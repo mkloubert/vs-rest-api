@@ -76,6 +76,23 @@ You can define one or more users, that can access the API via [Basic Authentific
 
 By default any user (and guest) have read-only access.
 
+#### HTTPs [[&uarr;](#https-)]
+
+For secure access, you can define a SSL certificate:
+
+```json
+{
+    "rest.api": {
+        // ...
+        
+        "ssl": {
+            "cert": "./api-host.crt",
+            "key": "./api-host.key"
+        }
+    }
+}
+```
+
 ### Build-in endpoints [[&uarr;](#how-to-use-)]
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]
