@@ -76,7 +76,7 @@ You can define one or more users, that can access the API via [Basic Authentific
 
 By default any user (and guest) have read-only access.
 
-#### HTTPs [[&uarr;](#https-)]
+#### HTTPs [[&uarr;](#settings-)]
 
 For secure access, you can define a SSL certificate:
 
