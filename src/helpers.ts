@@ -77,6 +77,31 @@ export function asArray<T>(val: T | T[]): T[] {
 }
 
 /**
+ * Returns data as buffer.
+ * 
+ * @param {any} val The input value.
+ * 
+ * @returns {Buffer} The output value.
+ */
+export function asBuffer(val: any, enc?: string): Buffer {
+    if (isNullOrUndefined(val)) {
+        return val;
+    }
+
+    enc = normalizeString(enc);
+    if (!enc) {
+        enc = 'utf8';
+    }
+
+    let buff: Buffer = val;
+    if ('object' !== val) {
+        buff = new Buffer(toStringSafe(val), enc);
+    }
+
+    return buff;
+}
+
+/**
  * Cleans up a string.
  * 
  * @param {any} str The string to cleanup.
