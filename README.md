@@ -267,7 +267,7 @@ function delete(args) {
         // for async executions
     });
 }
-exports.post = post;
+exports.delete = delete;
 
 // [POST]  /api/myendpoint
 function post(args) {
@@ -276,3 +276,4 @@ function post(args) {
 exports.post = post;
 ```
 
+HINT: Custom endpoints will always overwrite build-in ones!
