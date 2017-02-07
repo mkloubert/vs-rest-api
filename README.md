@@ -244,36 +244,30 @@ GET /api/myendpoint
 your script should look like this:
 
 ```javascript
-function get(args) {
+exports.get = function(args) {
     // do the magic here
 }
-exports.get = get;
 ```
 
 You are also able to define functions for other request methods, like `POST` or `DELETE`:
 
 ```javascript
-// ...
-
 // [FOO]  /api/myendpoint
-function foo(args) {
+exports.foo = function(args) {
     // for custom request methods
 }
-exports.foo = foo;
 
 // [DELETE]  /api/myendpoint
-function delete(args) {
+exports.delete = function(args) {
     return new Promise(function(resolve, reject) {
         // for async executions
     });
 }
-exports.delete = delete;
 
 // [POST]  /api/myendpoint
-function post(args) {
+exports.post = function(args) {
     // no (promise) result means: sync execution
 }
-exports.post = post;
 ```
 
 HINT: Custom endpoints will always overwrite build-in ones!
