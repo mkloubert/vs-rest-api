@@ -1,0 +1,331 @@
+{
+  "name": "vs-rest-api",
+  "displayName": "REST API",
+  "description": "Extension that provides a REST API to control your editor.",
+  "version": "0.0.1",
+  "publisher": "mkloubert",
+  "engines": {
+    "vscode": "^1.5.0"
+  },
+  "license": "MIT",
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "HTTP",
+    "Remote",
+    "Editor",
+    "REST",
+    "API"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/src/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.remoteEditor.startHost",
+        "title": "Starts the web server",
+        "category": "Remote Editor"
+      },
+      {
+        "command": "extension.remoteEditor.stopHost",
+        "title": "Stops the web server",
+        "category": "Remote Editor"
+      },
+      {
+        "command": "extension.remoteEditor.toggleHostState",
+        "title": "Starts or stops the web server",
+        "category": "Remote Editor"
+      }
+    ],
+    "configuration": {
+      "properties": {
+        "remote.editor": {
+          "type": "object",
+          "properties": {
+            "autoStart": {
+              "description": "Start HTTP on startup or not.",
+              "type": "boolean",
+              "default": false
+            },
+            "guest": {
+              "oneOf": [
+                {
+                  "description": "Defines if guest account should be activated or not.",
+                  "type": "boolean",
+                  "default": true
+                },
+                {
+                  "description": "Settings for the guest account.",
+                  "type": "object",
+                  "properties": {
+                    "exclude": {
+                      "description": "Defines one or more glob patterns with files to exclude.",
+                      "oneOf": [
+                        {
+                          "description": "The glob pattern with the files to exclude.",
+                          "type": "string"
+                        },
+                        {
+                          "description": "The list glob patterns with the files to exclude.",
+                          "type": "array",
+                          "default": [],
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "files": {
+                      "description": "Defines one or more glob patterns with files to include.",
+                      "oneOf": [
+                        {
+                          "description": "The glob pattern with the files to include.",
+                          "type": "string",
+                          "default": "**"
+                        },
+                        {
+                          "description": "The list glob patterns with the files to include.",
+                          "type": "array",
+                          "default": [
+                            "**"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "isActive": {
+                      "description": "Defines if user guest should be activated or not.",
+                      "type": "boolean",
+                      "default": true
+                    }
+                  }
+                }
+              ]
+            },
+            "lang": {
+              "description": "The custom language to use.",
+              "type": "string"
+            },
+            "liveUpdate": {
+              "description": "Live update settings.",
+              "type": "object",
+              "properties": {
+                "isActive": {
+                  "description": "Is live update active or not.",
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "port": {
+              "description": "The TCP port the HTTP server should listen on.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535,
+              "default": 8080
+            },
+            "realm": {
+              "description": "The name of the realm for the authentication.",
+              "type": "string",
+              "default": "Remote Editor"
+            },
+            "ssl": {
+              "description": "Configuration for running as HTTPs server.",
+              "properties": {
+                "ca": {
+                  "description": "The path to the ca file.",
+                  "type": "string"
+                },
+                "cert": {
+                  "description": "The path to the file of the certificate.",
+                  "type": "string"
+                },
+                "key": {
+                  "description": "The path to the key file.",
+                  "type": "string"
+                },
+                "passphrase": {
+                  "description": "The required password for the key file.",
+                  "type": "string"
+                },
+                "rejectUnauthorized": {
+                  "description": "Request unauthorized or not.",
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
+            "users": {
+              "oneOf": [
+                {
+                  "description": "The configuration of the user.",
+                  "type": "object",
+                  "properties": {
+                    "exclude": {
+                      "description": "Defines one or more glob patterns with files to exclude.",
+                      "oneOf": [
+                        {
+                          "description": "The glob pattern with the files to exclude.",
+                          "type": "string"
+                        },
+                        {
+                          "description": "The list glob patterns with the files to exclude.",
+                          "type": "array",
+                          "default": [],
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "files": {
+                      "description": "Defines one or more glob patterns with files to include.",
+                      "oneOf": [
+                        {
+                          "description": "The glob pattern with the files to include.",
+                          "type": "string",
+                          "default": "**"
+                        },
+                        {
+                          "description": "The list glob patterns with the files to include.",
+                          "type": "array",
+                          "default": [
+                            "**"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "isActive": {
+                      "description": "Defines if user account should be activated or not.",
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "name": {
+                      "description": "The name of the user.",
+                      "type": "string"
+                    },
+                    "password": {
+                      "description": "The password.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "password"
+                  ]
+                },
+                {
+                  "description": "A list of one or more users.",
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "exclude": {
+                        "description": "Defines one or more glob patterns with files to exclude.",
+                        "oneOf": [
+                          {
+                            "description": "The glob pattern with the files to exclude.",
+                            "type": "string"
+                          },
+                          {
+                            "description": "The list glob patterns with the files to exclude.",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "files": {
+                        "description": "Defines one or more global patterns with files to include.",
+                        "oneOf": [
+                          {
+                            "description": "The glob pattern with the files to include.",
+                            "type": "string",
+                            "default": "**"
+                          },
+                          {
+                            "description": "The list glob patterns with the files to include.",
+                            "type": "array",
+                            "default": [
+                              "**"
+                            ],
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "isActive": {
+                        "description": "Defines if user account should be activated or not.",
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "name": {
+                        "description": "The name of the user.",
+                        "type": "string"
+                      },
+                      "password": {
+                        "description": "The password.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "password"
+                    ]
+                  }
+                }
+              ]
+            },
+            "withDot": {
+              "description": "Show (directories) with leading '.' character or not.",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "typescript": "^2.0.3",
+    "vscode": "^1.0.0",
+    "mocha": "^2.3.3",
+    "@types/node": "^6.0.40",
+    "@types/mocha": "^2.2.32"
+  },
+  "icon": "icon.png",
+  "author": {
+    "name": "Marcel Joachim Kloubert"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mkloubert/vs-rest-api"
+  },
+  "bugs": {
+    "url": "https://github.com/mkloubert/vs-rest-api/issues"
+  },
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "glob": "^7.1.1",
+    "i18next": "^6.1.2",
+    "isbinaryfile": "^3.0.2",
+    "mime": "^1.3.4",
+    "moment": "^2.17.1"
+  }
+}
