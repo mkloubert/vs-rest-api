@@ -7,7 +7,10 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
 ## Table of contents
 
 1. [Install](#install-)
-1. [How to use](#how-to-use-)
+2. [How to use](#how-to-use-)
+   * [Settings](#settings-)
+   * [Build-in endpoints](#build-in-endpoints-)
+   * [Custom endpoints](#custom-endpoints-)
 
 ## Install [[&uarr;](#table-of-contents)]
 
@@ -20,6 +23,8 @@ ext install vs-rest-api
 Or search for things like `vs-deploy` in your editor.
 
 ## How to use [[&uarr;](#table-of-contents)]
+
+### Settings [[&uarr;](#how-to-use-)]
 
 ### Build-in endpoints [[&uarr;](#how-to-use-)]
 
