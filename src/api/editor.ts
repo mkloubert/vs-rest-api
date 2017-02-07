@@ -24,19 +24,20 @@
 // DEALINGS IN THE SOFTWARE.
 
 import * as Path from 'path';
+import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
 import * as rapi_host from '../host';
 import * as vscode from 'vscode';
 
 
 //    /api/editor
-export function get(apiCtx: rapi_host.ApiContext): Promise<any> {
+export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
         try {
             let nextAction = () => {
-                apiCtx.sendNotFound();
+                args.sendNotFound();
 
                 completed();
             };
@@ -50,7 +51,7 @@ export function get(apiCtx: rapi_host.ApiContext): Promise<any> {
                     let filePath: string;
                     let mime: string;
                     let sendResponse = () => {
-                        apiCtx.response.data = {
+                        args.response.data = {
                             content: doc.getText(),
                             file: {
                                 mime: mime,
@@ -78,7 +79,7 @@ export function get(apiCtx: rapi_host.ApiContext): Promise<any> {
                         if (false !== relativePath) {
                             nextAction = null;
                             
-                            apiCtx.request.user.isFileVisible(fullPath).then((isVisible) => {
+                            args.request.user.isFileVisible(fullPath).then((isVisible) => {
                                 if (isVisible) {
                                     filePath = rapi_helpers.toStringSafe(relativePath);
                                     filePath = rapi_helpers.replaceAllStrings(filePath, "\\", '/');
@@ -91,7 +92,7 @@ export function get(apiCtx: rapi_host.ApiContext): Promise<any> {
                                     sendResponse();
                                 }
                                 else {
-                                    apiCtx.sendNotFound();
+                                    args.sendNotFound();
                                     
                                     completed();
                                 }

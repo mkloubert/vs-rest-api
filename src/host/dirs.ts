@@ -24,6 +24,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 import * as Path from 'path';
+import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
 import * as rapi_host from '../host';
 import * as rapi_host_helpers from '../host/helpers';
@@ -33,10 +34,10 @@ import * as rapi_host_helpers from '../host/helpers';
  * Handles a local directory.
  * 
  * @param {string} dir The local directory.
- * @param {rapi_host.RequestContext} ctx The request context.
+ * @param {rapi_contracts.RequestContext} ctx The request context.
  */
 export function handleDirectory(dir: string,
-                                ctx: rapi_host.RequestContext) {
+                                ctx: rapi_contracts.RequestContext) {
     if (0 == Path.basename(dir).trim().indexOf('.')) {
         if (!rapi_helpers.toBooleanSafe(ctx.config.withDot)) {
             rapi_host_helpers.sendNotFound(ctx);

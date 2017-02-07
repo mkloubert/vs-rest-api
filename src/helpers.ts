@@ -27,10 +27,12 @@
 import * as ChildProcess from 'child_process';
 const Entities = require('html-entities').AllHtmlEntities;
 import * as FS from 'fs';
+import * as i18 from './i18';
 const IsBinaryFile = require("isbinaryfile");
 const MIME = require('mime');
 import * as Moment from 'moment';
 import * as Path from 'path';
+import * as rapi_contracts from './contracts';
 import * as vscode from 'vscode';
 import * as ZLib from 'zlib';
 
@@ -519,6 +521,32 @@ export function loadJavaScript(jsFile: string, withTags = true): Promise<string>
 }
 
 /**
+ * Loads a module.
+ * 
+ * @param {string} file The path of the module's file.
+ * @param {boolean} useCache Use cache or not.
+ * 
+ * @return {TModule} The loaded module.
+ */
+export function loadModuleSync<TModule extends rapi_contracts.ScriptModule>(file: string, useCache: boolean = false): TModule {
+    if (!Path.isAbsolute(file)) {
+        file = Path.join(vscode.workspace.rootPath, file);
+    }
+    file = Path.resolve(file);
+
+    let stats = FS.lstatSync(file);
+    if (!stats.isFile()) {
+        throw new Error(i18.t('isNo.file', file));
+    }
+
+    if (!useCache) {
+        delete require.cache[file];  // remove from cache
+    }
+    
+    return require(file);
+}
+
+/**
  * Tries to load a text file.
  * 
  * @param {string} file The path to the file.
@@ -825,6 +853,25 @@ export function toStringSafe(str: any, defValue: any = ''): string {
     }
 
     return str;
+}
+
+/**
+ * Keeps sure to return a "validator" that is NOT (null) or (undefined).
+ * 
+ * @param {rapi_contracts.Validator<T>} validator The input value.
+ * 
+ * @return {rapi_contracts.Validator<T>} The output value.
+ */
+export function toValidatorSafe<T>(validator: rapi_contracts.Validator<T>): rapi_contracts.Validator<T> {
+    if (!validator) {
+        // use "dummy" validator
+
+        validator = (): boolean => {
+            return true;
+        };
+    }
+    
+    return validator;
 }
 
 /**

@@ -34,6 +34,9 @@ import * as vscode from 'vscode';
  * Stores the strings of a translation.
  */
 export interface Translation {
+    isNo: {
+        file: string;
+    },
 }
 
 

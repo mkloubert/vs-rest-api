@@ -23,10 +23,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+import * as rapi_contracts from '../contracts';
 import * as rapi_host from '../host';
 
 
 //    /api/test
-export function get(ctx: rapi_host.ApiContext) {
-    ctx.response.data = 'Wurst';
+export function get(args: rapi_contracts.ApiMethodArguments) {
+    args.response.data = 'Wurst';
 }

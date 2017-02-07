@@ -23,6 +23,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+import * as rapi_contracts from '../contracts';
 import * as rapi_host from '../host';
 import * as rapi_host_helpers from './helpers';
 
@@ -31,10 +32,10 @@ import * as rapi_host_helpers from './helpers';
  * Handles a local file.
  * 
  * @param {string} file The local file.
- * @param {rapi_host.RequestContext} ctx The request context.
+ * @param {rapi_contracts.RequestContext} ctx The request context.
  */
 export function handleFile(file: string,
-                           ctx: rapi_host.RequestContext) {
+                           ctx: rapi_contracts.RequestContext) {
     ctx.user.isFileVisible(file).then((isVisible) => {
         if (!isVisible) {
             rapi_host_helpers.sendNotFound(ctx);

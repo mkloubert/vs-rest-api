@@ -29,4 +29,7 @@ import { Translation } from '../i18';
 // 
 // Translated by: Marcel Joachim Kloubert (https://github.com/mkloubert)
 export const TRANSLATION: Translation = {
+    isNo: {
+        file: "{0:trim,surround} ist keine Datei!",
+    },
 };

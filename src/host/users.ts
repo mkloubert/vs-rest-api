@@ -27,7 +27,6 @@ const Glob = require('glob');
 import * as Path from 'path';
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
-import * as rapi_host from '../host';
 import * as vscode from 'vscode';
 
 
@@ -45,47 +44,23 @@ const DEFAULT_USER: rapi_contracts.Account = {
 };
 DEFAULT_USER.__globals[VAR_VISIBLE_FILES] = {};
 
-/**
- * An user.
- */
-export class User {
-    /**
-     * Stores the underlying account.
-     */
+
+class User implements rapi_contracts.User {
     protected readonly _ACCOUNT: rapi_contracts.Account;
-    /**
-     * Stores the underlying request context.
-     */
-    protected readonly _CONTEXT: rapi_host.RequestContext;
-    /**
-     * Stores the if user is a guest or not.
-     */
+    protected readonly _CONTEXT: rapi_contracts.RequestContext;
     protected readonly _IS_GUEST: boolean;
 
-    /**
-     * Initializes a new instance of that class.
-     * 
-     * @param {rapi_host.RequestContext} ctx The underlying request context.
-     * @param {rapi_contracts.Account} account The underlying account object.
-     * @param {boolean} isGuest Is guest or not.
-     */
-    constructor(ctx: rapi_host.RequestContext, account: rapi_contracts.Account, isGuest: boolean) {
+    constructor(ctx: rapi_contracts.RequestContext, account: rapi_contracts.Account, isGuest: boolean) {
         this._ACCOUNT = account;
         this._CONTEXT = ctx;
         this._IS_GUEST = rapi_helpers.toBooleanSafe(isGuest);
     }
 
-    /**
-     * Gets the underlying account.
-     */
     public get account(): rapi_contracts.Account {
         return this._ACCOUNT;
     }
 
-    /**
-     * Gets the underlying request context.
-     */
-    public get context(): rapi_host.RequestContext {
+    public get context(): rapi_contracts.RequestContext {
         return this._CONTEXT;
     }
 
@@ -130,14 +105,6 @@ export class User {
         });
     }
 
-    /**
-     * Gets a variable of the user.
-     * 
-     * @param {string} name The name of the variable.
-     * @param {T} [defaultValue] The default value.
-     * 
-     * @return {T} The value.
-     */
     public get<T>(name: string, defaultValue?: T): T {
         name = this.parseVarName(name);
 
@@ -152,33 +119,16 @@ export class User {
         return value;
     }
 
-    /**
-     * Checks if a variable exists.
-     * 
-     * @param {string} name The name of the variable.
-     * 
-     * @returns {boolean} Exists or not.
-     */
     public has(name: string): boolean {
         name = this.parseVarName(name);
 
         return (<Object>this.account.__globals).hasOwnProperty(name);
     }
 
-    /**
-     * Gets if user is a guest or not.
-     */
     public get isGuest(): boolean {
         return this._IS_GUEST;
     }
 
-    /**
-     * Checks if a file is visible for that user.
-     * 
-     * @param {string} file The file to check.
-     * 
-     * @returns {Promise<boolean>} The promise.
-     */
     public isFileVisible(file: string): Promise<boolean> {
         let me = this;
         
@@ -283,26 +233,11 @@ export class User {
         return rapi_helpers.normalizeString(name);
     }
 
-    /**
-     * Sets a variable for the user.
-     * 
-     * @param {string} name The name of the variable.
-     * @param {T} value The value to set.
-     * 
-     * @chainable
-     */
     public set<T>(name: string, value: T): User {
         this.account.__globals[this.parseVarName(name)] = value;
         return this;
     }
 
-    /**
-     * Removes a variable.
-     * 
-     * @param {string} name The name of the variable.
-     * 
-     * @chainable
-     */
     public unset(name: string): User {
         name = this.parseVarName(name);
         delete this.account.__globals['name'];
@@ -315,11 +250,11 @@ export class User {
 /**
  * Tries to find an user by request context.
  * 
- * @param {rapi_host.RequestContext} ctx The request context.
+ * @param {rapi_contracts.RequestContext} ctx The request context.
  * 
- * @return {User} The user (if found).
+ * @return {rapi_contracts.User} The user (if found).
  */
-export function getUser(ctx: rapi_host.RequestContext): User {
+export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User {
     let result: User;
 
     let createGuestUser = (account?: rapi_contracts.Account) => {

@@ -26,6 +26,7 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 import * as Moment from 'moment';
+import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
 import * as rapi_host from '../host';
 import * as vscode from 'vscode';
@@ -53,7 +54,7 @@ interface FileSystemItem {
 }
 
 
-function handleDirectory(apiCtx: rapi_host.ApiContext, dir: string): Promise<any> {
+function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         let dirs: DirectoryItem[] = [];
         let files: FileItem[] = [];
@@ -145,7 +146,7 @@ function handleDirectory(apiCtx: rapi_host.ApiContext, dir: string): Promise<any
                         }
                     }
 
-                    apiCtx.response.data = list;
+                    args.response.data = list;
 
                     resolve();
                 }
@@ -156,7 +157,7 @@ function handleDirectory(apiCtx: rapi_host.ApiContext, dir: string): Promise<any
             return 0 == rapi_helpers.normalizeString(d).indexOf('.');
         };
 
-        apiCtx.headers[HEADER_FILE_TYPE] = 'directory';
+        args.headers[HEADER_FILE_TYPE] = 'directory';
 
         FS.readdir(dir, (err, items) => {
             if (err) {
@@ -184,7 +185,7 @@ function handleDirectory(apiCtx: rapi_host.ApiContext, dir: string): Promise<any
 
                             if (hasLeadingDot(i)) {
                                 // also with dots?
-                                addDir = rapi_helpers.toBooleanSafe(apiCtx.request.config.withDot);
+                                addDir = rapi_helpers.toBooleanSafe(args.request.config.withDot);
                             }
 
                             if (addDir) {
@@ -200,7 +201,7 @@ function handleDirectory(apiCtx: rapi_host.ApiContext, dir: string): Promise<any
                             nextItem();
                         }
                         else if (stats.isFile()) {
-                            apiCtx.request.user.isFileVisible(fullPath).then((isVisible) => {
+                            args.request.user.isFileVisible(fullPath).then((isVisible) => {
                                 if (isVisible) {
                                     files.push({
                                         birthtime: stats.birthtime,
@@ -230,18 +231,18 @@ function handleDirectory(apiCtx: rapi_host.ApiContext, dir: string): Promise<any
     });
 }
 
-function handleFile(apiCtx: rapi_host.ApiContext, file: string): Promise<any> {
+function handleFile(args: rapi_contracts.ApiMethodArguments, file: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
-        apiCtx.headers[HEADER_FILE_TYPE] = 'file';
+        args.headers[HEADER_FILE_TYPE] = 'file';
 
-        switch (apiCtx.request.method) {
+        switch (args.request.method) {
             case 'get':
                 // get file content
                 FS.readFile(file, (err, data) => {
                     if (!err) {
-                        apiCtx.setContent(data, rapi_helpers.detectMimeByFilename(file));
+                        args.setContent(data, rapi_helpers.detectMimeByFilename(file));
                     }
 
                     completed(err);
@@ -255,7 +256,7 @@ function handleFile(apiCtx: rapi_host.ApiContext, file: string): Promise<any> {
                         vscode.window.showTextDocument(doc).then(() => {
                             completed();
                         }, (err) => {
-                            apiCtx.response.code = 1;
+                            args.response.code = 1;
 
                             completed();
                         });
@@ -269,7 +270,7 @@ function handleFile(apiCtx: rapi_host.ApiContext, file: string): Promise<any> {
                 break;
 
             default:
-                apiCtx.sendMethodNotAllowed();
+                args.sendMethodNotAllowed();
                 completed();
                 break;
         }
@@ -278,24 +279,24 @@ function handleFile(apiCtx: rapi_host.ApiContext, file: string): Promise<any> {
 
 
 //    /api/workspace
-function request(apiCtx: rapi_host.ApiContext): Promise<any> {
+function request(args: rapi_contracts.ApiMethodArguments): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
         let notFound = () => {
-            apiCtx.sendNotFound();
+            args.sendNotFound();
 
             completed();
         };
 
         let methodNotAllowed = () => {
-            apiCtx.sendMethodNotAllowed();
+            args.sendMethodNotAllowed();
 
             completed();
         };
 
         try {
-            let normalizedPath = rapi_helpers.toStringSafe(apiCtx.request.url.pathname);
+            let normalizedPath = rapi_helpers.toStringSafe(args.request.url.pathname);
             normalizedPath = rapi_helpers.replaceAllStrings(normalizedPath, "\\", '/');
             normalizedPath = rapi_helpers.replaceAllStrings(normalizedPath, Path.sep, '/');
 
@@ -324,17 +325,17 @@ function request(apiCtx: rapi_host.ApiContext): Promise<any> {
                             };
 
                             if (stats.isDirectory()) {
-                                switch (apiCtx.request.method) {
+                                switch (args.request.method) {
                                     case 'get':
                                         nextAction = null;
 
                                         let isVisible = true;
                                         if (0 == rapi_helpers.normalizeString(Path.basename(fullPath)).indexOf('.')) {
-                                            isVisible = rapi_helpers.toBooleanSafe(apiCtx.request.config.withDot);
+                                            isVisible = rapi_helpers.toBooleanSafe(args.request.config.withDot);
                                         }
 
                                         if (isVisible) {
-                                            handleDirectory(apiCtx, fullPath).then(() => {
+                                            handleDirectory(args, fullPath).then(() => {
                                                 completed();
                                             }).catch((err) => {
                                                 completed(err);
@@ -351,8 +352,8 @@ function request(apiCtx: rapi_host.ApiContext): Promise<any> {
                             else if (stats.isFile()) {
                                 nextAction = null;
 
-                                apiCtx.request.user.isFileVisible(fullPath).then(() => {
-                                    handleFile(apiCtx, fullPath).then(() => {
+                                args.request.user.isFileVisible(fullPath).then(() => {
+                                    handleFile(args, fullPath).then(() => {
                                         completed();
                                     }).catch((err) => {
                                         completed(err);

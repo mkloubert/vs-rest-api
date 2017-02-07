@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -49,6 +49,32 @@
               "description": "Start HTTP on startup or not.",
               "type": "boolean",
               "default": false
+            },
+            "endpoints": {
+              "type": "object",
+              "patternProperties": {
+                "(.*)": {
+                  "description": "The regular expression of the endpoint.",
+                  "type": "object",
+                  "format": "regex",
+                  "properties": {
+                    "isActive": {
+                      "description": "Indicates if the endpoint is currently active or not.",
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "options": {
+                      "description": "The options for the execution."
+                    },
+                    "script": {
+                      "description": "The path to the script with the methods to handle the API request.",
+                      "type": "string",
+                      "default": "./my-api-endpoint.js"
+                    }
+                  },
+                  "required": [ "script" ]
+                }
+              }
             },
             "guest": {
               "oneOf": [
@@ -293,6 +319,31 @@
                       "password"
                     ]
                   }
+                }
+              ]
+            },
+            "validator": {
+              "description": "Defines a script that validates a client request.",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "The path to the validator script.",
+                  "default": "./my-client-validator.js"
+                },
+                {
+                  "type": "object",
+                  "description": "Settings for the client request validator.",
+                  "properties": {
+                    "options": {
+                      "description": "Additional options / data for the execution (if required)."
+                    },
+                    "script": {
+                      "type": "string",
+                      "description": "The path to the validator script.",
+                      "default": "./my-client-validator.js"
+                    }
+                  },
+                  "required": [ "script" ]
                 }
               ]
             },

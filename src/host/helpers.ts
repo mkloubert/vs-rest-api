@@ -23,8 +23,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
-import * as rapi_host from '../host';
 import * as URL from 'url';
 import * as ZLib from 'zlib';
 
@@ -68,13 +68,13 @@ export interface CompressForResponseResult {
  * Tries to compress data for a reponse.
  * 
  * @param {any} data The data to compress.
- * @param {rapi_host.RequestContext} ctx The underlying request context.
+ * @param {rapi_contracts.RequestContext} ctx The underlying request context.
  * @param {string} encoding The custom text encoding to use, if 'data' is no buffer.
  * 
  * @return {Promise<CompressForResponseResult>} The result.
  */
 export function compressForResponse(data: any,
-                                    ctx: rapi_host.RequestContext,
+                                    ctx: rapi_contracts.RequestContext,
                                     encoding?: string): Promise<CompressForResponseResult> {
     encoding = rapi_helpers.normalizeString(encoding);
     if (!encoding) {
@@ -84,6 +84,9 @@ export function compressForResponse(data: any,
     return new Promise<CompressForResponseResult>((resolve, reject) => {
         try {
             let uncompressed = rapi_helpers.asBuffer(data, encoding);
+            if (!uncompressed) {
+                uncompressed = Buffer.alloc(0);
+            }
 
             let compressed: Buffer;
             let contentEncoding: string;
@@ -173,10 +176,10 @@ export function getUrlParam(params: Object, name: string): string {
  * Sends an error response.
  * 
  * @param {any} err The error to send.
- * @param {rapi_host.RequestContext} ctx The request context.
+ * @param {rapi_contracts.RequestContext} ctx The request context.
  * @param {number} code The custom status code to send.
  */
-export function sendError(err: any, ctx: rapi_host.RequestContext, code = 500) {
+export function sendError(err: any, ctx: rapi_contracts.RequestContext, code = 500) {
     try {
         ctx.response.statusCode = code;
         ctx.response.statusMessage = rapi_helpers.toStringSafe(err);
@@ -191,10 +194,10 @@ export function sendError(err: any, ctx: rapi_host.RequestContext, code = 500) {
 /**
  * Sends a "forbidden" response.
  * 
- * @param {rapi_host.RequestContext} ctx The request context.
+ * @param {rapi_contracts.RequestContext} ctx The request context.
  * @param {number} code The custom status code to send.
  */
-export function sendForbidden(ctx: rapi_host.RequestContext, code = 403) {
+export function sendForbidden(ctx: rapi_contracts.RequestContext, code = 403) {
     try {
         ctx.response.statusCode = code;
 
@@ -206,12 +209,29 @@ export function sendForbidden(ctx: rapi_host.RequestContext, code = 403) {
 }
 
 /**
- * Sends a "not found" response.
+ * Sends a "method not allowed" response.
  * 
- * @param {rapi_host.RequestContext} ctx The request context.
+ * @param {rapi_contracts.RequestContext} ctx The request context.
  * @param {number} code The custom status code to send.
  */
-export function sendNotFound(ctx: rapi_host.RequestContext, code = 404) {
+export function sendMethodNotAllowed(ctx: rapi_contracts.RequestContext, code = 405) {
+    try {
+        ctx.response.statusCode = code;
+
+        ctx.response.end();
+    }
+    catch (e) {
+        this.controller.log(`[ERROR] host.helpers.sendMethodNotAllowed(): ${rapi_helpers.toStringSafe(e)}`);
+    }
+}
+
+/**
+ * Sends a "not found" response.
+ * 
+ * @param {rapi_contracts.RequestContext} ctx The request context.
+ * @param {number} code The custom status code to send.
+ */
+export function sendNotFound(ctx: rapi_contracts.RequestContext, code = 404) {
     try {
         ctx.response.statusCode = code;
 
@@ -223,12 +243,29 @@ export function sendNotFound(ctx: rapi_host.RequestContext, code = 404) {
 }
 
 /**
- * Sends an "unauthorized" response.
+ * Sends a "not implemented" response.
  * 
- * @param {rapi_host.RequestContext} ctx The request context.
+ * @param {rapi_contracts.RequestContext} ctx The request context.
  * @param {number} code The custom status code to send.
  */
-export function sendUnauthorized(ctx: rapi_host.RequestContext, code = 401) {
+export function sendNotImplemented(ctx: rapi_contracts.RequestContext, code = 501) {
+    try {
+        ctx.response.statusCode = code;
+
+        ctx.response.end();
+    }
+    catch (e) {
+        this.controller.log(`[ERROR] host.helpers.sendNotImplemented(): ${rapi_helpers.toStringSafe(e)}`);
+    }
+}
+
+/**
+ * Sends an "unauthorized" response.
+ * 
+ * @param {rapi_contracts.RequestContext} ctx The request context.
+ * @param {number} code The custom status code to send.
+ */
+export function sendUnauthorized(ctx: rapi_contracts.RequestContext, code = 401) {
     try {
         let realm = rapi_helpers.toStringSafe(ctx.config.realm);
         if (rapi_helpers.isEmptyString(realm)) {

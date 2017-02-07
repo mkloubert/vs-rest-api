@@ -54,128 +54,6 @@ export const DEFAULT_PORT = 1781;
  */
 export const REGEX_API = /^(\/)(api)(\/)?/i;
 
-/**
- * The APU context.
- */
-export interface ApiContext {
-    /**
-     * The content to use instead of 'ApiContext.response'.
-     */
-    content?: any;
-    /**
-     * The text encoding to use.
-     */
-    encoding: string;
-    /**
-     * The response headers to send.
-     */
-    headers: { [key: string]: any };
-    /**
-     * The request context.
-     */
-    request: RequestContext;
-    /**
-     * The response data.
-     */
-    response: ApiResponse;
-    /**
-     * Sets up the response for a 405 HTTP response.
-     * 
-     * @chainable
-     */
-    sendMethodNotAllowed: () => ApiContext;
-    /**
-     * Sets up the response for a 404 HTTP response.
-     * 
-     * @chainable
-     */
-    sendNotFound: () => ApiContext;
-    /**
-     * Sets the content of 'ApiContext.content'.
-     * 
-     * @param {any} newContent The new content to set.
-     * @param {string} mime The content / mime type.
-     * 
-     * @chainable
-     */
-    setContent: (newContent: any, mime?: string) => ApiContext;
-    /**
-     * The status code.
-     */
-    statusCode?: number;
-    /**
-     * Writes data to the response.
-     * 
-     * @chainable
-     */
-    write: (data: any) => ApiContext;
-}
-
-/**
- * An API method.
- * 
- * @param {ApiContext} ctx The context.
- * 
- * @return {Promise<any>|void} The result.
- */
-export type ApiMethod = (ctx: ApiContext) => Promise<any> | void;
-
-/**
- * An API response.
- */
-export interface ApiResponse {
-    /**
-     * The code.
-     */
-    code: number;
-    /**
-     * The data.
-     */
-    data?: any;
-    /**
-     * The message.
-     */
-    msg?: string;
-}
-
-/**
- * A request context.
- */
-export interface RequestContext {
-    /**
-     * The current configuration.
-     */
-    config: rapi_contracts.Configuration;
-    /**
-     * The GET parameters.
-     */
-    GET: { [key: string]: string };
-    /**
-     * The name of the request method.
-     */
-    method: string;
-    /**
-     * Gets the HTTP request context.
-     */
-    request: HTTP.IncomingMessage;
-    /**
-     * Gets the HTTP response context.
-     */
-    response: HTTP.ServerResponse;
-    /**
-     * The request time.
-     */
-    time: Moment.Moment;
-    /**
-     * The URL as object.
-     */
-    url: URL.Url;
-    /**
-     * The current user.
-     */
-    user?: rapi_users.User;
-}
-
 
 /**
  * A HTTP for browsing the workspace.
@@ -220,12 +98,13 @@ export class ApiHost implements vscode.Disposable {
     /**
      * Handles an API call.
      * 
-     * @param {RequestContext} ctx The request context.
+     * @param {rapi_contracts.RequestContext} ctx The request context.
      * @param {ApiResponse} response The predefined response data.
      */
-    protected handleApi(ctx: RequestContext, response: ApiResponse) {
+    protected handleApi(ctx: rapi_contracts.RequestContext, response: rapi_contracts.ApiResponse) {
         try {
-            let method: ApiMethod;
+            let apiModule: rapi_contracts.ApiModule;
+            let method: rapi_contracts.ApiMethod;
 
             let normalizedPath = rapi_helpers.toStringSafe(ctx.url.pathname);
             normalizedPath = rapi_helpers.replaceAllStrings(normalizedPath, "\\", '/');
@@ -237,148 +116,199 @@ export class ApiHost implements vscode.Disposable {
                                       .map(x => rapi_helpers.normalizeString(x))
                                       .filter(x => !rapi_helpers.isEmptyString(x));
 
-            let isRoot = true;
+            let apiArgs: rapi_contracts.ApiMethodArguments = {
+                encoding: DEFAULT_ENCODING,
+                headers: {
+                    'Content-type': 'application/json; charset=utf-8',
+                },
+                path: parts.join('/'),
+                request: ctx,
+                response: response,
+                setContent: function(newContent, mime) {
+                    delete this.response;
 
-            if (parts.length > 0) {
-                let modName = rapi_helpers.cleanupString(parts[0]);
-                if (!rapi_helpers.isEmptyString(modName)) {
-                    isRoot = false;
+                    this.content = newContent;
 
-                    // try load module
-                    let mod: any;
-                    try {
-                        mod = require(`./api/${modName}`);
+                    mime = rapi_helpers.normalizeString(mime);
+                    if (mime) {
+                        if (!this.headers) {
+                            this.headers = {};
+                        }
+
+                        this.headers['Content-type'] = mime;
                     }
-                    catch (e) { /* not found */ }
 
-                    if (mod) {
-                        // search for function that
-                        // has the same name as the HTTP request
-                        // method
-                        for (let p in mod) {
-                            if (p == ctx.method) {
-                                if ('function' === typeof mod[p]) {
-                                    method = mod[p];
-                                }
+                    return this;
+                },
+                sendMethodNotAllowed: function() {
+                    this.statusCode = 405;
+                    
+                    delete this.response;
+                    delete this.headers;
 
-                                break;
-                            }
+                    return this;
+                },
+                sendNotFound: function() {
+                    this.statusCode = 404;
+                    
+                    delete this.response;
+                    delete this.headers;
+
+                    return this;
+                },
+                statusCode: 200,
+                write: function(data) {
+                    if (!data) {
+                        return;
+                    }
+
+                    let enc = rapi_helpers.normalizeString(this.encoding);
+                    if (!enc) {
+                        enc = DEFAULT_ENCODING;
+                    }
+
+                    this.request
+                        .response.write(rapi_helpers.asBuffer(data), enc);
+
+                    return this;
+                }
+            };
+
+            // search for a matching external API module
+            if (ctx.config.endpoints) {
+                for (let pattern in ctx.config.endpoints) {
+                    let ep = ctx.config.endpoints[pattern];
+                    if (!ep) {
+                        continue;
+                    }
+
+                    if (!rapi_helpers.toBooleanSafe(ep.isActive, true)) {
+                        continue;  // not active
+                    }
+
+                    let isMatching = true;
+                
+                    if (pattern) {
+                        let regex = new RegExp(rapi_helpers.toStringSafe(pattern), 'i');
+
+                        isMatching = regex.test(apiArgs.path);
+                    }
+
+                    if (isMatching) {
+                        // found
+                        apiArgs.options = ep.options;
+
+                        let apiScript = rapi_helpers.toStringSafe(ep.script);
+                        if (apiScript) {
+                            apiModule = rapi_helpers.loadModuleSync<rapi_contracts.ApiModule>(apiScript);
                         }
 
-                        if (!method) {
-                            // no matching method found
+                        if (!apiModule) {
+                            // ... but not implemented
 
-                            method = (ac) => {
-                                ac.sendMethodNotAllowed();
-                            };
+                            rapi_host_helpers.sendNotImplemented(ctx);
+                            return;
                         }
+
+                        break;
                     }
                 }
             }
 
-            if (isRoot) {
-                // root
-                method = (ac) => {
-                    ac.response.data = {
-                        addr: ctx.request.connection.remoteAddress,
-                        time: ctx.time.format('YYYY-MM-DD HH:mm:ss'),
-                    };
+            if (apiModule) {
+                // custom method from external API module
+                method = apiModule[ctx.method];
+            }
+            else {
+                // no custom method found
+                // now try to bind matching "build in" ...
 
-                    if (!ctx.user.isGuest) {
-                        ac.response.data.me = {
-                            name: rapi_helpers.normalizeString(ctx.user.account['name']),
-                        };
+                let isRoot = true;
+
+                if (parts.length > 0) {
+                    let modName = rapi_helpers.cleanupString(parts[0]);
+                    if (!rapi_helpers.isEmptyString(modName)) {
+                        isRoot = false;
+
+                        // try load module
+                        let mod: any;
+                        try {
+                            mod = require(`./api/${modName}`);
+                        }
+                        catch (e) { /* not found */ }
+
+                        if (mod) {
+                            // search for function that
+                            // has the same name as the HTTP request
+                            // method
+                            for (let p in mod) {
+                                if (p == ctx.method) {
+                                    if ('function' === typeof mod[p]) {
+                                        method = mod[p];
+                                    }
+
+                                    break;
+                                }
+                            }
+
+                            if (!method) {
+                                // no matching method found
+
+                                method = (ac) => {
+                                    ac.sendMethodNotAllowed();
+                                };
+                            }
+                        }
                     }
-                };
+                }
+
+                if (isRoot) {
+                    // root
+                    method = (ac) => {
+                        ac.response.data = {
+                            addr: ctx.request.connection.remoteAddress,
+                            time: ctx.time.format('YYYY-MM-DD HH:mm:ss'),
+                        };
+
+                        if (!ctx.user.isGuest) {
+                            ac.response.data.me = {
+                                name: rapi_helpers.normalizeString(ctx.user.account['name']),
+                            };
+                        }
+                    };
+                }
             }
 
             if (method) {
-                let apiCtx: ApiContext = {
-                    encoding: DEFAULT_ENCODING,
-                    headers: {
-                        'Content-type': 'application/json; charset=utf-8',
-                    },
-                    request: ctx,
-                    response: response,
-                    setContent: function(newContent, mime) {
-                        delete this.response;
-
-                        this.content = newContent;
-
-                        mime = rapi_helpers.normalizeString(mime);
-                        if (mime) {
-                            if (!this.headers) {
-                                this.headers = {};
-                            }
-
-                            this.headers['Content-type'] = mime;
-                        }
-
-                        return this;
-                    },
-                    sendMethodNotAllowed: function() {
-                        this.statusCode = 405;
-                        
-                        delete this.response;
-                        delete this.headers;
-
-                        return this;
-                    },
-                    sendNotFound: function() {
-                        this.statusCode = 404;
-                        
-                        delete this.response;
-                        delete this.headers;
-
-                        return this;
-                    },
-                    statusCode: 200,
-                    write: function(data) {
-                        if (!data) {
-                            return;
-                        }
-
-                        let enc = rapi_helpers.normalizeString(this.encoding);
-                        if (!enc) {
-                            enc = DEFAULT_ENCODING;
-                        }
-
-                        this.request
-                            .response.write(rapi_helpers.asBuffer(data), enc);
-
-                        return this;
-                    }
-                };
-
                 let sendResponse = (err?: any) => {
                     if (err) {
                         rapi_host_helpers.sendError(err, ctx);
                     }
                     else {
                         try {
-                            let enc = rapi_helpers.normalizeString(apiCtx.encoding);
+                            let enc = rapi_helpers.normalizeString(apiArgs.encoding);
                             if (!enc) {
                                 enc = DEFAULT_ENCODING;
                             }
 
                             let responseData: any;
-                            if (apiCtx.response) {
+                            if (apiArgs.response) {
                                 responseData = JSON.stringify(response);
                             }
                             else {
-                                responseData = apiCtx.content;
+                                responseData = apiArgs.content;
                             }
 
                             let sendResponseData = (finalDataToSend: any) => {
-                                let statusCode = apiCtx.statusCode;
+                                let statusCode = apiArgs.statusCode;
                                 if (rapi_helpers.isEmptyString(statusCode)) {
                                     statusCode = 200;
                                 }
                                 else {
-                                    statusCode = parseInt(rapi_helpers.normalizeString(apiCtx.statusCode));
+                                    statusCode = parseInt(rapi_helpers.normalizeString(apiArgs.statusCode));
                                 }
 
-                                ctx.response.writeHead(statusCode, apiCtx.headers);
+                                ctx.response.writeHead(statusCode, apiArgs.headers);
 
                                 ctx.response.write(rapi_helpers.asBuffer(finalDataToSend));
 
@@ -387,11 +317,11 @@ export class ApiHost implements vscode.Disposable {
 
                             rapi_host_helpers.compressForResponse(responseData, ctx, enc).then((compressResult) => {
                                 if (compressResult.contentEncoding) {
-                                    if (!apiCtx.headers) {
-                                        apiCtx.headers = {};
+                                    if (!apiArgs.headers) {
+                                        apiArgs.headers = {};
                                     }
 
-                                    apiCtx.headers['Content-encoding'] = compressResult.contentEncoding;
+                                    apiArgs.headers['Content-encoding'] = compressResult.contentEncoding;
                                 }
 
                                 sendResponseData(compressResult.dataToSend);
@@ -405,7 +335,7 @@ export class ApiHost implements vscode.Disposable {
                     }
                 }
                 
-                let methodResult = method(apiCtx);
+                let methodResult = method(apiArgs);
                 if (methodResult) {
                     // async / promise call
 
@@ -433,14 +363,14 @@ export class ApiHost implements vscode.Disposable {
      * 
      * @param {RequestContext} ctx The request context.
      */
-    protected handleRequest(ctx: RequestContext) {
+    protected handleRequest(ctx: rapi_contracts.RequestContext) {
         let me = this;
 
         let normalizedPath = rapi_helpers.normalizeString(ctx.url.pathname);
 
         if (REGEX_API.test(normalizedPath)) {
             // API
-            let apiResponse: ApiResponse = {
+            let apiResponse: rapi_contracts.ApiResponse = {
                 code: 0,
             };
             
@@ -492,7 +422,11 @@ export class ApiHost implements vscode.Disposable {
                     try {
                         let url = URL.parse(req.url);
 
-                        let ctx: RequestContext = {
+                        let ctx: rapi_contracts.RequestContext = {
+                            client: {
+                                address: req.connection.remoteAddress,
+                                port: req.connection.remotePort,
+                            },
                             config: cfg,
                             GET: <any>rapi_host_helpers.urlParamsToObject(url),
                             method: rapi_helpers.normalizeString(req.method),
@@ -513,7 +447,86 @@ export class ApiHost implements vscode.Disposable {
                         }
 
                         try {
-                            me.handleRequest(ctx);
+                            let validatorArgs: rapi_contracts.ValidatorArguments<rapi_contracts.RemoteClient> = {
+                                context: {
+                                    config: ctx.config,
+                                    method: ctx.method,
+                                    request: req,
+                                    response: resp,
+                                    statusCode: 404,
+                                    time: ctx,
+                                },
+                                value: ctx.client,
+                            };
+
+                            let validator: rapi_contracts.Validator<rapi_contracts.RemoteClient>;
+                            if (!rapi_helpers.isNullOrUndefined(cfg.validator)) {
+                                let validatorScript: string;
+
+                                if ('object' === typeof cfg.validator) {
+                                    validatorScript = cfg.validator.script;
+
+                                    validatorArgs.options = cfg.validator.options;
+                                }
+                                else {
+                                    validatorScript = rapi_helpers.toStringSafe(cfg.validator);
+                                }
+
+                                if (!rapi_helpers.isEmptyString(validatorScript)) {
+                                    let validatorModule = rapi_helpers.loadModuleSync<rapi_contracts.ValidatorModule<rapi_contracts.RemoteClient>>(validatorScript);
+                                    if (validatorModule) {
+                                        validator = validatorModule.validate;
+                                    }
+                                }
+                            }
+                            validator = rapi_helpers.toValidatorSafe(validator);
+
+                            let handleTheRequest = (isRequestValid: boolean) => {
+                                isRequestValid = rapi_helpers.toBooleanSafe(isRequestValid, true);
+
+                                if (isRequestValid) {
+                                    try {
+                                        me.handleRequest(ctx);
+                                    }
+                                    catch (e) {
+                                        rapi_host_helpers.sendError(e, ctx);
+                                    }
+                                }
+                                else {
+                                    try {
+                                        // not valid
+                                        let statusCode = validatorArgs.context.statusCode;
+                                        if (rapi_helpers.isEmptyString(statusCode)) {
+                                            statusCode = '404';
+                                        }
+                                        statusCode = parseInt(rapi_helpers.normalizeString(statusCode));
+
+                                        ctx.response.statusCode = statusCode;
+
+                                        ctx.response.end();
+                                    }
+                                    catch (e) {
+                                        rapi_helpers.log(`[ERROR] ApiHost.start().requestListener(): ${rapi_helpers.toStringSafe(e)}`);
+                                    }
+                                }
+                            };
+
+                            let validatorResult = validator(validatorArgs);
+                            if (rapi_helpers.isNullOrUndefined(validatorResult)) {
+                                handleTheRequest(true);
+                            }
+                            else {
+                                if ('object' === typeof validatorResult) {
+                                    validatorResult.then((isValid) => {
+                                        handleTheRequest(isValid);
+                                    }).catch((err) => {
+                                        rapi_host_helpers.sendError(err, ctx);
+                                    })
+                                }
+                                else {
+                                    handleTheRequest(validatorResult);
+                                }
+                            }
                         }
                         catch (e) {
                             rapi_host_helpers.sendError(e, ctx);
