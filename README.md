@@ -262,6 +262,10 @@ exports.get = function(args) {
     // s. https://mkloubert.github.io/vs-rest-api/modules/_host_helpers_.html
     var hostHelpers = args.require('./host/helpers');
     
+    // access a module that is part of the extentsion
+    // s. https://github.com/mkloubert/vs-rest-api/blob/master/package.json
+    var glob = args.require('glob');
+    
     // access the data from the settings
     // from the example above this is: "Hello!"
     var opts = args.options;
