@@ -86,7 +86,7 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                             return;
                         }
 
-                        return Moment(x).utc().format('YYYY-MM-DD HH:mm:ss');
+                        return Moment(x).utc().toISOString();
                     };
 
                     let normalizePath = (p: string): string => {

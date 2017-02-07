@@ -569,7 +569,7 @@ export class ApiHost implements vscode.Disposable {
 
                                 if (!rapi_helpers.isEmptyString(validatorScript)) {
                                     if (!Path.isAbsolute(validatorScript)) {
-                                        validatorScript = Path.join(vscode.workspace.rootPath);
+                                        validatorScript = Path.join(vscode.workspace.rootPath, validatorScript);
                                     }
                                     validatorScript = Path.resolve(validatorScript);
 
@@ -581,18 +581,18 @@ export class ApiHost implements vscode.Disposable {
                                     if (validatorModule) {
                                         validator = validatorModule.validate;
                                     }
-                                }
 
-                                // validatorArgs.state
-                                Object.defineProperty(validatorArgs, 'state', {
-                                    enumerable: true,
-                                    get: () => {
-                                        return me._VALIDATOR_SCRIPT_STATES[validatorScript];
-                                    },
-                                    set: (newValue) => {
-                                        me._VALIDATOR_SCRIPT_STATES[validatorScript] = newValue;
-                                    }
-                                });
+                                    // validatorArgs.state
+                                    Object.defineProperty(validatorArgs, 'state', {
+                                        enumerable: true,
+                                        get: () => {
+                                            return me._VALIDATOR_SCRIPT_STATES[validatorScript];
+                                        },
+                                        set: (newValue) => {
+                                            me._VALIDATOR_SCRIPT_STATES[validatorScript] = newValue;
+                                        }
+                                    });
+                                }
                             }
                             validator = rapi_helpers.toValidatorSafe(validator);
 
