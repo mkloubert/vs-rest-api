@@ -9,6 +9,7 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
 1. [Install](#install-)
 2. [How to use](#how-to-use-)
    * [Settings](#settings-)
+         * [Users](#users-)
    * [Build-in endpoints](#build-in-endpoints-)
    * [Custom endpoints](#custom-endpoints-)
 
@@ -25,6 +26,24 @@ Or search for things like `vs-deploy` in your editor.
 ## How to use [[&uarr;](#table-of-contents)]
 
 ### Settings [[&uarr;](#how-to-use-)]
+
+Open (or create) your `settings.json` in your `.vscode` subfolder of your workspace.
+
+Add a `deploy` section:
+
+```json
+{
+    "rest.api": {
+        "autoStart": true,
+        "openInBrowser": true,
+        "port": 1781
+    }
+}
+```
+
+This example will run the host on port `1781` on startup and opens the URL `https://localhost:1781/` in your default application, like your browser.
+
+#### Users [[&uarr;](#settings-)]
 
 ### Build-in endpoints [[&uarr;](#how-to-use-)]
 
