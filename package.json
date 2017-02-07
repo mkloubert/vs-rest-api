@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -70,11 +70,17 @@
                       "description": "The path to the script with the methods to handle the API request.",
                       "type": "string",
                       "default": "./my-api-endpoint.js"
+                    },
+                    "state": {
+                      "description": "The initial value for the execution arguments of the underlying script."
                     }
                   },
                   "required": [ "script" ]
                 }
               }
+            },
+            "globals": {
+              "description": "Data that is accessable from everywhere, in scripts e.g."
             },
             "guest": {
               "oneOf": [
@@ -341,6 +347,9 @@
                       "type": "string",
                       "description": "The path to the validator script.",
                       "default": "./my-client-validator.js"
+                    },
+                    "state": {
+                      "description": "The initial value for the execution arguments of the underlying script."
                     }
                   },
                   "required": [ "script" ]

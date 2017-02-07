@@ -776,6 +776,17 @@ export function replaceAllStrings(str: string, searchValue: string, replaceValue
 }
 
 /**
+ * Loads a module from the extension context.
+ * 
+ * @param {string} id The ID / path of the module.
+ * 
+ * @return {any} The loaded module.
+ */
+export function requireModule(id: string) {
+    return require(toStringSafe(id));
+}
+
+/**
  * Converts a value to a boolean.
  * 
  * @param {any} val The value to convert.

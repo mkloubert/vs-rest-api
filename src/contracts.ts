@@ -68,6 +68,10 @@ export interface ApiEndpoint {
      * The path to the script with the methods to handle the API request.
      */
     script: string;
+    /**
+     * The initial value for the execution arguments of the underlying script.
+     */
+    state?: any;
 }
 
 /**
@@ -83,6 +87,10 @@ export type ApiMethod = (args: ApiMethodArguments) => Promise<any> | void;
  * Arguments for an API method.
  */
 export interface ApiMethodArguments extends ScriptArguments {
+    /**
+     * Compress response (if possible) or not.
+     */
+    compress?: boolean;
     /**
      * The content to use instead of 'ApiMethodArguments.response'.
      */
@@ -181,6 +189,10 @@ export interface Configuration {
      */
     endpoints?: { [pattern: string]: ApiEndpoint },
     /**
+     * Data that is accessable from everywhere, in scripts e.g.
+     */
+    globals?: any;
+    /**
      * Configuration for the "guest" account.
      */
     guest?: Account | boolean;
@@ -254,6 +266,10 @@ export interface Configuration {
          * The path to the validator script.
          */
         script: string;
+        /**
+         * The initial value for the execution arguments of the underlying script.
+         */
+        state?: any;
     },
     /**
      * Show (directories) with leading '.' character or not.
@@ -340,9 +356,25 @@ export interface RequestContext {
  */
 export interface ScriptArguments {
     /**
-     * Stores a permanent value for the current session.
+     * Gets the global data from the settings.
      */
-    state?: any;
+    readonly globals: any;
+    /**
+     * Gets the object to share data between all scripts of this type.
+     */
+    readonly globalState: Object;
+    /**
+     * Loads a module from the script / extension context.
+     */
+    readonly require: (id: string) => any;
+    /**
+     * Stores a permanent value for the current session for THIS script.
+     */
+    state: any;
+    /**
+     * Gets the workspace wide object to share data, between ALL scripts e.g.
+     */
+    readonly workspaceState: Object;
 }
 
 /**

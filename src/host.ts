@@ -60,6 +60,14 @@ export const REGEX_API = /^(\/)(api)(\/)?/i;
  */
 export class ApiHost implements vscode.Disposable {
     /**
+     * Stores the permanent state values of API endpoint script states.
+     */
+    protected readonly _API_ENDPOINT_SCRIPT_STATES: { [script: string]: any } = {};
+    /**
+     * Stores an object that shares data between all API endpoint scripts.
+     */
+    protected readonly _API_ENDPOINT_STATE: Object = {};
+    /**
      * Stores the underlying controller.
      */
     protected readonly _CONTROLLER: rapi_controller.Controller;
@@ -67,6 +75,14 @@ export class ApiHost implements vscode.Disposable {
      * The current server instance.
      */
     protected _server: HTTP.Server | HTTPs.Server;
+    /**
+     * Stores the permanent state values of validator script states.
+     */
+    protected readonly _VALIDATOR_SCRIPT_STATES: { [script: string]: any } = {};
+    /**
+     * Stores an object that shares data between all validator scripts.
+     */
+    protected readonly _VALIDATOR_STATE: Object = {};
 
     /**
      * Initializes a new instance of that class.
@@ -102,6 +118,8 @@ export class ApiHost implements vscode.Disposable {
      * @param {ApiResponse} response The predefined response data.
      */
     protected handleApi(ctx: rapi_contracts.RequestContext, response: rapi_contracts.ApiResponse) {
+        let me = this;
+        
         try {
             let apiModule: rapi_contracts.ApiModule;
             let method: rapi_contracts.ApiMethod;
@@ -118,11 +136,16 @@ export class ApiHost implements vscode.Disposable {
 
             let apiArgs: rapi_contracts.ApiMethodArguments = {
                 encoding: DEFAULT_ENCODING,
+                globals: me.controller.getGlobals(),
+                globalState: undefined,
                 headers: {
                     'Content-type': 'application/json; charset=utf-8',
                 },
                 path: parts.join('/'),
                 request: ctx,
+                require: function(id) {
+                    return rapi_helpers.requireModule(id);
+                },
                 response: response,
                 setContent: function(newContent, mime) {
                     delete this.response;
@@ -156,7 +179,9 @@ export class ApiHost implements vscode.Disposable {
 
                     return this;
                 },
+                state: undefined,
                 statusCode: 200,
+                workspaceState: undefined,
                 write: function(data) {
                     if (!data) {
                         return;
@@ -173,6 +198,22 @@ export class ApiHost implements vscode.Disposable {
                     return this;
                 }
             };
+
+            // apiArgs.globalState
+            Object.defineProperty(apiArgs, 'globalState', {
+                enumerable: true,
+                get: () => {
+                    return me._API_ENDPOINT_STATE;
+                }
+            });
+
+            // apiArgs.workspaceState
+            Object.defineProperty(apiArgs, 'workspaceState', {
+                enumerable: true,
+                get: () => {
+                    return me.controller.workspaceState;
+                }
+            });
 
             // search for a matching external API module
             if (ctx.config.endpoints) {
@@ -199,8 +240,24 @@ export class ApiHost implements vscode.Disposable {
                         apiArgs.options = ep.options;
 
                         let apiScript = rapi_helpers.toStringSafe(ep.script);
-                        if (apiScript) {
+                        if (!rapi_helpers.isEmptyString(apiScript)) {
+                            if (!Path.isAbsolute(apiScript)) {
+                                apiScript = Path.join(vscode.workspace.rootPath, apiScript);
+                            }
+                            apiScript = Path.resolve(apiScript);
+
                             apiModule = rapi_helpers.loadModuleSync<rapi_contracts.ApiModule>(apiScript);
+
+                            // apiArgs.state
+                            Object.defineProperty(apiArgs, 'state', {
+                                enumerable: true,
+                                get: () => {
+                                    return me._API_ENDPOINT_SCRIPT_STATES[apiScript];
+                                },
+                                set: (newValue: any) => {
+                                    me._API_ENDPOINT_SCRIPT_STATES[apiScript] = newValue;
+                                }
+                            });
                         }
 
                         if (!apiModule) {
@@ -300,34 +357,47 @@ export class ApiHost implements vscode.Disposable {
                             }
 
                             let sendResponseData = (finalDataToSend: any) => {
-                                let statusCode = apiArgs.statusCode;
-                                if (rapi_helpers.isEmptyString(statusCode)) {
-                                    statusCode = 200;
-                                }
-                                else {
-                                    statusCode = parseInt(rapi_helpers.normalizeString(apiArgs.statusCode));
-                                }
-
-                                ctx.response.writeHead(statusCode, apiArgs.headers);
-
-                                ctx.response.write(rapi_helpers.asBuffer(finalDataToSend));
-
-                                ctx.response.end();
-                            };
-
-                            rapi_host_helpers.compressForResponse(responseData, ctx, enc).then((compressResult) => {
-                                if (compressResult.contentEncoding) {
-                                    if (!apiArgs.headers) {
-                                        apiArgs.headers = {};
+                                try {
+                                    let statusCode = apiArgs.statusCode;
+                                    if (rapi_helpers.isEmptyString(statusCode)) {
+                                        statusCode = 200;
+                                    }
+                                    else {
+                                        statusCode = parseInt(rapi_helpers.normalizeString(apiArgs.statusCode));
                                     }
 
-                                    apiArgs.headers['Content-encoding'] = compressResult.contentEncoding;
-                                }
+                                    ctx.response.writeHead(statusCode, apiArgs.headers);
 
-                                sendResponseData(compressResult.dataToSend);
-                            }).catch((err) => {
+                                    ctx.response.write(rapi_helpers.asBuffer(finalDataToSend));
+
+                                    ctx.response.end();
+                                }
+                                catch (e) {
+                                    //TODO: log
+                                }
+                            };
+
+                            if (rapi_helpers.toBooleanSafe(apiArgs.compress, true)) {
+                                rapi_host_helpers.compressForResponse(responseData, ctx, enc).then((compressResult) => {
+                                    if (compressResult.contentEncoding) {
+                                        if (!apiArgs.headers) {
+                                            apiArgs.headers = {};
+                                        }
+
+                                        apiArgs.headers['Content-encoding'] = compressResult.contentEncoding;
+                                    }
+
+                                    sendResponseData(compressResult.dataToSend);
+                                }).catch((err) => {
+                                    //TODO: log
+
+                                    sendResponseData(responseData);
+                                });
+                            }
+                            else {
+                                // no compression
                                 sendResponseData(responseData);
-                            });
+                            }
                         }
                         catch (e) {
                             rapi_host_helpers.sendError(e, ctx);
@@ -456,28 +526,73 @@ export class ApiHost implements vscode.Disposable {
                                     statusCode: 404,
                                     time: ctx,
                                 },
+                                globals: me.controller.getGlobals(),
+                                globalState: undefined,
+                                require: function(id) {
+                                    return rapi_helpers.requireModule(id);
+                                },
+                                state: undefined,
                                 value: ctx.client,
+                                workspaceState: undefined,
                             };
+
+                            // validatorArgs.globalState
+                            Object.defineProperty(validatorArgs, 'globalState', {
+                                enumerable: true,
+                                get: () => {
+                                    return me._VALIDATOR_STATE;
+                                }
+                            });
+
+                            // validatorArgs.state
+                            Object.defineProperty(validatorArgs, 'state', {
+                                enumerable: true,
+                                get: () => {
+                                    return me.controller.workspaceState;
+                                }
+                            });
 
                             let validator: rapi_contracts.Validator<rapi_contracts.RemoteClient>;
                             if (!rapi_helpers.isNullOrUndefined(cfg.validator)) {
                                 let validatorScript: string;
 
+                                let initialState: any;
                                 if ('object' === typeof cfg.validator) {
                                     validatorScript = cfg.validator.script;
 
                                     validatorArgs.options = cfg.validator.options;
+                                    initialState = cfg.validator.state;
                                 }
                                 else {
                                     validatorScript = rapi_helpers.toStringSafe(cfg.validator);
                                 }
 
                                 if (!rapi_helpers.isEmptyString(validatorScript)) {
+                                    if (!Path.isAbsolute(validatorScript)) {
+                                        validatorScript = Path.join(vscode.workspace.rootPath);
+                                    }
+                                    validatorScript = Path.resolve(validatorScript);
+
+                                    if ('undefined' === typeof me._VALIDATOR_SCRIPT_STATES[validatorScript]) {
+                                        me._VALIDATOR_SCRIPT_STATES[validatorScript] = initialState;
+                                    }
+
                                     let validatorModule = rapi_helpers.loadModuleSync<rapi_contracts.ValidatorModule<rapi_contracts.RemoteClient>>(validatorScript);
                                     if (validatorModule) {
                                         validator = validatorModule.validate;
                                     }
                                 }
+
+                                // validatorArgs.state
+                                Object.defineProperty(validatorArgs, 'state', {
+                                    enumerable: true,
+                                    get: () => {
+                                        return me._VALIDATOR_SCRIPT_STATES[validatorScript];
+                                    },
+                                    set: (newValue) => {
+                                        me._VALIDATOR_SCRIPT_STATES[validatorScript] = newValue;
+                                    }
+                                });
                             }
                             validator = rapi_helpers.toValidatorSafe(validator);
 

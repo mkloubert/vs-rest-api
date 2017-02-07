@@ -57,6 +57,10 @@ export class Controller implements vscode.Disposable {
      * Stores the package file of that extension.
      */
     protected readonly _PACKAGE_FILE: rapi_contracts.PackageFile;
+    /**
+     * Stores the object that shares data workspace wide.
+     */
+    protected _workspaceState: Object;
 
     /**
      * Initializes a new instance of that class.
@@ -109,6 +113,20 @@ export class Controller implements vscode.Disposable {
     }
 
     /**
+     * Returns a copy of the global data from the settings.
+     * 
+     * @return {any} The global data from the settings.
+     */
+    public getGlobals(): any {
+        let globals = this.config.globals;
+        if (globals) {
+            globals = rapi_helpers.cloneObject(this.config.globals);
+        }
+
+        return globals;
+    }
+
+    /**
      * The 'on activated' event.
      */
     public onActivated() {
@@ -149,6 +167,7 @@ export class Controller implements vscode.Disposable {
         let me = this;
 
         let cfg = <rapi_contracts.Configuration>vscode.workspace.getConfiguration("rest.api");
+        me._workspaceState = {};
 
         let nextSteps = (err?: any) => {
             if (err) {
@@ -365,5 +384,12 @@ export class Controller implements vscode.Disposable {
                 });
             }
         });
+    }
+
+    /**
+     * Gets the object that shares data workspace wide.
+     */
+    public get workspaceState(): Object {
+        return this._workspaceState;
     }
 }
