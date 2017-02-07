@@ -183,4 +183,30 @@ POST /api/workspace/test.html
 
 #### Editor [[&uarr;](#build-in-endpoints-)]
 
+##### [GET] /api/editor
+
+```
+GET /api/editor
+```
+
+Possible result:
+
+```json
+{
+    "code": 0,
+    "data": {
+        "content": "<html>\r\n    \r\nHello, guys!\r\n\r\nThis file is currently edited!\r\n\r\n</html>",
+        "file": {
+            "mime": "text/html",
+            "name": "test.html",
+            "path": "/api/workspace/test.html"
+        },
+        "isDirty": true,
+        "isUntitled": false,
+        "lang": "html",
+        "lines": 7
+    }
+}
+```
+
 ### Custom endpoints [[&uarr;](#how-to-use-)]
