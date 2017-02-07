@@ -34,7 +34,7 @@ import * as vscode from 'vscode';
 /**
  * HTTP header for defining the file type.
  */
-export const HEADER_FILE_TYPE = 'X-vscode-remoteeditor-type';
+export const HEADER_FILE_TYPE = 'X-vscode-restapi-type';
 
 interface DirectoryItem extends FileSystemItem {
 }

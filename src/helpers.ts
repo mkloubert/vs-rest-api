@@ -579,7 +579,7 @@ export function log(msg: any) {
     let now = Moment();
 
     msg = toStringSafe(msg);
-    console.log(`[vs-remote-editor :: ${now.format('YYYY-MM-DD HH:mm:ss')}] => ${msg}`);
+    console.log(`[vs-rest-api :: ${now.format('YYYY-MM-DD HH:mm:ss')}] => ${msg}`);
 }
 
 /**

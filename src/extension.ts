@@ -59,23 +59,41 @@ export function activate(context: vscode.ExtensionContext) {
 
         outputChannel.appendLine(`Copyright (c) ${now.format('YYYY')}  Marcel Joachim Kloubert <marcel.kloubert@gmx.net>`);
         outputChannel.appendLine('');
-        outputChannel.appendLine(`GitHub : https://github.com/mkloubert/vs-remote-editor`);
+        outputChannel.appendLine(`GitHub : https://github.com/mkloubert/vs-rest-api`);
         outputChannel.appendLine(`Twitter: https://twitter.com/mjkloubert`);
-        outputChannel.appendLine(`Donate : [PayPal] https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=74YKCZZXPCP64`);
-        outputChannel.appendLine(`         [Flattr] https://flattr.com/submit/auto?fid=o62pkd&url=https%3A%2F%2Fgithub.com%2Fmkloubert%2Fvs-remote-editor`);
+        outputChannel.appendLine(`Donate : [PayPal] https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9J3ZR95RJE2BA`);
+        outputChannel.appendLine(`         [Flattr] https://flattr.com/submit/auto?fid=o62pkd&url=https%3A%2F%2Fgithub.com%2Fmkloubert%2Fvs-rest-api`);
 
         outputChannel.appendLine('');
     }
 
     controller = new rapi_controller.Controller(context, outputChannel, pkgFile);
+
+    // (re)start host
+    let startHost = vscode.commands.registerCommand('extension.restApi.startHost', () => {
+        controller.start().then(() => {
+            //TODO
+        }).catch((err) => {
+            vscode.window.showErrorMessage(`[REST API START]: ${rapi_helpers.toStringSafe(err)}`);
+        });
+    });
+
+    // stop host
+    let stopHost = vscode.commands.registerCommand('extension.restApi.stopHost', () => {
+        controller.stop().then(() => {
+            //TODO
+        }).catch((err) => {
+            vscode.window.showErrorMessage(`[REST API STOP]: ${rapi_helpers.toStringSafe(err)}`);
+        });
+    });
     
-    let toggleServerState = vscode.commands.registerCommand('extension.remoteEditor.toggleHostState', () => {
-        try {
-            controller.toggleHostState();
-        }
-        catch (e) {
-            vscode.window.showErrorMessage(`[REMOTE EDITOR TOGGLE]: ${rapi_helpers.toStringSafe(e)}`);
-        }
+    // toggle host state.
+    let toggleServerState = vscode.commands.registerCommand('extension.restApi.toggleHostState', () => {
+        controller.toggleHostState().then(() => {
+            //TODO
+        }).catch((err) => {
+            vscode.window.showErrorMessage(`[REST API TOGGLE]: ${rapi_helpers.toStringSafe(err)}`);
+        });
     });
 
     // notfiy setting changes
@@ -83,7 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
            .push(vscode.workspace.onDidChangeConfiguration(controller.onDidChangeConfiguration, controller));
 
     context.subscriptions
-           .push(toggleServerState);
+           .push(startHost, stopHost, toggleServerState);
 
     controller.onActivated();
 }

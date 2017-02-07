@@ -193,7 +193,7 @@ export class ApiHost implements vscode.Disposable {
     /**
      * Initializes a new instance of that class.
      * 
-     * @param {rapi_editor.Controller} controller The underlying controller.
+     * @param {rapi_controller.Controller} controller The underlying controller.
      */
     constructor(controller: rapi_controller.Controller) {
         this._CONTROLLER = controller;

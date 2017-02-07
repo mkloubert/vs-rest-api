@@ -147,7 +147,7 @@ export class Controller implements vscode.Disposable {
     public reloadConfiguration() {
         let me = this;
 
-        let cfg = <rapi_contracts.Configuration>vscode.workspace.getConfiguration("remote.editor");
+        let cfg = <rapi_contracts.Configuration>vscode.workspace.getConfiguration("rest.api");
 
         let nextSteps = (err?: any) => {
             if (err) {
@@ -201,7 +201,7 @@ export class Controller implements vscode.Disposable {
         return new Promise<rapi_host.ApiHost>((resolve, reject) => {
             let completed = (err: any, h?: rapi_host.ApiHost) => {
                 if (err) {
-                    vscode.window.showErrorMessage(`[vs-remote-editor] Could not start host: ${rapi_helpers.toStringSafe(err)}`);
+                    vscode.window.showErrorMessage(`[vs-rest-api] Could not start host: ${rapi_helpers.toStringSafe(err)}`);
 
                     reject(err);
                 }
@@ -224,7 +224,7 @@ export class Controller implements vscode.Disposable {
                         completed(null, newHost);
                     }
                     else {
-                        vscode.window.showErrorMessage("[vs-remote-editor] Server has not been started!");
+                        vscode.window.showErrorMessage("[vs-rest-api] Server has not been started!");
                     }
                 }).catch((err) => {
                     completed(err);
@@ -258,7 +258,7 @@ export class Controller implements vscode.Disposable {
         return new Promise<boolean>((resolve, reject) => {
             let completed = (err: any, stopped?: boolean) => {
                 if (err) {
-                    vscode.window.showErrorMessage(`[vs-remote-editor] Could not stop host: ${rapi_helpers.toStringSafe(err)}`);
+                    vscode.window.showErrorMessage(`[vs-rest-api] Could not stop host: ${rapi_helpers.toStringSafe(err)}`);
 
                     reject(err);
                 }
@@ -287,24 +287,24 @@ export class Controller implements vscode.Disposable {
     /**
      * Toggle the state of the current host.
      */
-    public toggleHostState() {
+    public toggleHostState(): Promise<boolean> {
         let me = this;
-        let cfg = me.config;
 
-        let currentHost = me._host;
-        if (currentHost) {
-            me.stop().then(() => {
-                //TODO
-            }).catch((err) => {
-                me.log(`[ERROR] Controller.toggleHostState(1): ${rapi_helpers.toStringSafe(err)}`);
-            });
-        }
-        else {
-            me.start().then(() => {
-                //TODO
-            }).catch((err) => {
-                me.log(`[ERROR] Controller.toggleHostState(2): ${rapi_helpers.toStringSafe(err)}`);
-            });
-        }
+        return new Promise<boolean>((resolve, reject) => {
+            if (me._host) {
+                me.stop().then(() => {
+                    resolve(false);
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
+            else {
+                me.start().then(() => {
+                    resolve(true);
+                }).catch((err) => {
+                    reject(err);
+                });
+            }
+        });
     }
 }
