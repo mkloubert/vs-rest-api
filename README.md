@@ -176,7 +176,7 @@ If the result is a file or a directory can be checked by the HTTP response heade
 Opens a text editor of the given file inside VS Code:
 
 ```
-POST /api/workspace/test.php
+POST /api/workspace/test.html
 ```
 
 ![Demo Open file in editor](https://raw.githubusercontent.com/mkloubert/vs-rest-api/master/demos/demo1.gif)
