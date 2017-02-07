@@ -323,6 +323,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "glob": "^7.1.1",
+    "html-entities": "^1.2.0",
     "i18next": "^6.1.2",
     "isbinaryfile": "^3.0.2",
     "mime": "^1.3.4",

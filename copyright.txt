@@ -1,0 +1,2 @@
+Icons:
+    - /icon.png (Vecteezy; https://www.vecteezy.com/free-vector/icons)
