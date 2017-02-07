@@ -10,6 +10,7 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
 2. [How to use](#how-to-use-)
    * [Settings](#settings-)
          * [Users](#users-)
+         * [HTTPs](#https-)
    * [Build-in endpoints](#build-in-endpoints-)
    * [Custom endpoints](#custom-endpoints-)
 
@@ -44,6 +45,36 @@ Add a `deploy` section:
 This example will run the host on port `1781` on startup and opens the URL `https://localhost:1781/` in your default application, like your browser.
 
 #### Users [[&uarr;](#settings-)]
+
+By default anyone can access the API with read-only access.
+
+You can define one or more users, that can access the API via [Basic Authentification](https://en.wikipedia.org/wiki/Basic_access_authentication): 
+
+```json
+{
+    "rest.api": {
+        // ...
+        
+        "guest": false,
+        "users": [
+            {
+                "name": "mkloubert",
+                "password": "P@sswort123!"
+            },
+            {
+                "name": "jlpicard",
+                "password": "NCC-1701-D"
+            },
+            {
+                "name": "neo",
+                "password": "Follow_the_white_rabbit"
+            }
+        ]
+    }
+}
+```
+
+By default any user (and guest) have read-only access.
 
 ### Build-in endpoints [[&uarr;](#how-to-use-)]
 
