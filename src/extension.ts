@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
         rapi_helpers.log(`[ERROR] extension.activate(): ${rapi_helpers.toStringSafe(e)}`);
     }
 
-    let outputChannel = vscode.window.createOutputChannel("Remote Editor");
+    let outputChannel = vscode.window.createOutputChannel("REST API");
 
     // show infos about the app
     {

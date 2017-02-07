@@ -239,7 +239,7 @@ export function sendUnauthorized(ctx: rapi_host.RequestContext, code = 401) {
     try {
         let realm = rapi_helpers.toStringSafe(ctx.config.realm);
         if (rapi_helpers.isEmptyString(realm)) {
-            realm = 'Remote Editor';
+            realm = 'REST API for Visual Studio Code';
         }
 
         let headers: any = {
