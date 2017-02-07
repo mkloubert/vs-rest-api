@@ -185,6 +185,8 @@ POST /api/workspace/test.html
 
 ##### [GET] /api/editor
 
+Returns information about the active text editor:
+
 ```
 GET /api/editor
 ```
@@ -209,4 +211,68 @@ Possible result:
 }
 ```
 
+If no editor is currently opened, a `404` response will be returned.
+
 ### Custom endpoints [[&uarr;](#how-to-use-)]
+
+You can define custom endpoints that are executed via script.
+
+Define one ore more regular expressions in your [settings](#settings-) and the scripts that should be executed, if a patter matches:
+
+```json
+{
+    "rest.api": {
+        // ...
+        
+        "enpoints": {
+            "myendpoint": {
+                "script": "./my-endpoint.js"
+            }
+        }
+    }
+}
+```
+
+The `./my-endpoint.js` must contain a public function with the name of the current HTTP request method (lower case).
+
+For example if you want to make a simple `GET` request
+
+```
+GET /api/myendpoint
+```
+
+your script should look like this:
+
+```javascript
+function get(args) {
+    // do the magic here
+}
+exports.get = get;
+```
+
+You are also able to define functions for other request methods, like `POST` or `DELETE`:
+
+```javascript
+// ...
+
+// [FOO]  /api/myendpoint
+function foo(args) {
+    // for custom request methods
+}
+exports.foo = foo;
+
+// [DELETE]  /api/myendpoint
+function delete(args) {
+    return new Promise(function(resolve, reject) {
+        // for async executions
+    });
+}
+exports.post = post;
+
+// [POST]  /api/myendpoint
+function post(args) {
+    // no (promise) result means: sync execution
+}
+exports.post = post;
+```
+
