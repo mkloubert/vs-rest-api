@@ -12,6 +12,8 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
          * [Users](#users-)
          * [HTTPs](#https-)
    * [Build-in endpoints](#build-in-endpoints-)
+         * [Workspace](#workspace-)
+         * [Editor](#editor-)
    * [Custom endpoints](#custom-endpoints-)
 
 ## Install [[&uarr;](#table-of-contents)]
@@ -94,5 +96,89 @@ For secure access, you can define a SSL certificate:
 ```
 
 ### Build-in endpoints [[&uarr;](#how-to-use-)]
+
+#### Workspace [[&uarr;](#build-in-endpoints-)]
+
+##### [GET] /api/workspace{/path}
+
+Lists a directory inside the workspace or returns the content of a file:
+
+```
+GET /api/workspace
+```
+
+This will list the root root directory of your workspace. A possible result can be:
+
+```json
+{
+    "code": 0,
+    "data": {
+        "dirs": [
+            {
+                "creationTime": "2017-01-22T14:26:56.482Z",
+                "lastChangeTime": "2017-01-22T14:27:26.147Z",
+                "lastModifiedTime": "2017-01-22T14:26:56.488Z",
+                "name": "css",
+                "path": "/api/workspace/css",
+                "type": "dir"
+            },
+            {
+                "creationTime": "2017-01-22T14:26:56.888Z",
+                "lastChangeTime": "2017-01-22T14:27:26.152Z",
+                "lastModifiedTime": "2017-01-22T14:26:56.908Z",
+                "name": "js",
+                "path": "/api/workspace/js",
+                "type": "dir"
+            },
+            {
+                "creationTime": "2017-01-22T14:26:26.631Z",
+                "lastChangeTime": "2017-01-22T14:26:27.005Z",
+                "lastModifiedTime": "2017-01-22T14:26:26.669Z",
+                "name": "_res",
+                "path": "/api/workspace/_res",
+                "type": "dir"
+            }
+        ],
+        "files": [
+            {
+                "creationTime": "2017-01-22T14:27:47.902Z",
+                "lastChangeTime": "2017-01-23T21:07:37.595Z",
+                "lastModifiedTime": "2017-01-23T21:07:37.595Z",
+                "mime": "application/octet-stream",
+                "name": "index.php",
+                "path": "/api/workspace/index.php",
+                "type": "file"
+            },
+            {
+                "creationTime": "2017-02-01T23:58:54.173Z",
+                "lastChangeTime": "2017-02-04T20:17:12.811Z",
+                "lastModifiedTime": "2017-02-04T20:17:12.811Z",
+                "mime": "text/html",
+                "name": "test.html",
+                "path": "/api/workspace/test.html",
+                "type": "file"
+            }
+        ]
+    }
+}
+```
+
+You also can define an additional path argument to the endpoint that can list a sub directory or return the content of a file:
+
+```
+GET /api/workspace/test.php
+```
+
+If the result is a file or a directory can be checked by the HTTP response header value `X-Vscode-Restapi-Type`, which can be `directory` or `file`.
+
+##### [POST] /api/workspace{/file}
+
+Opens a text editor of the given file inside VS Code:
+
+```
+POST /api/workspace/test.php
+```
+
+#### Editor [[&uarr;](#build-in-endpoints-)]
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]
