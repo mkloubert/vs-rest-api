@@ -120,7 +120,7 @@ export class Controller implements vscode.Disposable {
     public getGlobals(): any {
         let globals = this.config.globals;
         if (globals) {
-            globals = rapi_helpers.cloneObject(this.config.globals);
+            globals = rapi_helpers.cloneObject(globals);
         }
 
         return globals;
