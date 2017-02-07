@@ -179,6 +179,8 @@ Opens a text editor of the given file inside VS Code:
 POST /api/workspace/test.php
 ```
 
+![Demo Open file in editor](https://raw.githubusercontent.com/mkloubert/vs-rest-api/master/demos/demo1.gif)
+
 #### Editor [[&uarr;](#build-in-endpoints-)]
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]
