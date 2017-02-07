@@ -226,7 +226,8 @@ Define one ore more regular expressions in your [settings](#settings-) and the s
         
         "enpoints": {
             "myendpoint": {
-                "script": "./my-endpoint.js"
+                "script": "./my-endpoint.js",
+                "options": "Hello!"
             }
         }
     }
@@ -245,9 +246,65 @@ your script should look like this:
 
 ```javascript
 exports.get = function(args) {
+    // access VS Code API (s. https://code.visualstudio.com/Docs/extensionAPI/vscode-api)
+    var vscode = require('vscode');
+    
+    // access NodeJS API provided by VS Code
+    // s.  (s. https://nodejs.org/api/)
+    var fs = require('fs');
+    
+    // access an own module
+    var myModule = require('./my-module.js');
+    
+    // access a module used by the extension:
+    // s. https://mkloubert.github.io/vs-rest-api/modules/_helpers_.html
+    var helpers = args.require('./helpers');
+    // s. https://mkloubert.github.io/vs-rest-api/modules/_host_helpers_.html
+    var hostHelpers = args.require('./host/helpers');
+    
+    // access the data from the settings
+    // from the example above this is: "Hello!"
+    var opts = args.options;
+    
+    // share / store data (while current session)...
+    // ... for this script
+    var myState = args.state;
+    args.state = new Date();
+    // ... with other scripts of this type
+    args.globalState['myEndpoint'] = new Date();
+    // ... with the whole workspace
+    args.workspaceState['myEndpoint'] = new Date();
+    
+    // if you want to return an AJAX response object:
+    // s. https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apiresponse.html
+    {
+        args.response.code = 666;  // the response code (not the HTTP response code!)
+        args.response.msg = 'Result of the evil!';  // a custom message for more information
+        args.response.data = {
+            'mk': 23979,
+            'TM': '5979'
+        };
+    }
+    
+    // if you want to return custom content
+    // instead of the object in 'args.response'
+    // s. https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html#setcontent
+    {
+        var html = fs.readFileSync('/path/to/my/file.html');
+    
+        args.setContent(html, 'text/html');
+    }
+    
+    // custom HTTP status code
+    args.statusCode = 202;
+
     // do the magic here
 }
 ```
+
+The `args` parameter of the function uses the [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) interface.
+
+You can return a [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) for async executions or nothing for sync executions (as in this example).
 
 You are also able to define functions for other request methods, like `POST` or `DELETE`:
 
