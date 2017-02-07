@@ -302,7 +302,7 @@ exports.get = function(args) {
     // custom HTTP status code
     args.statusCode = 202;
 
-    // do the magic here
+    // ...
 }
 ```
 
