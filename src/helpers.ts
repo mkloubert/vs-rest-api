@@ -94,7 +94,7 @@ export function asBuffer(val: any, enc?: string): Buffer {
     }
 
     let buff: Buffer = val;
-    if ('object' !== val) {
+    if ('object' !== typeof val) {
         buff = new Buffer(toStringSafe(val), enc);
     }
 

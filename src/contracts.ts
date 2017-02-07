@@ -73,6 +73,10 @@ export interface Configuration {
         isActive?: boolean;
     },
     /**
+     * Indicates if the root endpoint should be opened in browser after host has been started or not.
+     */
+    openInBrowser?: boolean;
+    /**
      * The TCP port the HTTP server should listen on.
      */
     port?: number;
@@ -80,6 +84,10 @@ export interface Configuration {
      * The name of the realm for the authentication.
      */
     realm?: string;
+    /**
+     * Indicates if an info popup / notification should be displayed after a successful start / stop of the API host.
+     */
+    showPopupOnSuccess?: boolean;
     /**
      * Configuration for running as HTTPs server.
      */

@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -26,12 +26,12 @@
     "commands": [
       {
         "command": "extension.restApi.startHost",
-        "title": "Starts the web server",
+        "title": "(Re)start the web server",
         "category": "REST API"
       },
       {
         "command": "extension.restApi.stopHost",
-        "title": "Stops the web server",
+        "title": "Stop the web server",
         "category": "REST API"
       },
       {
@@ -122,6 +122,11 @@
                 }
               }
             },
+            "openInBrowser": {
+              "type": "boolean",
+              "description": "Indicates if the root endpoint should be opened in browser after host has been started or not.",
+              "default": false
+            },
             "port": {
               "description": "The TCP port the HTTP server should listen on.",
               "type": "integer",
@@ -133,6 +138,11 @@
               "description": "The name of the realm for the authentication.",
               "type": "string",
               "default": "REST API for Visual Studio Code"
+            },
+            "showPopupOnSuccess": {
+              "type": "boolean",
+              "description": "Indicates if an info popup / notification should be displayed after a successful start / stop of the API host.",
+              "default": true
             },
             "ssl": {
               "description": "Configuration for running as HTTPs server.",

@@ -343,13 +343,8 @@ export class ApiHost implements vscode.Disposable {
                             enc = DEFAULT_ENCODING;
                         }
 
-                        let dataToWrite: Buffer;
-                        if ('object' !== data) {
-                            dataToWrite = new Buffer(rapi_helpers.toStringSafe(data), enc);
-                        }
-
                         this.request
-                            .response.write(dataToWrite);
+                            .response.write(rapi_helpers.asBuffer(data), enc);
 
                         return this;
                     }
@@ -361,34 +356,48 @@ export class ApiHost implements vscode.Disposable {
                     }
                     else {
                         try {
-                            let statusCode = apiCtx.statusCode;
-                            if (rapi_helpers.isEmptyString(statusCode)) {
-                                statusCode = 200;
-                            }
-                            else {
-                                statusCode = parseInt(rapi_helpers.normalizeString(apiCtx.statusCode));
+                            let enc = rapi_helpers.normalizeString(apiCtx.encoding);
+                            if (!enc) {
+                                enc = DEFAULT_ENCODING;
                             }
 
-                            if (apiCtx.headers) {
-                                ctx.response.writeHead(statusCode, apiCtx.headers);
-                            }
-                            else {
-                                ctx.response.statusCode = statusCode;
-                            }
-
+                            let responseData: any;
                             if (apiCtx.response) {
-                                let enc = rapi_helpers.normalizeString(apiCtx.encoding);
-                                if (!enc) {
-                                    enc = DEFAULT_ENCODING;
+                                responseData = JSON.stringify(response);
+                            }
+                            else {
+                                responseData = apiCtx.content;
+                            }
+
+                            let sendResponseData = (finalDataToSend: any) => {
+                                let statusCode = apiCtx.statusCode;
+                                if (rapi_helpers.isEmptyString(statusCode)) {
+                                    statusCode = 200;
+                                }
+                                else {
+                                    statusCode = parseInt(rapi_helpers.normalizeString(apiCtx.statusCode));
                                 }
 
-                                apiCtx.write(JSON.stringify(response));
-                            }
-                            else {
-                                apiCtx.write(apiCtx.content);
-                            }
+                                ctx.response.writeHead(statusCode, apiCtx.headers);
 
-                            ctx.response.end();
+                                ctx.response.write(rapi_helpers.asBuffer(finalDataToSend));
+
+                                ctx.response.end();
+                            };
+
+                            rapi_host_helpers.compressForResponse(responseData, ctx, enc).then((compressResult) => {
+                                if (compressResult.contentEncoding) {
+                                    if (!apiCtx.headers) {
+                                        apiCtx.headers = {};
+                                    }
+
+                                    apiCtx.headers['Content-encoding'] = compressResult.contentEncoding;
+                                }
+
+                                sendResponseData(compressResult.dataToSend);
+                            }).catch((err) => {
+                                sendResponseData(responseData);
+                            });
                         }
                         catch (e) {
                             rapi_host_helpers.sendError(e, ctx);

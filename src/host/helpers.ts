@@ -83,14 +83,7 @@ export function compressForResponse(data: any,
     
     return new Promise<CompressForResponseResult>((resolve, reject) => {
         try {
-            let uncompressed: Buffer;
-            if ('object' === typeof data) {
-                uncompressed = data;  // seems to be a buffer
-            }
-            else {
-                uncompressed = new Buffer(rapi_helpers.toStringSafe(data),
-                                          encoding);
-            }
+            let uncompressed = rapi_helpers.asBuffer(data, encoding);
 
             let compressed: Buffer;
             let contentEncoding: string;
