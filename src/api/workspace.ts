@@ -164,10 +164,6 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
             }
         };
 
-        let hasLeadingDot = (d: string) => {
-            return 0 == rapi_helpers.normalizeString(d).indexOf('.');
-        };
-
         args.headers[HEADER_FILE_TYPE] = 'directory';
 
         FS.readdir(dir, (err, items) => {
@@ -192,24 +188,21 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                     }
                     else {
                         if (stats.isDirectory()) {
-                            let addDir = true;
+                            args.request.user.isDirVisible(fullPath, args.request.config.withDot).then((isVisible) => {
+                                if (isVisible) {
+                                    dirs.push({
+                                        birthtime: stats.birthtime,
+                                        ctime: stats.ctime,
+                                        fullPath: fullPath,
+                                        mtime: stats.mtime,
+                                        name: i,
+                                    });
+                                }
 
-                            if (hasLeadingDot(i)) {
-                                // also with dots?
-                                addDir = rapi_helpers.toBooleanSafe(args.request.config.withDot);
-                            }
-
-                            if (addDir) {
-                                dirs.push({
-                                    birthtime: stats.birthtime,
-                                    ctime: stats.ctime,
-                                    fullPath: fullPath,
-                                    mtime: stats.mtime,
-                                    name: i,
-                                });
-                            }
-
-                            nextItem();
+                                nextItem();
+                            }).catch((err) => {
+                                completed(err);
+                            });
                         }
                         else if (stats.isFile()) {
                             args.request.user.isFileVisible(fullPath).then((isVisible) => {
@@ -320,23 +313,20 @@ function request(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                                     case 'get':
                                         nextAction = null;
 
-                                        let isVisible = true;
-                                        if (0 == rapi_helpers.normalizeString(Path.basename(fullPath)).indexOf('.')) {
-                                            isVisible = rapi_helpers.toBooleanSafe(args.request.config.withDot);
-                                        }
-
-                                        if (isVisible) {
-                                            handleDirectory(args, fullPath).then(() => {
-                                                completed();
-                                            }).catch((err) => {
-                                                completed(err);
-                                            });
-                                        }
-                                        else {
-                                            nextAction = () => {
+                                        args.request.user.isDirVisible(fullPath, args.request.config.withDot).then((isVisible) => {
+                                            if (isVisible) {
+                                                handleDirectory(args, fullPath).then(() => {
+                                                    completed();
+                                                }).catch((err) => {
+                                                    completed(err);
+                                                });
+                                            }
+                                            else {
                                                 notFound();
-                                            };
-                                        }
+                                            }
+                                        }).catch((err) => {
+                                            completed(err);
+                                        });
                                         break;
                                 }
                             }

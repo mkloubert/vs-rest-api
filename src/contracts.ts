@@ -59,6 +59,10 @@ export interface Account {
      * Is account active or not.
      */
     isActive?: boolean;
+    /**
+     * Show (directories) with leading '.' character for the account or not.
+     */
+    withDot?: boolean;
 }
 
 /**
@@ -441,14 +445,6 @@ export interface User {
      */
     readonly context: RequestContext;
     /**
-     * Filters visible files.
-     * 
-     * @param {string|string[]} files The files to filter.
-     * 
-     * @returns {Promise<string[]>} The promise.
-     */
-    readonly filterVisibleFiles: (files: string | string[]) => Promise<string[]>;
-    /**
      * Gets a variable of the user.
      * 
      * @param {string} name The name of the variable.
@@ -469,6 +465,14 @@ export interface User {
      * Gets if user is a guest or not.
      */
     readonly isGuest: boolean;
+    /**
+     * Checks if a directory is visible for that user.
+     * 
+     * @param {string} dir The file to check.
+     * 
+     * @returns {Promise<boolean>} The promise.
+     */
+    readonly isDirVisible: (dir: string, withDot?: boolean) => Promise<boolean>;
     /**
      * Checks if a file is visible for that user.
      * 

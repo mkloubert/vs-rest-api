@@ -23,6 +23,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+import * as FS from 'fs';
 const Glob = require('glob');
 import * as Path from 'path';
 import * as rapi_contracts from '../contracts';
@@ -42,6 +43,10 @@ export const VAR_CAN_OPEN = 'can_open';
  * Name of a variable that stores the cache for visible files.
  */
 export const VAR_VISIBLE_FILES = 'visible_files';
+/**
+ * Name of a variable that defines if an user can see directories with leading dots or not.
+ */
+export const VAR_WITH_DOT = 'with_dot';
 
 const DEFAULT_USER: rapi_contracts.Account = {
     __globals: {},
@@ -68,47 +73,6 @@ class User implements rapi_contracts.User {
         return this._CONTEXT;
     }
 
-    public filterVisibleFiles(files: string | string[]): Promise<string[]> {
-        let me = this;
-
-        let filesToCheck = rapi_helpers.asArray(files)
-                                       .filter(x => !rapi_helpers.isEmptyString(x));
-        
-        return new Promise<string[]>((resolve, reject) => {
-            let visibleFiles: string[] = [];
-            let completed = (err?: any) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(visibleFiles);
-                }
-            };
-
-            let nextFile: () => void;
-            nextFile = () => {
-                if (filesToCheck.length < 1) {
-                    completed();
-                    return;
-                }
-
-                let f = filesToCheck.shift();
-
-                me.isFileVisible(f).then((isVisible) => {
-                    if (isVisible) {
-                        visibleFiles.push(f);
-                    }
-
-                    nextFile();
-                }).catch((err) => {
-                    completed(err);
-                });
-            };
-
-            nextFile();
-        });
-    }
-
     public get<T>(name: string, defaultValue?: T): T {
         name = this.parseVarName(name);
 
@@ -129,8 +93,52 @@ class User implements rapi_contracts.User {
         return (<Object>this.account.__globals).hasOwnProperty(name);
     }
 
-    public get isGuest(): boolean {
-        return this._IS_GUEST;
+    public isDirVisible(dir: string, withDot?: boolean): Promise<boolean> {
+        let me = this;
+        
+        return new Promise<boolean>((resolve, reject) => {
+            let completed = (err: any, isVisible?: boolean) => {
+                if (err) {
+                    reject();
+                }
+                else {
+                    resolve(isVisible);
+                }
+            };
+
+            try {
+                let normalizePath = (p: string) => {
+                    p = Path.resolve(p);
+                    p = rapi_helpers.replaceAllStrings(p, Path.sep, '/');
+
+                    return p;
+                };
+
+                dir = normalizePath(dir);
+                let dirName = Path.basename(dir);
+
+                FS.lstat(dir, (err, stats) => {
+                    if (err) {
+                        completed(err);
+                    }
+                    else {
+                        let isVisible: boolean = null;
+
+                        if (stats.isDirectory()) {
+                            isVisible = true;
+                            if (0 == rapi_helpers.normalizeString(dirName).indexOf('.')) {
+                                isVisible = rapi_helpers.toBooleanSafe(me.get<boolean>(VAR_WITH_DOT) || withDot);
+                            }
+                        }
+
+                        completed(null, isVisible);
+                    }
+                });
+            }
+            catch (e) {
+                completed(e);
+            }
+        });
     }
 
     public isFileVisible(file: string): Promise<boolean> {
@@ -224,6 +232,10 @@ class User implements rapi_contracts.User {
                 completed(e);
             }
         });
+    }
+
+    public get isGuest(): boolean {
+        return this._IS_GUEST;
     }
 
     /**

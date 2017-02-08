@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -149,6 +149,11 @@
                       "description": "Defines if guest account should be activated or not.",
                       "type": "boolean",
                       "default": true
+                    },
+                    "withDot": {
+                      "description": "Show (directories) with leading '.' character for the guest or not.",
+                      "type": "boolean",
+                      "default": false
                     }
                   }
                 }
@@ -271,6 +276,11 @@
                     "password": {
                       "description": "The password.",
                       "type": "string"
+                    },
+                    "withDot": {
+                      "description": "Show (directories) with leading '.' character for the user or not.",
+                      "type": "boolean",
+                      "default": false
                     }
                   },
                   "required": [
@@ -342,6 +352,11 @@
                       "password": {
                         "description": "The password.",
                         "type": "string"
+                      },
+                      "withDot": {
+                        "description": "Show (directories) with leading '.' character for the user or not.",
+                        "type": "boolean",
+                        "default": false
                       }
                     },
                     "required": [
