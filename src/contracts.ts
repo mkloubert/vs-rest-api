@@ -40,6 +40,10 @@ export interface Account {
     __globals: { [action: string]: any };
 
     /**
+     * Defines if account is able to open an editor tab in VS Code or not.
+     */
+    canOpen?: boolean;
+    /**
      * Defines if account is able to execute commands or not.
      */
     canExecute?: boolean;

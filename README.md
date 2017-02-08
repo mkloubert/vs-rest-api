@@ -157,7 +157,7 @@ POST /api/commands/myCommand
 ]
 ```
 
-[canExecute](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.account.html#canexecute) property must be set to `(true)` for an user or guest in the [settings](#settings-), otherwise a `404` response is returned.
+[canOpen](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.account.html#canopen) property must be set to `(true)` for an user or guest in the [settings](#settings-), otherwise a `404` response is returned.
 
 #### Editor [[&uarr;](#build-in-endpoints-)]
 
@@ -190,6 +190,18 @@ Possible result:
 ```
 
 If no editor is currently opened, a `404` response will be returned.
+
+##### [POST] /api/editor{/file}
+
+Opens a text editor of the given file inside VS Code:
+
+```
+POST /api/editor/test.html
+```
+
+![Demo Open file in editor](https://raw.githubusercontent.com/mkloubert/vs-rest-api/master/demos/demo1.gif)
+
+If no file is defined, an untiled tab is opened.
 
 #### Workspace [[&uarr;](#build-in-endpoints-)]
 
@@ -263,17 +275,7 @@ You also can define an additional path argument to the endpoint that can list a 
 GET /api/workspace/test.php
 ```
 
-If the result is a file or a directory can be checked by the HTTP response header value `X-Vscode-Restapi-Type`, which can be `directory` or `file`.
-
-##### [POST] /api/workspace{/file}
-
-Opens a text editor of the given file inside VS Code:
-
-```
-POST /api/workspace/test.html
-```
-
-![Demo Open file in editor](https://raw.githubusercontent.com/mkloubert/vs-rest-api/master/demos/demo1.gif)
+You can check if the result is a file or directory, if you read the HTTP response header value `X-Vscode-Restapi-Type`, which can be `directory` or `file`.
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]
 

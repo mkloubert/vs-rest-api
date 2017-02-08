@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -98,6 +98,11 @@
                   "description": "Settings for the guest account.",
                   "type": "object",
                   "properties": {
+                    "canOpen": {
+                      "description": "Defines if guest is able to open an editor tab in VS Code or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "canExecute": {
                       "description": "Defines if guest can execute commands or not.",
                       "type": "boolean",
@@ -207,6 +212,11 @@
                   "description": "The configuration of the user.",
                   "type": "object",
                   "properties": {
+                    "canOpen": {
+                      "description": "Defines if user is able to open an editor tab in VS Code or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "canExecute": {
                       "description": "Defines if user can execute commands or not.",
                       "type": "boolean",
@@ -273,6 +283,11 @@
                   "type": "array",
                   "items": {
                     "properties": {
+                      "canOpen": {
+                        "description": "Defines if user is able to open an editor tab in VS Code or not.",
+                        "type": "boolean",
+                        "default": false
+                      },
                       "canExecute": {
                         "description": "Defines if user can execute commands or not.",
                         "type": "boolean",

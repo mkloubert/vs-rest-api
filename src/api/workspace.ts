@@ -249,26 +249,6 @@ function handleFile(args: rapi_contracts.ApiMethodArguments, file: string): Prom
                 });
                 break;
 
-            case 'post':
-                // open edtior
-                try {
-                    vscode.workspace.openTextDocument(vscode.Uri.file(file)).then((doc) => {
-                        vscode.window.showTextDocument(doc).then(() => {
-                            completed();
-                        }, (err) => {
-                            args.response.code = 1;
-
-                            completed();
-                        });
-                    }, (err) => {
-                        completed(err);
-                    });
-                }
-                catch (e) {
-                    completed(e);
-                }
-                break;
-
             default:
                 args.sendMethodNotAllowed();
                 completed();
@@ -386,4 +366,3 @@ function request(args: rapi_contracts.ApiMethodArguments): Promise<any> {
 }
 
 export const get = request;
-export const post = request;

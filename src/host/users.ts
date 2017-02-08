@@ -35,6 +35,10 @@ import * as vscode from 'vscode';
  */
 export const VAR_CAN_EXECUTE = 'can_execute';
 /**
+ * Name of a variable that defines if an user can open an editor tab or not.
+ */
+export const VAR_CAN_OPEN = 'can_open';
+/**
  * Name of a variable that stores the cache for visible files.
  */
 export const VAR_VISIBLE_FILES = 'visible_files';
@@ -342,6 +346,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User
     if (result) {
         // can execute commands?
         result.set(VAR_CAN_EXECUTE, rapi_helpers.toBooleanSafe(result.account.canExecute));
+        // can open tabs in editor?
+        result.set(VAR_CAN_OPEN, rapi_helpers.toBooleanSafe(result.account.canOpen));
     }
 
     return result;
