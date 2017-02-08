@@ -342,6 +342,6 @@ Press `F1` to open the list of commands and select one of the following commands
 
 | Name | Description | ID |
 | ---- | --------- | --------- |
-| `REST API: Starts or stops the api server` | Deploys a specific package. | `extension.restApi.toggleHostState` |
-| `REST API: (Re)start the api server` | Deploys the current opened file. | `extension.restApi.startHost` |
-| `REST API: Stop the api server` | Start/stop listening for files from a remote machine. | `extension.restApi.stopHost` |
+| `REST API: Starts or stops the api server` | Toggles the state of the API's HTTP server. | `extension.restApi.toggleHostState` |
+| `REST API: (Re)start the api server` | (Re-)Starts the API's HTTP server. | `extension.restApi.startHost` |
+| `REST API: Stop the api server` | Stops the API. | `extension.restApi.stopHost` |
