@@ -772,12 +772,16 @@ export function readHttpBody(msg: HTTP.IncomingMessage): Promise<Buffer> {
         try {
             let buff: Buffer = msg.read();
             if (null === buff) {
-                msg.once('readable', function() {
+                msg.once('readable', () => {
                     readHttpBody(msg).then((b) => {
                         resolve(b);
                     }, (err) => {
                         reject(err);
                     });
+                });
+
+                msg.once('end', (b) => {
+                    resolve(b || Buffer.alloc(0));
                 });
             }
             else {

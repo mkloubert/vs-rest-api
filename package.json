@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -25,18 +25,18 @@
   "contributes": {
     "commands": [
       {
+        "command": "extension.restApi.toggleHostState",
+        "title": "Starts or stops the api server",
+        "category": "REST API"
+      },
+      {
         "command": "extension.restApi.startHost",
-        "title": "(Re)start the web server",
+        "title": "(Re)start the api server",
         "category": "REST API"
       },
       {
         "command": "extension.restApi.stopHost",
-        "title": "Stop the web server",
-        "category": "REST API"
-      },
-      {
-        "command": "extension.restApi.toggleHostState",
-        "title": "Starts or stops the web server",
+        "title": "Stop the api server",
         "category": "REST API"
       }
     ],

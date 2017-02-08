@@ -332,3 +332,15 @@ exports.post = function(args) {
 ```
 
 HINT: Custom endpoints will always overwrite build-in ones!
+
+### Commands [[&uarr;](#how-to-use-)]
+
+Press `F1` to open the list of commands and select one of the following commands:
+
+![Demo How to execute](https://raw.githubusercontent.com/mkloubert/vs-deploy/master/demos/demo2.gif)
+
+| Name | Description | ID |
+| ---- | --------- | --------- |
+| `REST API: Starts or stops the api server` | Deploys a specific package. | `extension.restApi.toggleHostState` |
+| `REST API: (Re)start the api server` | Deploys the current opened file. | `extension.restApi.startHost` |
+| `REST API: Stop the api server` | Start/stop listening for files from a remote machine. | `extension.restApi.stopHost` |
