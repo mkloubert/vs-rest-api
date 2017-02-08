@@ -23,6 +23,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+import * as FS from 'fs';
 import * as Path from 'path';
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
@@ -218,18 +219,30 @@ export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                     notFound();
                 }
                 else {
-                    args.request.user.isFileVisible(fullPath).then((isVisible) => {
-                        if (isVisible) {
-                            fileToOpen = fullPath;
-
-                            openFile();
+                    FS.stat(fullPath, (err, stats) => {
+                        if (err) {
+                            completed(err);
                         }
                         else {
-                            notFound();  // not visible
+                            if (stats.isFile()) {
+                                args.request.user.isFileVisible(fullPath).then((isVisible) => {
+                                    if (isVisible) {
+                                        fileToOpen = fullPath;
+
+                                        openFile();
+                                    }
+                                    else {
+                                        notFound();  // not visible
+                                    }
+                                }).catch((err) => {
+                                    completed(err);
+                                });
+                            }
+                            else {
+                                notFound();  // we can only open files
+                            }
                         }
-                    }).catch((err) => {
-                        completed(err);
-                    });
+                    }); 
                 }
             }
             else {

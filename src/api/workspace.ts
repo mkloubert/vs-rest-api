@@ -29,6 +29,7 @@ import * as Moment from 'moment';
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
 import * as rapi_host from '../host';
+import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
 
@@ -55,6 +56,8 @@ interface FileSystemItem {
 
 
 function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): Promise<any> {
+    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+
     return new Promise<any>((resolve, reject) => {
         let dirs: DirectoryItem[] = [];
         let files: FileItem[] = [];
@@ -119,18 +122,26 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                     });
 
                     files.forEach((x) => {
-                        list.files.push({
+                        let filePath = normalizePath(<any>relativePath).split('/')
+                                                                       .concat([ x.name ])
+                                                                       .map(x => encodeURIComponent(x))
+                                                                       .join('/');
+
+                        let newFileItem = {
                             creationTime: toDateTime(x.birthtime),
                             lastChangeTime: toDateTime(x.ctime),
                             lastModifiedTime: toDateTime(x.mtime),
                             mime: x.mime,
                             name: x.name,
-                            path: '/api/workspace' + normalizePath(<any>relativePath).split('/')
-                                                                                     .concat([ x.name ])
-                                                                                     .map(x => encodeURIComponent(x))
-                                                                                     .join('/'),
+                            path: '/api/workspace' + filePath,
                             type: 'file',
-                        });
+                        };
+
+                        if (canOpen) {
+                            newFileItem['openPath'] = '/api/editor' + filePath;
+                        }
+
+                        list.files.push(newFileItem);
                     });
 
                     let parentDir = Path.resolve(dir, '..');
