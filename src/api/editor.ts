@@ -49,6 +49,7 @@ function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promi
                 let fileName = doc.fileName;
                 let filePath: string;
                 let fullPath = fileName;
+                let openPath: string;
                 let mime: string;
                 let createObjectAndReturn = () => {
                     obj = {
@@ -62,6 +63,7 @@ function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promi
                         isUntitled: doc.isUntitled,
                         lang: doc.languageId,
                         lines: doc.lineCount,
+                        openPath: openPath,
                     };
 
                     completed();
@@ -82,9 +84,12 @@ function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promi
                                 filePath = rapi_helpers.replaceAllStrings(filePath, "\\", '/');
                                 filePath = rapi_helpers.replaceAllStrings(filePath, Path.sep, '/');
 
-                                filePath = '/api/workspace' + filePath.split('/')
-                                                                      .map(x => encodeURIComponent(x))
-                                                                      .join('/');
+                                let filePathSuffix = filePath.split('/')
+                                                             .map(x => encodeURIComponent(x))
+                                                             .join('/');
+
+                                filePath = '/api/workspace' + filePathSuffix;
+                                openPath = '/api/editor' + filePathSuffix;
 
                                 createObjectAndReturn();
                             }

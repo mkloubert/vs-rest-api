@@ -131,6 +131,7 @@ export class ApiHost implements vscode.Disposable {
 
             let parts = normalizedPath.substr(4)
                                       .split('/')
+                                      .map(x => decodeURIComponent(x))
                                       .filter(x => !rapi_helpers.isEmptyString(x));
 
             let apiArgs: rapi_contracts.ApiMethodArguments = {
