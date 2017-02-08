@@ -372,7 +372,7 @@ exports.get = function(args) {
 
 The `args` parameter of the function uses the [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) interface.
 
-You can return a [Promise](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise) for async executions or nothing for sync executions (as in this example).
+You can return a [Promise](https://github.com/Microsoft/vscode-extension-vscode/blob/master/thenable.d.ts) for async executions or nothing for sync executions (as in this example).
 
 You are also able to define functions for other request methods, like `POST` or `DELETE`:
 

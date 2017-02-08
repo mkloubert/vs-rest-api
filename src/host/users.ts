@@ -88,7 +88,7 @@ class User implements rapi_contracts.User {
         return (<Object>this.account.__globals).hasOwnProperty(name);
     }
 
-    public isDirVisible(dir: string, withDot: boolean): Promise<boolean> {
+    public isDirVisible(dir: string, withDot: boolean): PromiseLike<boolean> {
         let me = this;
         
         return new Promise<boolean>((resolve, reject) => {
@@ -156,7 +156,7 @@ class User implements rapi_contracts.User {
                         else {
                             completed(null, false);
                         }
-                    }).catch((err) => {
+                    }, (err) => {
                         completed(err);
                     });
                 }
@@ -167,7 +167,7 @@ class User implements rapi_contracts.User {
         });
     }
 
-    public isFileVisible(file: string, withDot: boolean): Promise<boolean> {
+    public isFileVisible(file: string, withDot: boolean): PromiseLike<boolean> {
         let me = this;
         
         return new Promise<boolean>((resolve, reject) => {
@@ -267,7 +267,7 @@ class User implements rapi_contracts.User {
                             };
 
                             nextPattern();
-                        }).catch((err) => {
+                        }, (err) => {
                             completed(err);
                         });
                     }

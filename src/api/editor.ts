@@ -32,7 +32,7 @@ import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
 
-function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promise<Object | false> {
+function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): PromiseLike<Object | false> {
     return new Promise<Object>((resolve, reject) => {
         let obj: Object | false;
         let completed = (err?: any) => {
@@ -100,7 +100,7 @@ function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promi
 
                                 completed();
                             }
-                        }).catch((err) => {
+                        }, (err) => {
                             completed(err);
                         });
                     }
@@ -122,7 +122,7 @@ function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promi
 }
 
 // [GET] /editor
-export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+export function get(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
@@ -148,7 +148,7 @@ export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                 catch (e) {
                     completed(e);
                 }
-            }).catch((err) => {
+            }, (err) => {
                 completed(err);
             });
         }
@@ -159,7 +159,7 @@ export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
 }
 
 // [POST] /editor[/{file}]
-export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+export function post(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
 
     return new Promise<any>((resolve, reject) => {
@@ -200,7 +200,7 @@ export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                             args.response.data = obj;
 
                             returnDoc();
-                        }).catch((err) => {
+                        }, (err) => {
                             completed(err);
                         });
                     }, (err) => {
@@ -239,7 +239,7 @@ export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                                     else {
                                         notFound();  // not visible
                                     }
-                                }).catch((err) => {
+                                }, (err) => {
                                     completed(err);
                                 });
                             }

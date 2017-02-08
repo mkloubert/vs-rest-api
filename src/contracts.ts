@@ -92,9 +92,9 @@ export interface ApiEndpoint {
  * 
  * @param {ApiMethodArguments} args The arguments.
  * 
- * @returns {Promise<any>|void} The result.
+ * @returns {PromiseLike<any>|void} The result.
  */
-export type ApiMethod = (args: ApiMethodArguments) => Promise<any> | void;
+export type ApiMethod = (args: ApiMethodArguments) => PromiseLike<any> | void;
 
 /**
  * Arguments for an API method.
@@ -115,17 +115,17 @@ export interface ApiMethodArguments extends ScriptArguments {
     /**
      * Gets the body.
      * 
-     * @returns {Promise<Buffer>} The promise.
+     * @returns {PromiseLike<Buffer>} The promise.
      */
-    readonly getBody: () => Promise<Buffer>;
+    readonly getBody: () => PromiseLike<Buffer>;
     /**
      * Gets the body as parsed JSON object.
      * 
      * @param {string} encoding The custom text encoding to use.
      * 
-     * @returns {Promise<T>} The promise.
+     * @returns {PromiseLike<T>} The promise.
      */
-    getJSON<T>(encoding?: string): Promise<T>;
+    getJSON<T>(encoding?: string): PromiseLike<T>;
     /**
      * The response headers to send.
      */
@@ -471,18 +471,18 @@ export interface User {
      * @param {string} dir The file to check.
      * @param {boolean} withDot Default value that indicates if directories with loading dots are allowed or not.
      * 
-     * @returns {Promise<boolean>} The promise.
+     * @returns {PromiseLike<boolean>} The promise.
      */
-    readonly isDirVisible: (dir: string, withDot: boolean) => Promise<boolean>;
+    readonly isDirVisible: (dir: string, withDot: boolean) => PromiseLike<boolean>;
     /**
      * Checks if a file is visible for that user.
      * 
      * @param {string} file The file to check.
      * @param {boolean} withDot Default value that indicates if directories with loading dots are allowed or not.
      * 
-     * @returns {Promise<boolean>} The promise.
+     * @returns {PromiseLike<boolean>} The promise.
      */
-    readonly isFileVisible: (file: string, withDot: boolean) => Promise<boolean>;
+    readonly isFileVisible: (file: string, withDot: boolean) => PromiseLike<boolean>;
     /**
      * Sets a variable for the user.
      * 
@@ -521,9 +521,9 @@ export interface UserAccount extends Account {
  * 
  * @param {ValidatorArguments<T>} args The arguments.
  * 
- * @return {Promise<boolean>|boolean} The result.
+ * @return {PromiseLike<boolean>|boolean} The result.
  */
-export type Validator<T> = (args: ValidatorArguments<T>) => Promise<boolean> | boolean;
+export type Validator<T> = (args: ValidatorArguments<T>) => PromiseLike<boolean> | boolean;
 
 /**
  * Arguments for a "validator" function.

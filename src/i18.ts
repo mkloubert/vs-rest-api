@@ -69,9 +69,9 @@ export function t(key: string, ...args: any[]): string {
  * 
  * @param {string} [lang] The custom language to use.
  * 
- * @returns {Promise<any>} The promise.
+ * @returns {PromiseLike<any>} The promise.
  */
-export function init(lang?: string): Promise<any> {
+export function init(lang?: string): PromiseLike<any> {
     if (rapi_helpers.isEmptyString(lang)) {
         lang = vscode.env.language;
     }

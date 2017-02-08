@@ -106,7 +106,7 @@ export class ApiHost implements vscode.Disposable {
         
         me.stop().then(() => {
             //TODO
-        }).catch((err) => {
+        }, (err) => {
             me.controller.log(`[ERROR] host.dispose(): ${rapi_helpers.toStringSafe(err)}`);
         });
     }
@@ -410,7 +410,7 @@ export class ApiHost implements vscode.Disposable {
                                     }
 
                                     sendResponseData(compressResult.dataToSend);
-                                }).catch((err) => {
+                                }, (err) => {
                                     //TODO: log
 
                                     sendResponseData(responseData);
@@ -433,7 +433,7 @@ export class ApiHost implements vscode.Disposable {
 
                     methodResult.then(() => {
                         sendResponse();
-                    }).catch((err) => {
+                    }, (err) => {
                         rapi_host_helpers.sendError(err, ctx);
                     });
                 }
@@ -478,9 +478,9 @@ export class ApiHost implements vscode.Disposable {
      * 
      * @param {number} [port] The custom TCP port to use.
      * 
-     * @return Promise<boolean> The promise.
+     * @return PromiseLike<boolean> The promise.
      */
-    public start(port?: number): Promise<boolean> {
+    public start(port?: number): PromiseLike<boolean> {
         if (rapi_helpers.isNullOrUndefined(port)) {
             port = DEFAULT_PORT;
         }
@@ -655,9 +655,9 @@ export class ApiHost implements vscode.Disposable {
                                 if ('object' === typeof validatorResult) {
                                     validatorResult.then((isValid) => {
                                         handleTheRequest(isValid);
-                                    }).catch((err) => {
+                                    }, (err) => {
                                         rapi_host_helpers.sendError(err, ctx);
-                                    })
+                                    });
                                 }
                                 else {
                                     handleTheRequest(validatorResult);
@@ -753,9 +753,9 @@ export class ApiHost implements vscode.Disposable {
      * 
      * @param {number} [port] The custom TCP port to use.
      * 
-     * @return Promise<boolean> The promise.
+     * @return PromiseLike<boolean> The promise.
      */
-    public stop(): Promise<boolean> {
+    public stop(): PromiseLike<boolean> {
         let me = this;
         
         return new Promise<boolean>((resolve, reject) => {

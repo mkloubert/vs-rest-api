@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
     let startHost = vscode.commands.registerCommand('extension.restApi.startHost', () => {
         controller.start().then(() => {
             //TODO
-        }).catch((err) => {
+        }, (err) => {
             // vscode.window.showErrorMessage(`[REST API START]: ${rapi_helpers.toStringSafe(err)}`);
         });
     });
@@ -82,7 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
     let stopHost = vscode.commands.registerCommand('extension.restApi.stopHost', () => {
         controller.stop().then(() => {
             //TODO
-        }).catch((err) => {
+        }, (err) => {
             // vscode.window.showErrorMessage(`[REST API STOP]: ${rapi_helpers.toStringSafe(err)}`);
         });
     });
@@ -91,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
     let toggleServerState = vscode.commands.registerCommand('extension.restApi.toggleHostState', () => {
         controller.toggleHostState().then(() => {
             //TODO
-        }).catch((err) => {
+        }, (err) => {
             // vscode.window.showErrorMessage(`[REST API TOGGLE]: ${rapi_helpers.toStringSafe(err)}`);
         });
     });

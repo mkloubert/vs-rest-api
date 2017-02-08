@@ -30,7 +30,7 @@ import * as vscode from 'vscode';
 
 
 // [GET] /commands
-export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+export function get(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
 
     return new Promise<any>((resolve, reject) => {
@@ -66,7 +66,7 @@ export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
 }
 
 // [POST] /commands/{commandId}
-export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+export function post(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
     
     return new Promise<any>((resolve, reject) => {
@@ -143,7 +143,7 @@ export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                         catch (e) {
                             completed(e);
                         }
-                    }).catch((err) => {
+                    }, (err) => {
                         completed(err);
                     });
                 }

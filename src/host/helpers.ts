@@ -71,11 +71,11 @@ export interface CompressForResponseResult {
  * @param {rapi_contracts.RequestContext} ctx The underlying request context.
  * @param {string} encoding The custom text encoding to use, if 'data' is no buffer.
  * 
- * @return {Promise<CompressForResponseResult>} The result.
+ * @return {PromiseLike<CompressForResponseResult>} The result.
  */
 export function compressForResponse(data: any,
                                     ctx: rapi_contracts.RequestContext,
-                                    encoding?: string): Promise<CompressForResponseResult> {
+                                    encoding?: string): PromiseLike<CompressForResponseResult> {
     encoding = rapi_helpers.normalizeString(encoding);
     if (!encoding) {
         encoding = 'utf8';

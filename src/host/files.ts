@@ -45,7 +45,7 @@ export function handleFile(file: string,
 
         //TODO
         ctx.response.end();
-    }).catch((err) => {
+    }, (err) => {
         rapi_host_helpers.sendError(err, ctx);
     });
 }

@@ -182,14 +182,14 @@ export class Controller implements vscode.Disposable {
             if (rapi_helpers.toBooleanSafe(cfg.autoStart)) {
                 this.start().then(() => {
                     //TODO
-                }).catch((e) => {
+                }, (e) => {
                     me.log(`[ERROR] Controller.reloadConfiguration().autoStart(1): ${rapi_helpers.toStringSafe(e)}`);
                 });
             }
             else {
                 this.stop().then(() => {
                     //TODO
-                }).catch((e) => {
+                }, (e) => {
                     me.log(`[ERROR] Controller.reloadConfiguration().autoStart(2): ${rapi_helpers.toStringSafe(e)}`);
                 });
             }
@@ -199,7 +199,7 @@ export class Controller implements vscode.Disposable {
         try {
             i18.init(cfg.lang).then(() => {
                 nextSteps();
-            }).catch((err) => {
+            }, (err) => {
                 nextSteps(err);
             });
         }
@@ -211,9 +211,9 @@ export class Controller implements vscode.Disposable {
     /**
      * Starts the host.
      * 
-     * @return {Promise<rapi_host.VSCodeRemoteHost>} The promise.
+     * @return {PromiseLike<rapi_host.VSCodeRemoteHost>} The promise.
      */
-    public start(): Promise<rapi_host.ApiHost> {
+    public start(): PromiseLike<rapi_host.ApiHost> {
         let me = this;
 
         let cfg = me.config;
@@ -275,7 +275,7 @@ export class Controller implements vscode.Disposable {
                     if (rapi_helpers.toBooleanSafe(cfg.openInBrowser)) {
                         rapi_helpers.open(browserUrl).then(() => {
                             //TODO
-                        }).catch((err) => {
+                        }, (err) => {
                             vscode.window.showWarningMessage(`[vs-rest-api] Could not open url '${browserUrl}': ${rapi_helpers.toStringSafe(err)}`);
                         });
                     }
@@ -298,7 +298,7 @@ export class Controller implements vscode.Disposable {
                     else {
                         completed(new Error("[vs-rest-api] Server has not been started!"));
                     }
-                }).catch((err) => {
+                }, (err) => {
                     completed(err);
                 });
             };
@@ -309,7 +309,7 @@ export class Controller implements vscode.Disposable {
 
                 currentHost.stop().then(() => {
                     startHost();
-                }).catch((err) => {
+                }, (err) => {
                     completed(err);
                 });
             }
@@ -350,7 +350,7 @@ export class Controller implements vscode.Disposable {
                     let changeLogBtn: rapi_contracts.PopupButton = {
                         action: () => {
                             rapi_helpers.open('https://github.com/mkloubert/vs-rest-api/blob/master/CHANGELOG.md').then(() => {
-                            }).catch((err) => {
+                            }, (err) => {
                                 me.log(i18.t('errors.withCategory', 'Controller.showNewVersionPopup(4)', err));
                             });
                         },
@@ -393,9 +393,9 @@ export class Controller implements vscode.Disposable {
     /**
      * Stops the host.
      * 
-     * @return {Promise<boolean>} The promise.
+     * @return {PromiseLike<boolean>} The promise.
      */
-    public stop(): Promise<boolean> {
+    public stop(): PromiseLike<boolean> {
         let me = this;
 
         let cfg = me.config;
@@ -422,7 +422,7 @@ export class Controller implements vscode.Disposable {
                     me._host = null;
 
                     completed(null, true);
-                }).catch((err) => {
+                }, (err) => {
                     completed(err);
                 });
             }
@@ -435,22 +435,24 @@ export class Controller implements vscode.Disposable {
 
     /**
      * Toggle the state of the current host.
+     * 
+     * @returns {PromiseLike<boolean>} The promise.
      */
-    public toggleHostState(): Promise<boolean> {
+    public toggleHostState(): PromiseLike<boolean> {
         let me = this;
 
         return new Promise<boolean>((resolve, reject) => {
             if (me._host) {
                 me.stop().then(() => {
                     resolve(false);
-                }).catch((err) => {
+                }, (err) => {
                     reject(err);
                 });
             }
             else {
                 me.start().then(() => {
                     resolve(true);
-                }).catch((err) => {
+                }, (err) => {
                     reject(err);
                 });
             }

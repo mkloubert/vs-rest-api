@@ -55,7 +55,7 @@ interface FileSystemItem {
 }
 
 
-function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): Promise<any> {
+function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): PromiseLike<any> {
     let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
 
     return new Promise<any>((resolve, reject) => {
@@ -200,7 +200,7 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                                 }
 
                                 nextItem();
-                            }).catch((err) => {
+                            }, (err) => {
                                 completed(err);
                             });
                         }
@@ -219,7 +219,7 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                                 }
 
                                 nextItem();
-                            }).catch((err) => {
+                            }, (err) => {
                                 completed(err);
                             });
                         }
@@ -235,7 +235,7 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
     });
 }
 
-function handleFile(args: rapi_contracts.ApiMethodArguments, file: string): Promise<any> {
+function handleFile(args: rapi_contracts.ApiMethodArguments, file: string): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
@@ -263,7 +263,7 @@ function handleFile(args: rapi_contracts.ApiMethodArguments, file: string): Prom
 
 
 //    /api/workspace
-function request(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+function request(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
@@ -317,14 +317,14 @@ function request(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                                             if (isVisible) {
                                                 handleDirectory(args, fullPath).then(() => {
                                                     completed();
-                                                }).catch((err) => {
+                                                }, (err) => {
                                                     completed(err);
                                                 });
                                             }
                                             else {
                                                 notFound();
                                             }
-                                        }).catch((err) => {
+                                        }, (err) => {
                                             completed(err);
                                         });
                                         break;
@@ -336,10 +336,10 @@ function request(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                                 args.request.user.isFileVisible(fullPath, args.request.user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then(() => {
                                     handleFile(args, fullPath).then(() => {
                                         completed();
-                                    }).catch((err) => {
+                                    }, (err) => {
                                         completed(err);
                                     });
-                                }).catch((err) => {
+                                }, (err) => {
                                     completed(err);
                                 });
                             }

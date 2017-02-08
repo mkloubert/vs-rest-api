@@ -427,9 +427,9 @@ export function getHeaderValue(headers: any, key: string, defaultValue?: any): s
  * 
  * @param {Buffer} data The data to check.
  * 
- * @returns {Promise<boolean>} The promise.
+ * @returns {PromiseLike<boolean>} The promise.
  */
-export function isBinaryContent(data: Buffer): Promise<boolean> {
+export function isBinaryContent(data: Buffer): PromiseLike<boolean> {
     return new Promise<boolean>((resolve, reject) => {
         let completed = createSimplePromiseCompletedAction(resolve, reject);
         if (!data) {
@@ -478,50 +478,6 @@ export function isNullOrUndefined(val: any): boolean {
 }
 
 /**
- * Tries to load a CSS file.
- * 
- * @param {string} cssFile The path to the CSS file.
- * @param {boolean} withTags Include surrounding HTML tags in result or not.
- * 
- * @return {Promise<string>} The promise.
- */
-export function loadCSS(cssFile: string, withTags = true): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-        loadTextFile(cssFile).then((css) => {
-            css = (withTags ? '<style type="text/css">' : '') + 
-                  css + 
-                  (withTags ? '</style>' : '');
-
-            resolve(css);
-        }).catch((err) => {
-            reject(err);
-        });
-    });
-}
-
-/**
- * Tries to load a JavaScript file.
- * 
- * @param {string} jsFile The path to the JavaScript file.
- * @param {boolean} withTags Include surrounding HTML tags in result or not.
- * 
- * @return {Promise<string>} The promise.
- */
-export function loadJavaScript(jsFile: string, withTags = true): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-        loadTextFile(jsFile).then((js) => {
-            js = (withTags ? '<script type="text/javascript">' : '') + 
-                 js + 
-                 (withTags ? '</script>' : '');
-
-            resolve(js);
-        }).catch((err) => {
-            reject(err);
-        });
-    });
-}
-
-/**
  * Loads a module.
  * 
  * @param {string} file The path of the module's file.
@@ -545,58 +501,6 @@ export function loadModuleSync<TModule extends rapi_contracts.ScriptModule>(file
     }
     
     return require(file);
-}
-
-/**
- * Tries to load a text file.
- * 
- * @param {string} file The path to the file.
- * @param {string} [encoding] The custom encoding to use.
- * 
- * @return {Promise<string>} The promise.
- */
-export function loadTextFile(file: string, encoding?: string): Promise<string> {
-    encoding = toStringSafe(encoding).toLowerCase().trim();
-    if (!encoding) {
-        encoding = 'utf8';
-    }
-    
-    return new Promise<string>((resolve, reject) => {
-        let completed = createSimplePromiseCompletedAction(resolve, reject);
-
-        try {
-            if (!isEmptyString(file)) {
-                if (!Path.isAbsolute(file)) {
-                    file = Path.join(vscode.workspace.rootPath, file);
-                }
-
-                file = Path.resolve(file);
-            }
-
-            if (isEmptyString(file)) {
-                completed();
-            }
-            else {
-                FS.readFile(file, (err, data) => {
-                    if (err) {
-                        completed(err);
-                    }
-                    else {
-                        try {
-                            completed(null,
-                                      data.toString(encoding));
-                        }
-                        catch (e) {
-                            completed(e);
-                        }
-                    }
-                });
-            }
-        }
-        catch (e) {
-            completed(e);
-        }
-    });
 }
 
 /**
@@ -633,9 +537,9 @@ export function normalizeString(val: any, normalizer?: (str: string) => string):
  * @param {string} target The target to open.
  * @param {OpenOptions} [opts] The custom options to set.
  * 
- * @param {Promise<ChildProcess.ChildProcess>} The promise.
+ * @param {PromiseLike<ChildProcess.ChildProcess>} The promise.
  */
-export function open(target: string, opts?: OpenOptions): Promise<ChildProcess.ChildProcess> {
+export function open(target: string, opts?: OpenOptions): PromiseLike<ChildProcess.ChildProcess> {
     let me = this;
 
     if (!opts) {
@@ -763,9 +667,9 @@ export function open(target: string, opts?: OpenOptions): Promise<ChildProcess.C
  * 
  * @param {HTTP.IncomingMessag} msg The HTTP message with the body.
  * 
- * @returns {Promise<Buffer>} The promise.
+ * @returns {PromiseLike<Buffer>} The promise.
  */
-export function readHttpBody(msg: HTTP.IncomingMessage): Promise<Buffer> {
+export function readHttpBody(msg: HTTP.IncomingMessage): PromiseLike<Buffer> {
     return new Promise<Buffer>((resolve, reject) => {
         let completed = createSimplePromiseCompletedAction(resolve, reject);
 
@@ -800,9 +704,9 @@ export function readHttpBody(msg: HTTP.IncomingMessage): Promise<Buffer> {
  * @param {HTTP.IncomingMessag} msg The HTTP message with the body.
  * @param {string} encoding The custom text encoding to use.
  * 
- * @returns {Promise<T>} The promise.
+ * @returns {PromiseLike<T>} The promise.
  */
-export function readHttpBodyAsJSON<T>(msg: HTTP.IncomingMessage, encoding?: string): Promise<T> {
+export function readHttpBodyAsJSON<T>(msg: HTTP.IncomingMessage, encoding?: string): PromiseLike<T> {
     encoding = normalizeString(encoding);
     if (!encoding) {
         encoding = 'utf8';
@@ -823,7 +727,7 @@ export function readHttpBodyAsJSON<T>(msg: HTTP.IncomingMessage, encoding?: stri
             catch (e) {
                 completed(e);
             }
-        }).catch((err) => {
+        }, (err) => {
             completed(err);
         });
     });
