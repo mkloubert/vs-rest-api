@@ -338,7 +338,7 @@ HINT: Custom endpoints will always overwrite build-in ones!
 
 Press `F1` to open the list of commands and select one of the following commands:
 
-![Demo How to execute](https://raw.githubusercontent.com/mkloubert/vs-deploy/master/demos/demo2.gif)
+![Demo How to execute](https://raw.githubusercontent.com/mkloubert/vs-rest-api/master/demos/demo2.gif)
 
 | Name | Description | ID |
 | ---- | --------- | --------- |
