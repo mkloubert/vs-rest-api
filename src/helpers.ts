@@ -27,6 +27,7 @@
 import * as ChildProcess from 'child_process';
 const Entities = require('html-entities').AllHtmlEntities;
 import * as FS from 'fs';
+import * as HTTP from 'http';
 import * as i18 from './i18';
 const IsBinaryFile = require("isbinaryfile");
 const MIME = require('mime');
@@ -754,6 +755,73 @@ export function open(target: string, opts?: OpenOptions): Promise<ChildProcess.C
         catch (e) {
             completed(e);
         }
+    });
+}
+
+/**
+ * Reads the content of the HTTP request body.
+ * 
+ * @param {HTTP.IncomingMessag} msg The HTTP message with the body.
+ * 
+ * @returns {Promise<Buffer>} The promise.
+ */
+export function readHttpBody(msg: HTTP.IncomingMessage): Promise<Buffer> {
+    return new Promise<Buffer>((resolve, reject) => {
+        let completed = createSimplePromiseCompletedAction(resolve, reject);
+
+        try {
+            let buff: Buffer = msg.read();
+            if (null === buff) {
+                msg.once('readable', function() {
+                    readHttpBody(msg).then((b) => {
+                        resolve(b);
+                    }, (err) => {
+                        reject(err);
+                    });
+                });
+            }
+            else {
+                resolve(buff);
+            }
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
+/**
+ * Reads the content of the HTTP request body as returns it as parsed object.
+ * 
+ * @param {HTTP.IncomingMessag} msg The HTTP message with the body.
+ * @param {string} encoding The custom text encoding to use.
+ * 
+ * @returns {Promise<T>} The promise.
+ */
+export function readHttpBodyAsJSON<T>(msg: HTTP.IncomingMessage, encoding?: string): Promise<T> {
+    encoding = normalizeString(encoding);
+    if (!encoding) {
+        encoding = 'utf8';
+    }
+    
+    return new Promise<T>((resolve, reject) => {
+        let completed = createSimplePromiseCompletedAction(resolve, reject);
+
+        readHttpBody(msg).then((body) => {
+            try {
+                let obj: T;
+                if (body && body.length > 0) {
+                    obj = JSON.parse(body.toString(encoding));
+                }
+
+                completed(null, obj);
+            }
+            catch (e) {
+                completed(e);
+            }
+        }).catch((err) => {
+            completed(err);
+        });
     });
 }
 

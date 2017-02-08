@@ -34,8 +34,17 @@ import * as vscode from 'vscode';
  * Stores the strings of a translation.
  */
 export interface Translation {
+    errors: {
+        withCategory: string;
+    },
     isNo: {
         file: string;
+    },
+    popups: {
+        newVersion: {
+            message: string;
+            showChangeLog: string;
+        },
     },
 }
 

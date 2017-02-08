@@ -27,6 +27,7 @@ import * as HTTP from 'http';
 import * as Moment from 'moment';
 import * as rapi_host from './host';
 import * as URL from 'url';
+import * as vscode from 'vscode';
 
 
 /**
@@ -100,6 +101,20 @@ export interface ApiMethodArguments extends ScriptArguments {
      */
     encoding: string;
     /**
+     * Gets the body.
+     * 
+     * @returns {Promise<Buffer>} The promise.
+     */
+    readonly getBody: () => Promise<Buffer>;
+    /**
+     * Gets the body as parsed JSON object.
+     * 
+     * @param {string} encoding The custom text encoding to use.
+     * 
+     * @returns {Promise<T>} The promise.
+     */
+    getJSON<T>(encoding?: string): Promise<T>;
+    /**
      * The response headers to send.
      */
     headers: { [key: string]: any };
@@ -119,6 +134,14 @@ export interface ApiMethodArguments extends ScriptArguments {
      * The response data.
      */
     response: ApiResponse;
+    /**
+     * Sends an error response.
+     * 
+     * @param {any} err The error.
+     * 
+     * @chainable
+     */
+    readonly sendError: (err: any) => ApiMethodArguments;
     /**
      * Sets up the response for a 405 HTTP response.
      * 
@@ -184,6 +207,10 @@ export interface Configuration {
      * Start HTTP on startup or not.
      */
     autoStart?: boolean;
+    /**
+     * Disables popups that report for a new (installed) version.
+     */
+    disableNewVersionPopups?: boolean;
     /**
      * One or more custom endpoints to define.
      */
@@ -294,6 +321,25 @@ export interface PackageFile {
      */
     version: string;
 }
+
+/**
+ * Describes a button of a popup.
+ */
+export interface PopupButton extends vscode.MessageItem {
+    /**
+     * Gets the action of that button.
+     */
+    action?: PopupButtonAction;
+    /**
+     * Contains an additional object that should be linked with that instance.
+     */
+    tag?: any;
+}
+
+/**
+ * A popup button action.
+ */
+export type PopupButtonAction = () => void;
 
 /**
  * A remote client.

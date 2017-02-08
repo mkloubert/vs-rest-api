@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -47,6 +47,11 @@
           "properties": {
             "autoStart": {
               "description": "Start HTTP on startup or not.",
+              "type": "boolean",
+              "default": false
+            },
+            "disableNewVersionPopups": {
+              "description": "Disables popups that report for a new (installed) version.",
               "type": "boolean",
               "default": false
             },

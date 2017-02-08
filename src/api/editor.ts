@@ -30,7 +30,14 @@ import * as rapi_host from '../host';
 import * as vscode from 'vscode';
 
 
-//    /api/editor
+/**
+ * Arguments for opening an editor.
+ */
+export interface OpenEditorArguments {
+    file?: string;
+}
+
+
 export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -111,5 +118,86 @@ export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
         catch (e) {
             completed(e);
         }
+    });
+}
+
+export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        args.getJSON<OpenEditorArguments>().then((oeArgs) => {
+            try {
+                let file: string;
+                if (oeArgs) {
+                    file = oeArgs.file;
+                }
+
+                let nextAction = () => {
+                    completed();
+                };
+
+                let openFile = (fileToOpen: string) => {
+                    nextAction = null;
+
+                    vscode.workspace.openTextDocument(fileToOpen).then((doc) => {
+                        vscode.window.showTextDocument(doc).then(() => {
+                            completed();
+                        }, (err) => {
+                            // opened, but not shown
+
+                            args.response.code = 1;
+
+                            completed();
+                        });
+                    }, (err) => {
+                        completed(err);
+                    });
+                };
+
+                if (rapi_helpers.isEmptyString(file)) {
+                    // open empty window
+                    openFile(null);
+                }
+                else {
+                    let fullPath = Path.join(vscode.workspace.rootPath, file);
+
+                    let relativePath = rapi_helpers.toRelativePath(fullPath);
+                    if (false === relativePath) {
+                        // cannot open files outside workspace
+
+                        nextAction = () => {
+                            args.sendNotFound();
+
+                            completed();
+                        };
+                    }
+                    else {
+                        nextAction = null;
+
+                        args.request.user.isFileVisible(fullPath).then((isVisible) => {
+                            if (isVisible) {
+                                openFile(fullPath);
+                            }
+                            else {
+                                args.sendNotFound();
+
+                                completed();
+                            }
+                        }).catch((err) => {
+                            completed(err);
+                        });
+                    }
+                }
+
+                if (nextAction) {
+                    nextAction();
+                }
+            }
+            catch (e) {
+                completed(e);
+            }
+        }).catch((err) => {
+            completed(err);
+        });
     });
 }

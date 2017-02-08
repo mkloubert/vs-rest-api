@@ -320,6 +320,77 @@ export class Controller implements vscode.Disposable {
     }
 
     /**
+     * Shows the popup for a new version.
+     */
+    protected showNewVersionPopup() {
+        let me = this;
+
+        let pkg = me.packageFile;
+        if (!pkg) {
+            return;
+        }
+
+        let currentVersion = pkg.version;
+        if (!currentVersion) {
+            return;
+        }
+
+        const KEY_LAST_KNOWN_VERSION = 'vsraLastKnownVersion';
+
+        // update last known version
+        let updateCurrentVersion = false;
+        try {
+            let lastKnownVersion: any = this._CONTEXT.globalState.get(KEY_LAST_KNOWN_VERSION, false);
+            if (lastKnownVersion != currentVersion) {
+                if (!rapi_helpers.toBooleanSafe(this.config.disableNewVersionPopups)) {
+                    // tell the user that it runs on a new version
+                    updateCurrentVersion = true;
+
+                    // [BUTTON] show change log
+                    let changeLogBtn: rapi_contracts.PopupButton = {
+                        action: () => {
+                            rapi_helpers.open('https://github.com/mkloubert/vs-rest-api/blob/master/CHANGELOG.md').then(() => {
+                            }).catch((err) => {
+                                me.log(i18.t('errors.withCategory', 'Controller.showNewVersionPopup(4)', err));
+                            });
+                        },
+                        title: i18.t('popups.newVersion.showChangeLog'),
+                    };
+
+                    vscode.window
+                          .showInformationMessage(i18.t('popups.newVersion.message', currentVersion),
+                                                  changeLogBtn)
+                          .then((item) => {
+                                  if (!item || !item.action) {
+                                      return;
+                                  }
+
+                                  try {
+                                      item.action();
+                                  }
+                                  catch (e) { 
+                                      me.log(i18.t('errors.withCategory', 'Controller.showNewVersionPopup(3)', e));
+                                  }
+                                });
+                }
+            }
+        }
+        catch (e) { 
+            me.log(i18.t('errors.withCategory', 'Controller.showNewVersionPopup(2)', e));
+        }
+
+        if (updateCurrentVersion) {
+            // update last known version
+            try {
+                this._CONTEXT.globalState.update(KEY_LAST_KNOWN_VERSION, currentVersion);
+            }
+            catch (e) {
+                me.log(i18.t('errors.withCategory', 'Controller.showNewVersionPopup(1)', e));
+            }
+        }
+    }
+
+    /**
      * Stops the host.
      * 
      * @return {Promise<boolean>} The promise.

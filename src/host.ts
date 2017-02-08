@@ -136,6 +136,13 @@ export class ApiHost implements vscode.Disposable {
 
             let apiArgs: rapi_contracts.ApiMethodArguments = {
                 encoding: DEFAULT_ENCODING,
+                getBody: function() {
+                    return rapi_helpers.readHttpBody(this.request.request);
+                },
+                getJSON: function() {
+                    return rapi_helpers.readHttpBodyAsJSON(this.request.request,
+                                                           this.encoding);
+                },
                 globals: me.controller.getGlobals(),
                 globalState: undefined,
                 headers: {
@@ -160,6 +167,14 @@ export class ApiHost implements vscode.Disposable {
 
                         this.headers['Content-type'] = mime;
                     }
+
+                    return this;
+                },
+                sendError: function(err: any) {
+                    this.statusCode = 500;
+                    
+                    delete this.response;
+                    delete this.headers;
 
                     return this;
                 },
@@ -366,7 +381,14 @@ export class ApiHost implements vscode.Disposable {
                                         statusCode = parseInt(rapi_helpers.normalizeString(apiArgs.statusCode));
                                     }
 
-                                    ctx.response.writeHead(statusCode, apiArgs.headers);
+                                    let headersToSend = apiArgs.headers;
+                                    if (!headersToSend) {
+                                        headersToSend = {};
+                                    }
+
+                                    headersToSend['X-Vscode-Restapi'] = me.controller.packageFile.version;
+
+                                    ctx.response.writeHead(statusCode, headersToSend);
 
                                     ctx.response.write(rapi_helpers.asBuffer(finalDataToSend));
 

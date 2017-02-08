@@ -29,7 +29,16 @@ import { Translation } from '../i18';
 // 
 // Translated by: Marcel Joachim Kloubert (https://github.com/mkloubert)
 export const TRANSLATION: Translation = {
+    errors: {
+        withCategory: '[ERROR] {0:trim}: {1}',
+    },
     isNo: {
         file: "{0:trim,surround} ist keine Datei!",
+    },
+    popups: {
+        newVersion: {
+            message: "Sie nutzen die neue Version {0:trim} von 'vs-rest-api'!",
+            showChangeLog: 'Änderungsprotokoll anzeigen (englisch)...',
+        },
     },
 };
