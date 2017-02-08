@@ -498,7 +498,6 @@ export class ApiHost implements vscode.Disposable {
         // init global storages
         accounts.filter(x => x).forEach(x => {
             x.__globals = {};
-            x.__globals[rapi_users.VAR_VISIBLE_FILES] = {};
         });
         
         return new Promise<boolean>((resolve, reject) => {

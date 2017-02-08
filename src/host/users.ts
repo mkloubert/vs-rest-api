@@ -40,10 +40,6 @@ export const VAR_CAN_EXECUTE = 'can_execute';
  */
 export const VAR_CAN_OPEN = 'can_open';
 /**
- * Name of a variable that stores the cache for visible files.
- */
-export const VAR_VISIBLE_FILES = 'visible_files';
-/**
  * Name of a variable that defines if an user can see directories with leading dots or not.
  */
 export const VAR_WITH_DOT = 'with_dot';
@@ -51,7 +47,6 @@ export const VAR_WITH_DOT = 'with_dot';
 const DEFAULT_USER: rapi_contracts.Account = {
     __globals: {},
 };
-DEFAULT_USER.__globals[VAR_VISIBLE_FILES] = {};
 
 
 class User implements rapi_contracts.User {
@@ -93,7 +88,7 @@ class User implements rapi_contracts.User {
         return (<Object>this.account.__globals).hasOwnProperty(name);
     }
 
-    public isDirVisible(dir: string, withDot?: boolean): Promise<boolean> {
+    public isDirVisible(dir: string, withDot: boolean): Promise<boolean> {
         let me = this;
         
         return new Promise<boolean>((resolve, reject) => {
@@ -114,26 +109,52 @@ class User implements rapi_contracts.User {
                     return p;
                 };
 
+                if (!Path.isAbsolute(dir)) {
+                    dir = Path.join(vscode.workspace.rootPath, dir);
+                }
+
+                let parentDir = dir + '/..';
+                parentDir = normalizePath(parentDir);
+
                 dir = normalizePath(dir);
                 let dirName = Path.basename(dir);
 
-                FS.lstat(dir, (err, stats) => {
-                    if (err) {
-                        completed(err);
-                    }
-                    else {
-                        let isVisible: boolean = null;
-
-                        if (stats.isDirectory()) {
-                            isVisible = true;
-                            if (0 == rapi_helpers.normalizeString(dirName).indexOf('.')) {
-                                isVisible = rapi_helpers.toBooleanSafe(me.get<boolean>(VAR_WITH_DOT) || withDot);
-                            }
+                let checkDirectory = () => {
+                    FS.lstat(dir, (err, stats) => {
+                        if (err) {
+                            completed(err);
                         }
+                        else {
+                            let isVisible: boolean = null;
 
-                        completed(null, isVisible);
-                    }
-                });
+                            if (stats.isDirectory()) {
+                                isVisible = true;
+                                if (0 == rapi_helpers.normalizeString(dirName).indexOf('.')) {
+                                    isVisible = rapi_helpers.toBooleanSafe(me.get<boolean>(VAR_WITH_DOT) || withDot);
+                                }
+                            }
+
+                            completed(null, isVisible);
+                        }
+                    });
+                };
+
+                // check parent directory
+                if (rapi_helpers.normalizeString(dir) == parentDir) {
+                    checkDirectory();
+                }
+                else {
+                    me.isDirVisible(parentDir, withDot).then((isDirectoryVisible) => {
+                        if (isDirectoryVisible) {
+                            checkDirectory();
+                        }
+                        else {
+                            completed(null, false);
+                        }
+                    }).catch((err) => {
+                        completed(err);
+                    });
+                }
             }
             catch (e) {
                 completed(e);
@@ -141,7 +162,7 @@ class User implements rapi_contracts.User {
         });
     }
 
-    public isFileVisible(file: string): Promise<boolean> {
+    public isFileVisible(file: string, withDot: boolean): Promise<boolean> {
         let me = this;
         
         return new Promise<boolean>((resolve, reject) => {
@@ -162,71 +183,93 @@ class User implements rapi_contracts.User {
                     return p;
                 };
 
+                if (!Path.isAbsolute(file)) {
+                    file = Path.join(vscode.workspace.rootPath, file);
+                }
+
                 file = normalizePath(file);
+                
+                FS.stat(file, (err, stats) => {
+                    if (err) {
+                        completed(err);
+                        return;
+                    }
 
-                let cache = me.get<Object>(VAR_VISIBLE_FILES);
-                if (cache.hasOwnProperty(file)) {
-                    // cached
-                    completed(null, rapi_helpers.toBooleanSafe(cache[file]));
-                    return;
-                }
-
-                cache[file] = false;
-
-                let patterns = rapi_helpers.asArray(me.account.files)
-                                           .map(x => rapi_helpers.toStringSafe(x))
-                                           .filter(x => !rapi_helpers.isEmptyString(x));
-                patterns = rapi_helpers.distinctArray(patterns);
-                if (patterns.length < 1) {
-                    patterns = [ '**' ];
-                }
-
-                let excludePatterns = rapi_helpers.asArray(me.account.exclude)
-                                                  .map(x => rapi_helpers.toStringSafe(x))
-                                                  .filter(x => !rapi_helpers.isEmptyString(x));
-                excludePatterns = rapi_helpers.distinctArray(excludePatterns);
-
-                let nextPattern: () => void;
-                nextPattern = () => {
-                    if (patterns.length < 1) {
+                    if (!stats.isFile()) {
                         completed(null, false);
                         return;
                     }
 
-                    let p = patterns.shift();
-
                     try {
-                        Glob(p, {
-                            absolute: true,
-                            cwd: vscode.workspace.rootPath,
-                            dot: true,
-                            ignore: excludePatterns,
-                            nodir: true,
-                            root: vscode.workspace.rootPath,
-                        }, (err: any, matchingFiles: string[]) => {
-                            if (err) {
-                                completed(err);
+                        let dir = Path.dirname(file);
+
+                        me.isDirVisible(dir, withDot).then((isDirectoryVisible) => {
+                            if (!isDirectoryVisible) {
+                                completed(null, false);  // directory not visible
                                 return;
                             }
 
-                            matchingFiles = matchingFiles.map(x => normalizePath(x));
-                            if (matchingFiles.indexOf(file) > -1) {
-                                cache[file] = true;
-                                completed(null, cache[file]);
+                            let patterns = rapi_helpers.asArray(me.account.files)
+                                                    .map(x => rapi_helpers.toStringSafe(x))
+                                                    .filter(x => !rapi_helpers.isEmptyString(x));
+                            patterns = rapi_helpers.distinctArray(patterns);
+                            if (patterns.length < 1) {
+                                patterns = [ '**' ];
+                            }
 
-                                return;
-                            }
-                            else {
-                                nextPattern();
-                            }
+                            let excludePatterns = rapi_helpers.asArray(me.account.exclude)
+                                                            .map(x => rapi_helpers.toStringSafe(x))
+                                                            .filter(x => !rapi_helpers.isEmptyString(x));
+                            excludePatterns = rapi_helpers.distinctArray(excludePatterns);
+
+                            let nextPattern: () => void;
+                            nextPattern = () => {
+                                if (patterns.length < 1) {
+                                    completed(null, false);
+                                    return;
+                                }
+
+                                let p = patterns.shift();
+
+                                try {
+                                    Glob(p, {
+                                        absolute: true,
+                                        cwd: vscode.workspace.rootPath,
+                                        dot: true,
+                                        ignore: excludePatterns,
+                                        nodir: true,
+                                        root: vscode.workspace.rootPath,
+                                    }, (err: any, matchingFiles: string[]) => {
+                                        if (err) {
+                                            completed(err);
+                                            return;
+                                        }
+
+                                        matchingFiles = matchingFiles.map(x => normalizePath(x));
+                                        if (matchingFiles.indexOf(file) > -1) {
+                                            completed(null, true);
+
+                                            return;
+                                        }
+                                        else {
+                                            nextPattern();
+                                        }
+                                    });
+                                }
+                                catch (e) {
+                                    completed(e);
+                                }
+                            };
+
+                            nextPattern();
+                        }).catch((err) => {
+                            completed(err);
                         });
                     }
                     catch (e) {
                         completed(e);
                     }
-                };
-
-                nextPattern();
+                });
             }
             catch (e) {
                 completed(e);

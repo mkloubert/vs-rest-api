@@ -26,6 +26,7 @@
 import * as rapi_contracts from '../contracts';
 import * as rapi_host from '../host';
 import * as rapi_host_helpers from './helpers';
+import * as rapi_host_users from '../host/users';
 
 
 /**
@@ -36,7 +37,7 @@ import * as rapi_host_helpers from './helpers';
  */
 export function handleFile(file: string,
                            ctx: rapi_contracts.RequestContext) {
-    ctx.user.isFileVisible(file).then((isVisible) => {
+    ctx.user.isFileVisible(file, ctx.user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then((isVisible) => {
         if (!isVisible) {
             rapi_host_helpers.sendNotFound(ctx);
             return;

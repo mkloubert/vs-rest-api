@@ -76,7 +76,7 @@ function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promi
                     mime = rapi_helpers.detectMimeByFilename(fullPath);
 
                     if (false !== relativePath) {
-                        user.isFileVisible(fullPath).then((isVisible) => {
+                        user.isFileVisible(fullPath, user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then((isVisible) => {
                             if (isVisible) {
                                 filePath = rapi_helpers.toStringSafe(relativePath);
                                 filePath = rapi_helpers.replaceAllStrings(filePath, "\\", '/');
@@ -225,7 +225,7 @@ export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                         }
                         else {
                             if (stats.isFile()) {
-                                args.request.user.isFileVisible(fullPath).then((isVisible) => {
+                                args.request.user.isFileVisible(fullPath, args.request.user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then((isVisible) => {
                                     if (isVisible) {
                                         fileToOpen = fullPath;
 

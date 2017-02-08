@@ -205,7 +205,7 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                             });
                         }
                         else if (stats.isFile()) {
-                            args.request.user.isFileVisible(fullPath).then((isVisible) => {
+                            args.request.user.isFileVisible(fullPath, args.request.user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then((isVisible) => {
                                 if (isVisible) {
                                     files.push({
                                         birthtime: stats.birthtime,
@@ -333,7 +333,7 @@ function request(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                             else if (stats.isFile()) {
                                 nextAction = null;
 
-                                args.request.user.isFileVisible(fullPath).then(() => {
+                                args.request.user.isFileVisible(fullPath, args.request.user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then(() => {
                                     handleFile(args, fullPath).then(() => {
                                         completed();
                                     }).catch((err) => {

@@ -469,18 +469,20 @@ export interface User {
      * Checks if a directory is visible for that user.
      * 
      * @param {string} dir The file to check.
+     * @param {boolean} withDot Default value that indicates if directories with loading dots are allowed or not.
      * 
      * @returns {Promise<boolean>} The promise.
      */
-    readonly isDirVisible: (dir: string, withDot?: boolean) => Promise<boolean>;
+    readonly isDirVisible: (dir: string, withDot: boolean) => Promise<boolean>;
     /**
      * Checks if a file is visible for that user.
      * 
      * @param {string} file The file to check.
+     * @param {boolean} withDot Default value that indicates if directories with loading dots are allowed or not.
      * 
      * @returns {Promise<boolean>} The promise.
      */
-    readonly isFileVisible: (file: string) => Promise<boolean>;
+    readonly isFileVisible: (file: string, withDot: boolean) => Promise<boolean>;
     /**
      * Sets a variable for the user.
      * 
