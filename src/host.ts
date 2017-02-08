@@ -131,7 +131,6 @@ export class ApiHost implements vscode.Disposable {
 
             let parts = normalizedPath.substr(4)
                                       .split('/')
-                                      .map(x => rapi_helpers.normalizeString(x))
                                       .filter(x => !rapi_helpers.isEmptyString(x));
 
             let apiArgs: rapi_contracts.ApiMethodArguments = {
@@ -298,7 +297,7 @@ export class ApiHost implements vscode.Disposable {
                 let isRoot = true;
 
                 if (parts.length > 0) {
-                    let modName = rapi_helpers.cleanupString(parts[0]);
+                    let modName = rapi_helpers.normalizeString(rapi_helpers.cleanupString(parts[0]));
                     if (!rapi_helpers.isEmptyString(modName)) {
                         isRoot = false;
 
