@@ -12,8 +12,9 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
          * [Users](#users-)
          * [HTTPs](#https-)
    * [Build-in endpoints](#build-in-endpoints-)
-         * [Workspace](#workspace-)
+         * [Commands](#commands-)
          * [Editor](#editor-)
+         * [Workspace](#workspace-)
    * [Custom endpoints](#custom-endpoints-)
    * [Commands](#commands-)
 
@@ -98,6 +99,98 @@ For secure access, you can define a SSL certificate:
 
 ### Build-in endpoints [[&uarr;](#how-to-use-)]
 
+#### Commands [[&uarr;](#build-in-endpoints-)]
+
+##### [GET] /api/commands
+
+Gets the list of all commands.
+
+Possible result:
+
+```json
+{
+    "code": 0,
+    "data": [
+        // ...
+        
+        {
+            "name": "editor.action.selectAll",
+            "path": "/api/commands/editor.action.selectAll"
+        },
+        {
+            "name": "editor.action.selectAllMatches",
+            "path": "/api/commands/editor.action.selectAllMatches"
+        },
+        {
+            "name": "editor.action.selectHighlights",
+            "path": "/api/commands/editor.action.selectHighlights"
+        },
+        
+        // ...
+    ]
+}
+```
+
+[canExecute](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.account.html#canexecute) property must be set to `(true)` for an user or guest in the [settings](#settings-), otherwise a `404` response is returned.
+
+##### [POST] /api/commands/{commandId}
+
+Executes a command.
+
+```
+POST /api/commands/editor.action.selectAll
+```
+
+If the command requires arguments, you can submit them as JSON array in the request body:
+
+```
+POST /api/commands/myCommand
+
+[
+    'argument1',
+    2,
+    true,
+    4.5
+    null,
+    undefined,
+    false
+]
+```
+
+[canExecute](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.account.html#canexecute) property must be set to `(true)` for an user or guest in the [settings](#settings-), otherwise a `404` response is returned.
+
+#### Editor [[&uarr;](#build-in-endpoints-)]
+
+##### [GET] /api/editor
+
+Returns information about the active text editor:
+
+```
+GET /api/editor
+```
+
+Possible result:
+
+```json
+{
+    "code": 0,
+    "data": {
+        "content": "<html>\r\n    \r\nHello, guys!\r\n\r\nThis file is currently edited!\r\n\r\n</html>",
+        "file": {
+            "mime": "text/html",
+            "name": "test.html",
+            "path": "/api/workspace/test.html"
+        },
+        "isDirty": true,
+        "isUntitled": false,
+        "lang": "html",
+        "lines": 7
+    }
+}
+```
+
+If no editor is currently opened, a `404` response will be returned.
+
 #### Workspace [[&uarr;](#build-in-endpoints-)]
 
 ##### [GET] /api/workspace{/path}
@@ -181,38 +274,6 @@ POST /api/workspace/test.html
 ```
 
 ![Demo Open file in editor](https://raw.githubusercontent.com/mkloubert/vs-rest-api/master/demos/demo1.gif)
-
-#### Editor [[&uarr;](#build-in-endpoints-)]
-
-##### [GET] /api/editor
-
-Returns information about the active text editor:
-
-```
-GET /api/editor
-```
-
-Possible result:
-
-```json
-{
-    "code": 0,
-    "data": {
-        "content": "<html>\r\n    \r\nHello, guys!\r\n\r\nThis file is currently edited!\r\n\r\n</html>",
-        "file": {
-            "mime": "text/html",
-            "name": "test.html",
-            "path": "/api/workspace/test.html"
-        },
-        "isDirty": true,
-        "isUntitled": false,
-        "lang": "html",
-        "lines": 7
-    }
-}
-```
-
-If no editor is currently opened, a `404` response will be returned.
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]
 

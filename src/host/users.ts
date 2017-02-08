@@ -31,9 +31,9 @@ import * as vscode from 'vscode';
 
 
 /**
- * Name of a variable that defines if an user can see live updates or not.
+ * Name of a variable that defines if an user can execute commands or not.
  */
-export const VAR_CAN_SEE_LIVE_UPDATES = 'can_see_live_updates';
+export const VAR_CAN_EXECUTE = 'can_execute';
 /**
  * Name of a variable that stores the cache for visible files.
  */
@@ -340,12 +340,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User
 
     // apply default values
     if (result) {
-        let canSeeLiveUpdates = true;
-        if (ctx.config.liveUpdate) {
-            canSeeLiveUpdates = rapi_helpers.toBooleanSafe(ctx.config.liveUpdate.isActive, true);
-        }
-
-        result.set(VAR_CAN_SEE_LIVE_UPDATES, canSeeLiveUpdates);
+        // can execute commands?
+        result.set(VAR_CAN_EXECUTE, rapi_helpers.toBooleanSafe(result.account.canExecute));
     }
 
     return result;

@@ -25,12 +25,23 @@
 
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
+import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
 
+// [GET] /commands
 export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+    let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
+
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        if (!canExecute) {
+            args.sendNotFound();
+            
+            completed();
+            return;
+        }
         
         vscode.commands.getCommands(false).then((commands) => {
             args.response.data = commands.map(x => {
@@ -54,7 +65,10 @@ export function get(args: rapi_contracts.ApiMethodArguments): Promise<any> {
     });
 }
 
+// [POST] /commands/{commandId}
 export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
+    let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
+    
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
@@ -64,41 +78,67 @@ export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
             completed();
         };
 
+        if (!canExecute) {
+            notFound();
+            return;
+        }
+
         vscode.commands.getCommands(false).then((commands) => {
-            let parts = args.path.split('/');
+            let path = args.path;
+            let firstSep = path.indexOf('/');
 
             let commandToExecute: string;
-            if (parts.length > 1) {
-                commandToExecute = rapi_helpers.normalizeString(parts[1]);
+            if (firstSep > -1) {
+                commandToExecute = rapi_helpers.normalizeString(path.substring(firstSep + 1));
             }
 
             if (commandToExecute) {
-                let knownCommand: string;
+                // find machting commands
+                let knownCommands: string[] = [];
                 for (let i = 0; i < commands.length; i++) {
                     let kc = commands[i];
 
                     if (rapi_helpers.normalizeString(kc) == commandToExecute) {
-                        knownCommand = kc;
+                        knownCommands.push(kc);
                         break;
                     }
                 }
 
-                if (knownCommand) {
+                if (knownCommands.length) {
+                    // try read arguments from body
                     args.getJSON<any>().then((body) => {
                         let cmdArgs: any[];
                         if (body) {
                             cmdArgs = rapi_helpers.asArray<Object | Object[]>(body);
                         }
+                        cmdArgs = cmdArgs || [];
 
                         try {
-                            vscode.commands
-                                  .executeCommand
-                                  .apply(null, [ knownCommand ].concat(cmdArgs))
-                                  .then(() => {
-                                            completed();
-                                        }, (err) => {
-                                            completed(err);
-                                        });
+                            let nextCommand: () => void;
+                            nextCommand = () => {
+                                if (knownCommands.length < 1) {
+                                    completed();
+                                    return;
+                                }
+
+                                try {
+                                    let kc = knownCommands.shift();
+
+                                    vscode.commands
+                                          .executeCommand
+                                          .apply(null, [ kc ].concat(cmdArgs))
+                                          .then(() => {
+                                                    nextCommand();
+                                                }, (err) => {
+                                                    completed(err);
+                                                });
+                                }
+                                catch (e) {
+                                    completed(e);
+                                }
+                            };
+
+                            nextCommand();
                         }
                         catch (e) {
                             completed(e);
@@ -108,11 +148,14 @@ export function post(args: rapi_contracts.ApiMethodArguments): Promise<any> {
                     });
                 }
                 else {
-                    notFound();
+                    notFound();  // no matching command(s) found
                 }
             }
             else {
-                notFound();
+                // no command defined
+
+                args.statusCode = 400;
+                completed();
             }
         }, (err) => {
             completed(err);

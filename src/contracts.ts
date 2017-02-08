@@ -40,6 +40,10 @@ export interface Account {
     __globals: { [action: string]: any };
 
     /**
+     * Defines if account is able to execute commands or not.
+     */
+    canExecute?: boolean;
+    /**
      * One or more glob patterns with files to exclude.
      */
     exclude?: string | string[];
@@ -227,15 +231,6 @@ export interface Configuration {
      * The custom language to use.
      */
     lang?: string;
-    /**
-     * Settings for live file content updates.
-     */
-    liveUpdate?: {
-        /**
-         * Is active or not.
-         */
-        isActive?: boolean;
-    },
     /**
      * Indicates if the root endpoint should be opened in browser after host has been started or not.
      */

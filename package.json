@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -98,6 +98,11 @@
                   "description": "Settings for the guest account.",
                   "type": "object",
                   "properties": {
+                    "canExecute": {
+                      "description": "Defines if guest can execute commands or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "exclude": {
                       "description": "Defines one or more glob patterns with files to exclude.",
                       "oneOf": [
@@ -136,7 +141,7 @@
                       ]
                     },
                     "isActive": {
-                      "description": "Defines if user guest should be activated or not.",
+                      "description": "Defines if guest account should be activated or not.",
                       "type": "boolean",
                       "default": true
                     }
@@ -147,17 +152,6 @@
             "lang": {
               "description": "The custom language to use.",
               "type": "string"
-            },
-            "liveUpdate": {
-              "description": "Live update settings.",
-              "type": "object",
-              "properties": {
-                "isActive": {
-                  "description": "Is live update active or not.",
-                  "type": "boolean",
-                  "default": true
-                }
-              }
             },
             "openInBrowser": {
               "type": "boolean",
@@ -213,6 +207,11 @@
                   "description": "The configuration of the user.",
                   "type": "object",
                   "properties": {
+                    "canExecute": {
+                      "description": "Defines if user can execute commands or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "exclude": {
                       "description": "Defines one or more glob patterns with files to exclude.",
                       "oneOf": [
@@ -274,6 +273,11 @@
                   "type": "array",
                   "items": {
                     "properties": {
+                      "canExecute": {
+                        "description": "Defines if user can execute commands or not.",
+                        "type": "boolean",
+                        "default": false
+                      },
                       "exclude": {
                         "description": "Defines one or more glob patterns with files to exclude.",
                         "oneOf": [
