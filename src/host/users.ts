@@ -114,12 +114,17 @@ class User implements rapi_contracts.User {
                 }
 
                 let parentDir = dir + '/..';
-                parentDir = normalizePath(parentDir);
+                try {
+                    parentDir = normalizePath(parentDir);
+                }
+                catch (e) {
+                    parentDir = dir;
+                }
 
                 dir = normalizePath(dir);
                 let dirName = Path.basename(dir);
 
-                let checkDirectory = () => {
+                let checkThisDirectory = () => {
                     FS.lstat(dir, (err, stats) => {
                         if (err) {
                             completed(err);
@@ -141,12 +146,12 @@ class User implements rapi_contracts.User {
 
                 // check parent directory
                 if (rapi_helpers.normalizeString(dir) == parentDir) {
-                    checkDirectory();
+                    checkThisDirectory();
                 }
                 else {
                     me.isDirVisible(parentDir, withDot).then((isDirectoryVisible) => {
                         if (isDirectoryVisible) {
-                            checkDirectory();
+                            checkThisDirectory();
                         }
                         else {
                             completed(null, false);
