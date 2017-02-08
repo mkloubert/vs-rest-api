@@ -323,6 +323,17 @@ exports.foo = function(args) {
 exports.delete = function(args) {
     return new Promise(function(resolve, reject) {
         // for async executions
+        
+        try {
+            // ...
+        
+            resolve();  // MUST be called at the end
+                        // on SUCCESS
+        }
+        catch (e) {
+            reject(e);  // MUST be called at the end
+                        // on ERROR
+        }
     });
 }
 
