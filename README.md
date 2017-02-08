@@ -16,7 +16,7 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
          * [Editor](#editor-)
          * [Workspace](#workspace-)
    * [Custom endpoints](#custom-endpoints-)
-   * [Commands](#commands-)
+   * [Commands](#commands--1)
 
 ## Install [[&uarr;](#table-of-contents)]
 
