@@ -30,7 +30,7 @@ import * as vscode from 'vscode';
 
 
 // [GET] /commands
-export function get(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
 
     return new Promise<any>((resolve, reject) => {
@@ -66,7 +66,7 @@ export function get(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 }
 
 // [POST] /commands/{commandId}
-export function post(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
     
     return new Promise<any>((resolve, reject) => {
@@ -122,11 +122,9 @@ export function post(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                                 }
 
                                 try {
-                                    let kc = knownCommands.shift();
-
                                     vscode.commands
                                           .executeCommand
-                                          .apply(null, [ kc ].concat(cmdArgs))
+                                          .apply(null, [ knownCommands.shift() ].concat(cmdArgs))
                                           .then(() => {
                                                     nextCommand();
                                                 }, (err) => {

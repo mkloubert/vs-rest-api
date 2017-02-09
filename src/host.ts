@@ -178,6 +178,14 @@ export class ApiHost implements vscode.Disposable {
 
                     return this;
                 },
+                sendForbidden: function() {
+                    this.statusCode = 403;
+                    
+                    delete this.response;
+                    delete this.headers;
+
+                    return this;
+                },
                 sendMethodNotAllowed: function() {
                     this.statusCode = 405;
                     
@@ -313,8 +321,10 @@ export class ApiHost implements vscode.Disposable {
                             // search for function that
                             // has the same name as the HTTP request
                             // method
+
+                            let upperMethod = ctx.method.toUpperCase();
                             for (let p in mod) {
-                                if (p == ctx.method) {
+                                if (p == upperMethod) {
                                     if ('function' === typeof mod[p]) {
                                         method = mod[p];
                                     }

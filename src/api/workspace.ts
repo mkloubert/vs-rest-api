@@ -24,6 +24,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 import * as FS from 'fs';
+const FSExtra = require('fs-extra');
 import * as Path from 'path';
 import * as Moment from 'moment';
 import * as rapi_contracts from '../contracts';
@@ -54,6 +55,83 @@ interface FileSystemItem {
     name: string;
 }
 
+function deleteItem(args: rapi_contracts.ApiMethodArguments, fullPath: string): PromiseLike<any> {
+    let canDelete = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_DELETE);
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        let forbidden = () => {
+            args.sendForbidden();
+
+            completed();
+        };
+
+        let notFound = () => {
+            args.sendNotFound();
+
+            completed();
+        };
+
+        if (!canDelete) {
+            forbidden();
+            return;
+        }
+
+        try {
+            FS.exists(fullPath, (exists) => {
+                if (exists) {
+                    FS.stat(fullPath, (err, stats) => {
+                        if (err) {
+                            completed(err);
+                        }
+                        else {
+                            let deleteItem = () => {
+                                FSExtra.remove(fullPath, (err) => {
+                                    completed(err);
+                                });
+                            };
+
+                            if (stats.isDirectory()) {
+                                args.request.user.isDirVisible(fullPath, args.request.config.withDot).then((isVisible) => {
+                                    if (isVisible) {
+                                        deleteItem();
+                                    }
+                                    else {
+                                        notFound();  // not visible
+                                    }
+                                }, (err) => {
+                                    completed(err);
+                                });
+                            }
+                            else if (stats.isFile()) {
+                                args.request.user.isFileVisible(fullPath, args.request.config.withDot).then((isVisible) => {
+                                    if (isVisible) {
+                                        deleteItem();
+                                    }
+                                    else {
+                                        notFound();  // not visible
+                                    }
+                                }, (err) => {
+                                    completed(err);
+                                });
+                            }
+                            else {
+                                notFound();
+                            }
+                        }
+                    });
+                }
+                else {
+                    notFound();
+                }
+            });         
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
 
 function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): PromiseLike<any> {
     let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
@@ -84,41 +162,15 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                         files: [],
                     };
 
-                    let toDateTime = (x: Date) => {
-                        if (!x) {
-                            return;
-                        }
-
-                        return Moment(x).utc().toISOString();
-                    };
-
-                    let normalizePath = (p: string): string => {
-                        p = rapi_helpers.toStringSafe(p);
-
-                        if (!p) {
-                            return p;
-                        }
-
-                        p = rapi_helpers.replaceAllStrings(p, "\\", '/');
-                        p = rapi_helpers.replaceAllStrings(p, Path.sep, '/');
-
-                        return p;
-                    };
-
                     let relativePath = rapi_helpers.toRelativePath(dir);
 
                     dirs.forEach((x) => {
-                        list.dirs.push({
-                            creationTime: toDateTime(x.birthtime),
-                            lastChangeTime: toDateTime(x.ctime),
-                            lastModifiedTime: toDateTime(x.mtime),
-                            name: x.name,
-                            path: '/api/workspace' + normalizePath(<any>relativePath).split('/')
-                                                                                     .concat([ x.name ])
-                                                                                     .map(x => encodeURIComponent(x))
-                                                                                     .join('/'),
-                            type: 'dir',
-                        });
+                        let dirPath = normalizePath(<any>relativePath).split('/')
+                                                                      .concat([ x.name ])
+                                                                      .map(x => encodeURIComponent(x))
+                                                                      .join('/');
+
+                        list.dirs.push(toDirectory(x, dirPath));
                     });
 
                     files.forEach((x) => {
@@ -127,21 +179,7 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
                                                                        .map(x => encodeURIComponent(x))
                                                                        .join('/');
 
-                        let newFileItem = {
-                            creationTime: toDateTime(x.birthtime),
-                            lastChangeTime: toDateTime(x.ctime),
-                            lastModifiedTime: toDateTime(x.mtime),
-                            mime: x.mime,
-                            name: x.name,
-                            path: '/api/workspace' + filePath,
-                            type: 'file',
-                        };
-
-                        if (canOpen) {
-                            newFileItem['openPath'] = '/api/editor' + filePath;
-                        }
-
-                        list.files.push(newFileItem);
+                        list.files.push(toFile(x, canOpen, filePath));
                     });
 
                     let parentDir = Path.resolve(dir, '..');
@@ -261,6 +299,17 @@ function handleFile(args: rapi_contracts.ApiMethodArguments, file: string): Prom
     });
 }
 
+function normalizePath(p: string) {
+    p = rapi_helpers.toStringSafe(p);
+    if (!p) {
+        return p;
+    }
+
+    p = rapi_helpers.replaceAllStrings(p, "\\", '/');
+    p = rapi_helpers.replaceAllStrings(p, Path.sep, '/');
+
+    return p;
+}
 
 //    /api/workspace
 function request(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
@@ -295,6 +344,25 @@ function request(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
             if (false === relativePath) {
                 notFound();
                 return;
+            }
+
+            switch (args.request.method) {
+                case 'delete':
+                    deleteItem(args, fullPath).then(() => {
+                        completed();
+                    }, (err) => {
+                        completed(err);
+                    });
+                    return;
+
+                case 'post':
+                case 'put':
+                    writeFile(args, fullPath).then(() => {
+                        completed();
+                    }, (err) => {
+                        completed(err);
+                    });
+                    return;
             }
 
             FS.exists(fullPath, (exists) => {
@@ -366,4 +434,188 @@ function request(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     });
 }
 
-export const get = request;
+function toISODateString(dt: Date): string {
+    if (!dt) {
+        return;
+    }
+
+    return Moment(dt).utc().toISOString();
+}
+
+function toDirectory(dirItem: DirectoryItem, dirPath: string): rapi_contracts.Directory {
+    if (!dirItem) {
+        return;
+    }
+
+    let newDirItem: rapi_contracts.Directory = {
+        creationTime: toISODateString(dirItem.birthtime),
+        lastChangeTime: toISODateString(dirItem.ctime),
+        lastModifiedTime: toISODateString(dirItem.mtime),
+        name: dirItem.name,
+        path: '/api/workspace' + dirPath,
+        type: 'dir',
+    };
+
+    return newDirItem;
+}
+
+function toFile(fileItem: FileItem, canOpen: boolean, filePath: string): rapi_contracts.File {
+    if (!fileItem) {
+        return;
+    }
+
+    let newFileItem: rapi_contracts.File = {
+        creationTime: toISODateString(fileItem.birthtime),
+        lastChangeTime: toISODateString(fileItem.ctime),
+        lastModifiedTime: toISODateString(fileItem.mtime),
+        mime: fileItem.mime,
+        name: fileItem.name,
+        path: '/api/workspace' + filePath,
+        size: fileItem.size,
+        type: 'file',
+    };
+
+    if (canOpen) {
+        newFileItem.openPath = '/api/editor' + filePath;
+    }
+
+    return newFileItem;
+}
+
+function writeFile(args: rapi_contracts.ApiMethodArguments,
+                   fullPath: string): PromiseLike<any> {
+    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        let forbidden = () => {
+            args.sendForbidden();
+            completed();
+        };
+
+        if (!canWrite) {
+            forbidden();
+            return;
+        }
+        
+        try {
+            let writeBodyToFile = () => {
+                try {
+                    let dir = Path.dirname(fullPath);
+                    let relativePath = rapi_helpers.toRelativePath(dir);
+                    if (false === relativePath) {
+                        forbidden();
+                        return;
+                    }
+
+                    let fileName = Path.basename(fullPath);
+
+                    let filePath = normalizePath(<any>relativePath).split('/')
+                                                                   .concat([ fileName ])
+                                                                   .map(x => encodeURIComponent(x))
+                                                                   .join('/');
+
+                    let writeBody = () => {
+                        //TODO check for file visibility even if file does not exist
+
+                        rapi_helpers.readHttpBody(args.request.request).then((data) => {
+                            FS.writeFile(fullPath, data || Buffer.alloc(0), (err) => {
+                                if (err) {
+                                    completed(err);
+                                }
+                                else {
+                                    FS.stat(fullPath, (err, stats) => {
+                                        if (!err) {
+                                            args.response.data = toFile({
+                                                birthtime: stats.birthtime,
+                                                ctime: stats.ctime,
+                                                fullPath: fullPath,
+                                                mime: rapi_helpers.detectMimeByFilename(fileName),
+                                                mtime: stats.mtime,
+                                                name: fileName,
+                                                size: stats.size,
+                                            }, canOpen, filePath); 
+                                        }
+
+                                        completed(err);
+                                    });
+                                }
+                            });
+                        }, (err) => {
+                            completed(err);
+                        });
+                    };
+
+                    let checkForFile = () => {
+                        FS.exists(fullPath, (exists) => {
+                            if (exists) {
+                                FS.stat(fullPath, (err, stats) => {
+                                    if (err) {
+                                        completed(err);
+                                    }
+                                    else {
+                                        if (stats.isFile()) {
+                                            writeBody();
+                                        }
+                                        else {
+                                            forbidden();  // only files
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                writeBody();
+                            }
+                        });
+                    };
+
+                    FS.exists(dir, (exists) => {
+                        if (exists) {
+                            checkForFile();
+                        }
+                        else {
+                            FSExtra.ensureDir(dir, (err) => {
+                                if (err) {
+                                    completed(err);
+                                }
+                                else {
+                                    checkForFile();
+                                }
+                            });
+                        }
+                    });
+                }
+                catch (e) {
+                    completed(e);
+                }
+            };
+
+            if ('put' == args.request.method) {
+                writeBodyToFile();
+            }
+            else {
+                // POST
+
+                FS.exists(fullPath, (exists) => {
+                    if (exists) {
+                        forbidden();  // do not overwrite existing files
+                    }
+                    else {
+                        writeBodyToFile();
+                    }
+                });
+            }
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
+
+export const DELETE = request;
+export const GET = request;
+export const POST = request;
+export const PUT = request;

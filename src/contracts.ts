@@ -40,13 +40,21 @@ export interface Account {
     __globals: { [action: string]: any };
 
     /**
-     * Defines if account is able to open an editor tab in VS Code or not.
+     * Defines if account is able to delete files or folders.
      */
-    canOpen?: boolean;
+    canDelete?: boolean;
     /**
      * Defines if account is able to execute commands or not.
      */
     canExecute?: boolean;
+    /**
+     * Defines if account is able to open an editor tab in VS Code or not.
+     */
+    canOpen?: boolean;
+    /**
+     * Defines if account has write access or not.
+     */
+    canWrite?: boolean;
     /**
      * One or more glob patterns with files to exclude.
      */
@@ -154,6 +162,12 @@ export interface ApiMethodArguments extends ScriptArguments {
      * @chainable
      */
     readonly sendError: (err: any) => ApiMethodArguments;
+    /**
+     * Sets up the response for a 403 HTTP response.
+     * 
+     * @chainable
+     */
+    readonly sendForbidden: () => ApiMethodArguments;
     /**
      * Sets up the response for a 405 HTTP response.
      * 
@@ -305,6 +319,64 @@ export interface Configuration {
      * Show (directories) with leading '.' character or not.
      */
     withDot?: boolean;
+}
+
+/**
+ * A directory.
+ */
+export interface Directory extends FileSystemItem {
+    /**
+     * The type.
+     */
+    type: "dir";
+}
+
+/**
+ * A file.
+ */
+export interface File extends FileSystemItem {
+    /**
+     * The MIME type.
+     */
+    mime: string;
+    /**
+     * The API endpoint to open the file in editor.
+     */
+    openPath?: string;
+    /**
+     * The size.
+     */
+    size: number;
+    /**
+     * The type.
+     */
+    type: "file";
+}
+
+/**
+ * A file system item.
+ */
+export interface FileSystemItem {
+    /**
+     * The UTC time the item was created (ISO format).
+     */
+    creationTime: string;
+    /**
+     * The UTC time the item was changed (ISO format).
+     */
+    lastChangeTime: string;
+    /**
+     * The UTC time the item was modified (ISO format).
+     */
+    lastModifiedTime: string;
+    /**
+     * The name of the item.
+     */
+    name: string;
+    /**
+     * The API endpoint to the item.
+     */
+    path: string;
 }
 
 /**

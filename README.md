@@ -298,7 +298,7 @@ Define one ore more regular expressions in your [settings](#settings-) and the s
 }
 ```
 
-The `./my-endpoint.js` must contain a public function with the name of the current HTTP request method (lower case).
+The `./my-endpoint.js` must contain a public function with the name of the current HTTP request method (upper case).
 
 For example if you want to make a simple `GET` request
 
@@ -309,7 +309,7 @@ GET /api/myendpoint
 your script should look like this:
 
 ```javascript
-exports.get = function(args) {
+exports.GET = function(args) {
     // access VS Code API (s. https://code.visualstudio.com/Docs/extensionAPI/vscode-api)
     var vscode = require('vscode');
     
@@ -378,12 +378,12 @@ You are also able to define functions for other request methods, like `POST` or 
 
 ```javascript
 // [FOO]  /api/myendpoint
-exports.foo = function(args) {
+exports.FOO = function(args) {
     // for custom request methods
 }
 
 // [DELETE]  /api/myendpoint
-exports.delete = function(args) {
+exports.DELETE = function(args) {
     return new Promise(function(resolve, reject) {
         // for async executions
         
@@ -401,7 +401,7 @@ exports.delete = function(args) {
 }
 
 // [POST]  /api/myendpoint
-exports.post = function(args) {
+exports.POST = function(args) {
     // no (promise) result means: sync execution
 }
 ```

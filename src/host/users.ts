@@ -32,6 +32,10 @@ import * as vscode from 'vscode';
 
 
 /**
+ * Name of a variable that defines if an user the right to delete items or not.
+ */
+export const VAR_CAN_DELETE = 'can_delete';
+/**
  * Name of a variable that defines if an user can execute commands or not.
  */
 export const VAR_CAN_EXECUTE = 'can_execute';
@@ -39,6 +43,10 @@ export const VAR_CAN_EXECUTE = 'can_execute';
  * Name of a variable that defines if an user can open an editor tab or not.
  */
 export const VAR_CAN_OPEN = 'can_open';
+/**
+ * Name of a variable that defines if an user has write access or not.
+ */
+export const VAR_CAN_WRITE = 'can_write';
 /**
  * Name of a variable that defines if an user can see directories with leading dots or not.
  */
@@ -404,10 +412,14 @@ export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User
 
     // apply default values
     if (result) {
+        // can delete files and folders?
+        result.set(VAR_CAN_DELETE, rapi_helpers.toBooleanSafe(result.account.canDelete));
         // can execute commands?
         result.set(VAR_CAN_EXECUTE, rapi_helpers.toBooleanSafe(result.account.canExecute));
         // can open tabs in editor?
         result.set(VAR_CAN_OPEN, rapi_helpers.toBooleanSafe(result.account.canOpen));
+        // can write (files)?
+        result.set(VAR_CAN_WRITE, rapi_helpers.toBooleanSafe(result.account.canWrite));
     }
 
     return result;

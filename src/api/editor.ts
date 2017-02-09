@@ -122,7 +122,7 @@ function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): Promi
 }
 
 // [GET] /editor
-export function get(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
@@ -159,7 +159,7 @@ export function get(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 }
 
 // [POST] /editor[/{file}]
-export function post(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
 
     return new Promise<any>((resolve, reject) => {
