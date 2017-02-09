@@ -313,7 +313,7 @@ exports.GET = function(args) {
     // access VS Code API (s. https://code.visualstudio.com/Docs/extensionAPI/vscode-api)
     var vscode = require('vscode');
     
-    // access NodeJS API provided by VS Code
+    // access Node.js API provided by VS Code
     // s.  (s. https://nodejs.org/api/)
     var fs = require('fs');
     
@@ -374,14 +374,9 @@ The `args` parameter of the function uses the [ApiMethodArguments](https://mklou
 
 You can return a [Promise](https://github.com/Microsoft/vscode-extension-vscode/blob/master/thenable.d.ts) for async executions or nothing for sync executions (as in this example).
 
-You are also able to define functions for other request methods, like `POST` or `DELETE`:
+You are also able to define functions for other request methods, like `POST` or `DELETE`, which are supported by [http](https://nodejs.org/api/http.html) / [https](https://nodejs.org/api/https.html) modules of [Node.js](https://nodejs.org/api/):
 
 ```javascript
-// [FOO]  /api/myendpoint
-exports.FOO = function(args) {
-    // for custom request methods
-}
-
 // [DELETE]  /api/myendpoint
 exports.DELETE = function(args) {
     return new Promise(function(resolve, reject) {
