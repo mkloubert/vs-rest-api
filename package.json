@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -100,6 +100,11 @@
                   "description": "Settings for the guest account.",
                   "type": "object",
                   "properties": {
+                    "canClose": {
+                      "description": "Defines if guest is able to close editor tabs or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "canDelete": {
                       "description": "Defines if guest is able to delete files or folders.",
                       "type": "boolean",
@@ -229,6 +234,11 @@
                   "description": "The configuration of the user.",
                   "type": "object",
                   "properties": {
+                    "canClose": {
+                      "description": "Defines if user is able to close editor tabs or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "canDelete": {
                       "description": "Defines if user is able to delete files or folders.",
                       "type": "boolean",
@@ -315,6 +325,11 @@
                   "type": "array",
                   "items": {
                     "properties": {
+                      "canClose": {
+                        "description": "Defines if user is able to close editor tabs or not.",
+                        "type": "boolean",
+                        "default": false
+                      },
                       "canDelete": {
                         "description": "Defines if user is able to delete files or folders.",
                         "type": "boolean",

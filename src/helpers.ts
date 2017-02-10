@@ -34,6 +34,7 @@ const MIME = require('mime');
 import * as Moment from 'moment';
 import * as Path from 'path';
 import * as rapi_contracts from './contracts';
+import * as rapi_host_users from './host/users';
 import * as vscode from 'vscode';
 import * as ZLib from 'zlib';
 
@@ -760,6 +761,141 @@ export function replaceAllStrings(str: string, searchValue: string, replaceValue
  */
 export function requireModule(id: string) {
     return require(toStringSafe(id));
+}
+
+/**
+ * Sets the content of a text editor.
+ * 
+ * @param {vscode.TextEditor} editor The text editor.
+ * @param {string} value The new value.
+ * 
+ * @param {PromiseLike<vscode.TextDocument>} The promise.
+ */
+export function setContentOfTextEditor(editor: vscode.TextEditor, value: string): PromiseLike<vscode.TextDocument> {
+    value = toStringSafe(value);
+    
+    return new Promise<any>((resolve, reject) => {
+        let completed = createSimplePromiseCompletedAction(resolve, reject);
+        
+        try {
+            editor.edit((builder) => {
+                try {
+                    let doc = editor.document;
+                    if (doc) {
+                        let r = new vscode.Range(new vscode.Position(0, 0),
+                                                 new vscode.Position(doc.lineCount, 0));
+
+                        builder.replace(r, value);
+                    }
+
+                    completed(null, editor.document);
+                }
+                catch (e) {
+                    completed(e);
+                }
+            });
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
+/**
+ * Converts a text document to a result object.
+ * 
+ * @param {vscode.TextDocument} doc The document to convert.
+ * @param {rapi_contracts.User} user The user that wants to access the document.
+ * 
+ * @returns {PromiseLike<Object|false>} The promise.
+ */
+export function textDocumentToObject(doc: vscode.TextDocument, user: rapi_contracts.User): PromiseLike<Object | false> {
+    return new Promise<Object>((resolve, reject) => {
+        let obj: Object | false;
+        let completed = (err?: any) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(obj);
+            }
+        };
+
+        try {
+            if (doc) {
+                let fileName = doc.fileName;
+                let filePath: string;
+                let fullPath = fileName;
+                let openPath: string;
+                let mime: string;
+                let createObjectAndReturn = () => {
+                    obj = {
+                        content: doc.getText(),
+                        file: {
+                            mime: mime,
+                            name: fileName,
+                            path: filePath,
+                        },
+                        isDirty: doc.isDirty,
+                        isUntitled: doc.isUntitled,
+                        lang: doc.languageId,
+                        lines: doc.lineCount,
+                        openPath: openPath,
+                    };
+
+                    completed();
+                };
+
+                if (doc.isUntitled) {
+                    createObjectAndReturn();
+                }
+                else {
+                    let relativePath = toRelativePath(fileName);
+                    fileName = Path.basename(fileName);
+                    mime = detectMimeByFilename(fullPath);
+
+                    if (false !== relativePath) {
+                        user.isFileVisible(fullPath, user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then((isVisible) => {
+                            if (isVisible) {
+                                filePath = toStringSafe(relativePath);
+                                filePath = replaceAllStrings(filePath, "\\", '/');
+                                filePath = replaceAllStrings(filePath, Path.sep, '/');
+
+                                let filePathSuffix = filePath.split('/')
+                                                             .map(x => encodeURIComponent(x))
+                                                             .join('/');
+
+                                filePath = '/api/workspace' + filePathSuffix;
+                                openPath = '/api/editor' + filePathSuffix;
+
+                                createObjectAndReturn();
+                            }
+                            else {
+                                // not visible
+
+                                obj = false;
+
+                                completed();
+                            }
+                        }, (err) => {
+                            completed(err);
+                        });
+                    }
+                    else {
+                        // do not submit path data of opened file
+                        // because it is not part of the workspace
+                        createObjectAndReturn();
+                    }
+                }
+            }
+            else {
+                completed();
+            }
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
 }
 
 /**

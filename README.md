@@ -12,9 +12,6 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
          * [Users](#users-)
          * [HTTPs](#https-)
    * [Build-in endpoints](#build-in-endpoints-)
-         * [Commands](#commands-)
-         * [Editor](#editor-)
-         * [Workspace](#workspace-)
    * [Custom endpoints](#custom-endpoints-)
    * [Commands](#commands--1)
 

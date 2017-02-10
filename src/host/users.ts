@@ -32,7 +32,11 @@ import * as vscode from 'vscode';
 
 
 /**
- * Name of a variable that defines if an user the right to delete items or not.
+ * Name of a variable that defines if an user has the right to close editor tabs or not.
+ */
+export const VAR_CAN_CLOSE = 'can_close';
+/**
+ * Name of a variable that defines if an user has the right to delete items or not.
  */
 export const VAR_CAN_DELETE = 'can_delete';
 /**
@@ -413,6 +417,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User
 
     // apply default values
     if (result) {
+        // can close?
+        result.set(VAR_CAN_CLOSE, rapi_helpers.toBooleanSafe(result.account.canClose));
         // can delete files and folders?
         result.set(VAR_CAN_DELETE, rapi_helpers.toBooleanSafe(result.account.canDelete));
         // can execute commands?

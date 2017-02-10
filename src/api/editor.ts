@@ -32,95 +32,6 @@ import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
 
-function docToObject(doc: vscode.TextDocument, user: rapi_contracts.User): PromiseLike<Object | false> {
-    return new Promise<Object>((resolve, reject) => {
-        let obj: Object | false;
-        let completed = (err?: any) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve(obj);
-            }
-        };
-
-        try {
-            if (doc) {
-                let fileName = doc.fileName;
-                let filePath: string;
-                let fullPath = fileName;
-                let openPath: string;
-                let mime: string;
-                let createObjectAndReturn = () => {
-                    obj = {
-                        content: doc.getText(),
-                        file: {
-                            mime: mime,
-                            name: fileName,
-                            path: filePath,
-                        },
-                        isDirty: doc.isDirty,
-                        isUntitled: doc.isUntitled,
-                        lang: doc.languageId,
-                        lines: doc.lineCount,
-                        openPath: openPath,
-                    };
-
-                    completed();
-                };
-
-                if (doc.isUntitled) {
-                    createObjectAndReturn();
-                }
-                else {
-                    let relativePath = rapi_helpers.toRelativePath(fileName);
-                    fileName = Path.basename(fileName);
-                    mime = rapi_helpers.detectMimeByFilename(fullPath);
-
-                    if (false !== relativePath) {
-                        user.isFileVisible(fullPath, user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then((isVisible) => {
-                            if (isVisible) {
-                                filePath = rapi_helpers.toStringSafe(relativePath);
-                                filePath = rapi_helpers.replaceAllStrings(filePath, "\\", '/');
-                                filePath = rapi_helpers.replaceAllStrings(filePath, Path.sep, '/');
-
-                                let filePathSuffix = filePath.split('/')
-                                                             .map(x => encodeURIComponent(x))
-                                                             .join('/');
-
-                                filePath = '/api/workspace' + filePathSuffix;
-                                openPath = '/api/editor' + filePathSuffix;
-
-                                createObjectAndReturn();
-                            }
-                            else {
-                                // not visible
-
-                                obj = false;
-
-                                completed();
-                            }
-                        }, (err) => {
-                            completed(err);
-                        });
-                    }
-                    else {
-                        // do not submit path data of opened file
-                        // because it is not part of the workspace
-                        createObjectAndReturn();
-                    }
-                }
-            }
-            else {
-                completed();
-            }
-        }
-        catch (e) {
-            completed(e);
-        }
-    });
-}
-
 // [GET] /editor
 export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
@@ -134,7 +45,7 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
                 doc = editor.document;
             }
 
-            docToObject(doc, args.request.user).then((obj) => {
+            rapi_helpers.textDocumentToObject(doc, args.request.user).then((obj) => {
                 try {
                     if (obj) {
                         args.response.data = obj;
@@ -196,7 +107,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                     };
 
                     vscode.window.showTextDocument(doc).then(() => {
-                        docToObject(doc, args.request.user).then((obj) => {
+                        rapi_helpers.textDocumentToObject(doc, args.request.user).then((obj) => {
                             args.response.data = obj;
 
                             returnDoc();
