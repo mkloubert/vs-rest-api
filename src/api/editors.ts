@@ -46,7 +46,7 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
         }
 
         try {
-            let editor = getEditorById(args);
+            let editor: any = getEditorById(args);
 
             if (editor) {
                 // DEPRECATED

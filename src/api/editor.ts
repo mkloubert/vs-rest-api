@@ -48,15 +48,18 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
         try {
             let editor = vscode.window.activeTextEditor;
             if (editor) {
-                // DEPRECATED
-                editor.hide();
+                vscode.commands.executeCommand('workbench.action.closeActiveEditor').then(() => {
+                    completed();
+                }, (err) => {
+                    completed(err);
+                });
             }
             else {
                 // no (matching) tab found
                 args.sendNotFound();
-            }
 
-            completed();
+                completed();
+            }
         }
         catch (e) {
             completed(e);
