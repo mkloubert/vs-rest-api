@@ -36,6 +36,7 @@ import * as rapi_helpers from './helpers';
 import * as rapi_host_dirs from './host/dirs';
 import * as rapi_host_files from './host/files';
 import * as rapi_host_helpers from './host/helpers';
+import * as rapi_host_users from './host/users';
 import * as rapi_users from './host/users';
 import * as URL from 'url';
 import * as vscode from 'vscode';
@@ -351,8 +352,110 @@ export class ApiHost implements vscode.Disposable {
                     method = (ac) => {
                         ac.response.data = {
                             addr: ctx.request.connection.remoteAddress,
+                            endpoints: {},
                             time: ctx.time.format('YYYY-MM-DD HH:mm:ss'),
                         };
+
+                        // endpoints
+                        {
+                            let endpoints: { [key: string]: any } = ac.response.data['endpoints'];
+
+                            // commands
+                            if (ac.request.user.get(rapi_host_users.VAR_CAN_EXECUTE)) {
+                                endpoints['commands'] = {
+                                    'get': '/api/commands',
+                                    'post': '/api/commands/{commandId}',
+                                };
+                            }
+
+                            // active editor
+                            {
+                                endpoints['active_editor'] = {
+                                    'get': '/api/editor',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_CLOSE)) {
+                                    endpoints['active_editor']['delete'] = '/api/editor';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_OPEN)) {
+                                    endpoints['active_editor']['post'] = '/api/editor(/{file})';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['active_editor']['patch'] = '/api/editor';
+                                    endpoints['active_editor']['put'] = '/api/editor';
+                                }
+                            }
+
+                            // open editor
+                            {
+                                endpoints['open_editors'] = {
+                                    'get': '/api/editors',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_CLOSE)) {
+                                    endpoints['open_editors']['delete'] = '/api/editors(/{id})';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_OPEN)) {
+                                    endpoints['open_editors']['post'] = '/api/editors(/{id})';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['open_editors']['patch'] = '/api/editors(/{id})';
+                                    endpoints['open_editors']['put'] = '/api/editors(/{id})';
+                                }
+                            }
+
+                            // extensions
+                            {
+                                endpoints['extensions'] = {
+                                    'get': '/api/extensions',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_ACTIVATE)) {
+                                    endpoints['extensions']['post'] = '/api/editors/{id}';
+                                }
+                            }
+
+                            // languages
+                            {
+                                endpoints['languages'] = {
+                                    'get': '/api/languages',
+                                };
+                            }
+
+                            // output channels
+                            {
+                                endpoints['outputs'] = {
+                                    'get': '/api/outputs',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
+                                    endpoints['outputs']['delete'] = '/api/outputs/{id}';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_CREATE)) {
+                                    endpoints['outputs']['post'] = '/api/outputs/{name}';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['outputs']['patch'] = '/api/outputs/{id}';
+                                    endpoints['outputs']['put'] = '/api/outputs/{id}';
+                                }
+                            }
+
+                            // workspace
+                            {
+                                endpoints['workspace'] = {
+                                    'get': '/api/workspace(/{path})',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
+                                    endpoints['workspace']['delete'] = '/api/workspace/{path}';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['workspace']['patch'] = '/api/workspace/{path}';
+                                    endpoints['workspace']['post'] = '/api/workspace/{path}';
+                                    endpoints['workspace']['put'] = '/api/workspace/{path}';
+                                }
+                            }
+                        }
 
                         if (!ctx.user.isGuest) {
                             ac.response.data.me = {

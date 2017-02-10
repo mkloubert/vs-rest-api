@@ -237,7 +237,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                 newChannel.show();
             }
             catch (e) {
-                args.response.code = 1;
+                args.response.code = 1;  // create, but not shown
             }
 
             completed();
