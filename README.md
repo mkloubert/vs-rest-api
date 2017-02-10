@@ -104,6 +104,7 @@ Visit the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#build-in-endpoint
 | [/api/editor](https://github.com/mkloubert/vs-rest-api/wiki#apieditor-) | Accesses resources of the active editor (tab).  |
 | [/api/editors](https://github.com/mkloubert/vs-rest-api/wiki#apieditors-) | Accesses resources of all opened editors.  |
 | [/api/extensions](https://github.com/mkloubert/vs-rest-api/wiki#apiextensions-) | Accesses resources of all known extensions.  |
+| [/api/outputs](https://github.com/mkloubert/vs-rest-api/wiki#apioutputs-) | Accesses resources of output channels handled by the extension.  |
 | [/api/workspace](https://github.com/mkloubert/vs-rest-api/wiki#apiworkspace-) | Accesses or manipulates resources, like files or folders, inside the current workspace.  |
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]

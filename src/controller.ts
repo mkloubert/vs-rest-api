@@ -166,16 +166,29 @@ export class Controller implements vscode.Disposable {
     public reloadConfiguration() {
         let me = this;
 
+        let oldWorkspaceState = this._workspaceState;
+        if (oldWorkspaceState) {
+            // dispose old output channels
+            let oldOutputChannels: vscode.OutputChannel[] = oldWorkspaceState['outputChannels'];
+            if (oldOutputChannels) {
+                oldOutputChannels.filter(x => x).forEach(x => {
+                    rapi_helpers.tryDispose(x);
+                });
+
+                delete oldWorkspaceState['outputChannels'];
+            }
+        }
+
         let cfg = <rapi_contracts.Configuration>vscode.workspace.getConfiguration("rest.api");
-        me._workspaceState = {};
+        me._workspaceState = {
+            outputChannels: [],
+        };
 
         let nextSteps = (err?: any) => {
             if (err) {
                 vscode.window.showErrorMessage(`Could not load language: ${rapi_helpers.toStringSafe(err)}`);
                 return;
             }
-
-            let t = i18.t('__test');
 
             me._config = cfg;
 

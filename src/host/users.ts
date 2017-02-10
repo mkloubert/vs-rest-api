@@ -40,6 +40,10 @@ export const VAR_CAN_ACTIVATE = 'can_activate';
  */
 export const VAR_CAN_CLOSE = 'can_close';
 /**
+ * Name of a variable that defines if an user has the right to create things like output channels or not or not.
+ */
+export const VAR_CAN_CREATE = 'can_create';
+/**
  * Name of a variable that defines if an user has the right to delete items or not.
  */
 export const VAR_CAN_DELETE = 'can_delete';
@@ -425,6 +429,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User
         result.set(VAR_CAN_ACTIVATE, rapi_helpers.toBooleanSafe(result.account.canActivate));
         // can close?
         result.set(VAR_CAN_CLOSE, rapi_helpers.toBooleanSafe(result.account.canClose));
+        // can create?
+        result.set(VAR_CAN_CREATE, rapi_helpers.toBooleanSafe(result.account.canCreate));
         // can delete files and folders?
         result.set(VAR_CAN_DELETE, rapi_helpers.toBooleanSafe(result.account.canDelete));
         // can execute commands?

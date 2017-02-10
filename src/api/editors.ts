@@ -271,7 +271,6 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
     });
 }
 
-
 // [PUT] /editors(/{id})
 export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);

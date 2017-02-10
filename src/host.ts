@@ -148,6 +148,7 @@ export class ApiHost implements vscode.Disposable {
                 headers: {
                     'Content-type': 'application/json; charset=utf-8',
                 },
+                outputChannel: me.controller.outputChannel,
                 path: parts.join('/'),
                 request: ctx,
                 require: function(id) {

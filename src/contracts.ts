@@ -48,6 +48,10 @@ export interface Account {
      */
     canClose?: boolean;
     /**
+     * Defines if account is able to create things like output channels or not.
+     */
+    canCreate?: boolean;
+    /**
      * Defines if account is able to delete files or folders.
      */
     canDelete?: boolean;
@@ -150,6 +154,10 @@ export interface ApiMethodArguments extends ScriptArguments {
      * Options for the execution.
      */
     options?: any;
+    /**
+     * The output channel that can be used.
+     */
+    outputChannel: vscode.OutputChannel;
     /**
      * The path.
      */
