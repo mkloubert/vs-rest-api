@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -203,8 +203,8 @@
               "oneOf": [
                 {
                   "type": "string",
-                  "description": "The path to the script that prepares an account (object).",
-                  "default": "./my-account-preparer.js"
+                  "description": "The path to the script that prepares an user (object).",
+                  "default": "./my-user-preparer.js"
                 },
                 {
                   "type": "object",
@@ -216,7 +216,7 @@
                     "script": {
                       "description": "The path to the script that prepares an account (object).",
                       "type": "string",
-                      "default": "./my-account-preparer.js"
+                      "default": "./my-user-preparer.js"
                     }
                   },
                   "required": [ "script" ]

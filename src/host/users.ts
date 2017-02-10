@@ -70,21 +70,18 @@ const DEFAULT_USER: rapi_contracts.Account = {
 
 
 class User implements rapi_contracts.User {
-    protected _account: rapi_contracts.Account;
+    protected readonly _ACCOUNT: rapi_contracts.Account;
     protected readonly _CONTEXT: rapi_contracts.RequestContext;
     protected readonly _IS_GUEST: boolean;
 
     constructor(ctx: rapi_contracts.RequestContext, account: rapi_contracts.Account, isGuest: boolean) {
-        this._account = account;
+        this._ACCOUNT = account;
         this._CONTEXT = ctx;
         this._IS_GUEST = rapi_helpers.toBooleanSafe(isGuest);
     }
 
     public get account(): rapi_contracts.Account {
-        return this._account;
-    }
-    public set account(newValue: rapi_contracts.Account) {
-        this._account = newValue;
+        return this._ACCOUNT;
     }
 
     public get context(): rapi_contracts.RequestContext {
@@ -347,7 +344,7 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
         try {
-            let result: User;
+            let result: rapi_contracts.User;
 
             let nextAction = () => {
                 completed(null, result);
@@ -459,38 +456,38 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                 }
 
                 if (!rapi_helpers.isNullOrUndefined(ctx.config.preparer)) {
-                    let accountPreparer: rapi_contracts.AccountPreparer;
+                    let userPreparer: rapi_contracts.UserPreparer;
                     if ('object' !== typeof ctx.config.preparer) {
                         let script = rapi_helpers.toStringSafe(ctx.config.preparer);
                         if (!rapi_helpers.isEmptyString(script)) {
-                            accountPreparer = {
+                            userPreparer = {
                                 script: script,
                             };
                         }
                     }
                     else {
-                        accountPreparer = ctx.config.preparer;
+                        userPreparer = ctx.config.preparer;
                     }
 
-                    if (accountPreparer) {
-                        let preparerScript = accountPreparer.script;
+                    if (userPreparer) {
+                        let preparerScript = userPreparer.script;
                         if (!Path.isAbsolute(preparerScript)) {
                             preparerScript = Path.join(vscode.workspace.rootPath, preparerScript);
                         }
                         preparerScript = Path.resolve(preparerScript);
 
-                        let preparerModule = rapi_helpers.loadModuleSync<rapi_contracts.AccountPreparerModule>(preparerScript);
+                        let preparerModule = rapi_helpers.loadModuleSync<rapi_contracts.UserPreparerModule>(preparerScript);
                         if (preparerModule) {
                             if (preparerModule.prepare) {
-                                let prepareArgs: rapi_contracts.AccountPreparerArguments = {
-                                    account: result.account,
+                                let prepareArgs: rapi_contracts.UserPreparerArguments = {
                                     globals: rapi_helpers.cloneObject(ctx.config.globals),
                                     globalState: undefined,
-                                    options: accountPreparer.options,
+                                    options: userPreparer.options,
                                     require: function(id) {
                                         return rapi_helpers.requireModule(id);
                                     },
                                     state: undefined,
+                                    user: result,
                                     workspaceState: undefined,
                                 };
 
@@ -525,8 +522,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                                 if (preparerResult) {
                                     nextAction = null;
 
-                                    preparerResult.then((account) => {
-                                        result.account = account || result.account;
+                                    preparerResult.then((user) => {
+                                        result = user || result;
 
                                         completed();
                                     }, (err) => {

@@ -90,49 +90,6 @@ export interface Account {
 }
 
 /**
- * Settings for preparing an account object.
- */
-export interface AccountPreparer {
-    /**
-     * The options for the execution.
-     */
-    options?: any;
-    /**
-     * The path to the script to execute.
-     */
-    script: string;
-}
-
-/**
- * Prepares an account.
- * 
- * @param {AccountPreparerArguments} args The arguments for the execution.
- * 
- * @returns {PromiseLike<Account>|void} The result.
- */
-export type AccountPreparerExecutor = (args: AccountPreparerArguments) => PromiseLike<Account> | void;
-
-/**
- * Arguments for a account preparer.
- */
-export interface AccountPreparerArguments extends ScriptArguments {
-    /**
-     * The account to prepare.
-     */
-    account: Account;
-}
-
-/**
- * A module for preparing accounts.
- */
-export interface AccountPreparerModule extends ScriptModule {
-    /**
-     * Prepares an account.
-     */
-    prepare: AccountPreparerExecutor;
-}
-
-/**
  * An API endpoint.
  */
 export interface ApiEndpoint {
@@ -323,7 +280,7 @@ export interface Configuration {
     /**
      * A script that prepares an account (object).
      */
-    preparer?: string | AccountPreparer;
+    preparer?: string | UserPreparer;
     /**
      * The name of the realm for the authentication.
      */
@@ -657,6 +614,49 @@ export interface UserAccount extends Account {
      * The password.
      */
     password: string;
+}
+
+/**
+ * Settings for preparing an user object.
+ */
+export interface UserPreparer {
+    /**
+     * The options for the execution.
+     */
+    options?: any;
+    /**
+     * The path to the script to execute.
+     */
+    script: string;
+}
+
+/**
+ * Prepares an user.
+ * 
+ * @param {UserPreparerArguments} args The arguments for the execution.
+ * 
+ * @returns {PromiseLike<User>|void} The result.
+ */
+export type UserPreparerExecutor = (args: UserPreparerArguments) => PromiseLike<User> | void;
+
+/**
+ * Arguments for a user preparer.
+ */
+export interface UserPreparerArguments extends ScriptArguments {
+    /**
+     * The user to prepare.
+     */
+    user: User;
+}
+
+/**
+ * A module for preparing user objects.
+ */
+export interface UserPreparerModule extends ScriptModule {
+    /**
+     * Prepares an user.
+     */
+    prepare: UserPreparerExecutor;
 }
 
 /**
