@@ -80,6 +80,10 @@ export interface Account {
      */
     isActive?: boolean;
     /**
+     * Custom values for the account.
+     */
+    values?: { [key: string]: any };
+    /**
      * Show (directories) with leading '.' character for the account or not.
      */
     withDot?: boolean;

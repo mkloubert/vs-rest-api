@@ -113,7 +113,7 @@ Detailed information can be found at the [wiki](https://github.com/mkloubert/vs-
 
 You can define custom endpoints that are executed via script.
 
-Define one ore more regular expressions in your [settings](#settings-) and the scripts that should be executed, if a patter matches:
+Define one ore more [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) in your [settings](#settings-) and the scripts that should be executed, if a pattern matches:
 
 ```json
 {

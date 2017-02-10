@@ -439,6 +439,13 @@ export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User
         result.set(VAR_CAN_OPEN, rapi_helpers.toBooleanSafe(result.account.canOpen));
         // can write (files)?
         result.set(VAR_CAN_WRITE, rapi_helpers.toBooleanSafe(result.account.canWrite));
+
+        // custom values
+        if (result.account.values) {
+            for (let p in result.account.values) {
+                result.set(p, result.account.values[p]);
+            }
+        }
     }
 
     return result;
