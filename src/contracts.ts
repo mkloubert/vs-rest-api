@@ -29,6 +29,10 @@ import * as rapi_host from './host';
 import * as URL from 'url';
 import * as vscode from 'vscode';
 
+/**
+ * Variable for saving a state.
+ */
+export const VAR_STATE = 'vsraState';
 
 /**
  * An account.
@@ -137,6 +141,10 @@ export interface ApiMethodArguments extends ScriptArguments {
      */
     encoding: string;
     /**
+     * The extension context.
+     */
+    readonly extension: vscode.ExtensionContext;
+    /**
      * Gets the body.
      * 
      * @returns {PromiseLike<Buffer>} The promise.
@@ -157,7 +165,7 @@ export interface ApiMethodArguments extends ScriptArguments {
     /**
      * The output channel that can be used.
      */
-    outputChannel: vscode.OutputChannel;
+    readonly outputChannel: vscode.OutputChannel;
     /**
      * The path.
      */
@@ -564,6 +572,48 @@ export interface ScriptArguments {
  * A script module.
  */
 export interface ScriptModule {
+}
+
+/**
+ * A state repository.
+ */
+export interface StateRepository {
+    /**
+     * An item for all accounts.
+     */
+    globals: StateRepositoryItem;
+    /**
+     * An item for the guest account.
+     */
+    guest: StateRepositoryItem;
+    /**
+     * The items for the user accounts.
+     */
+    users: { [name: string]: StateRepositoryItem };
+}
+
+/**
+ * A state repository item.
+ */
+export interface StateRepositoryItem {
+    /**
+     * Gets or sets a value by name.
+     */
+    [name: string]: any;
+}
+
+/**
+ * A state repository with an item.
+ */
+export interface StateRepositoryWithItem {
+    /**
+     * The item.
+     */
+    item: StateRepositoryItem;
+    /**
+     * The repository.
+     */
+    repository: StateRepository;
 }
 
 /**

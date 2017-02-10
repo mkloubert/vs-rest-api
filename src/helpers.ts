@@ -424,6 +424,32 @@ export function getHeaderValue(headers: any, key: string, defaultValue?: any): s
 }
 
 /**
+ * Returns the state repository item for a memento.
+ * 
+ * @param {vscode.Memento} memento The memento.
+ * @param {string} [varName] The name of the variable inside the memento.
+ * 
+ * @return {rapi_contracts.StateRepository} The item.
+ */
+export function getStateRepository(memento: vscode.Memento, varName = rapi_contracts.VAR_STATE): rapi_contracts.StateRepository {
+    if (!memento) {
+        return;
+    }
+
+    let repo = memento.get<rapi_contracts.StateRepository>(varName) || {
+        globals: {},
+        guest: {},
+        users: {},
+    };
+
+    for (let p in repo) {
+        repo[p] = repo[p] || {};
+    }
+
+    return repo;
+}
+
+/**
  * Checks if data is binary or text content.
  * 
  * @param {Buffer} data The data to check.

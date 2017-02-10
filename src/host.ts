@@ -138,6 +138,7 @@ export class ApiHost implements vscode.Disposable {
 
             let apiArgs: rapi_contracts.ApiMethodArguments = {
                 encoding: DEFAULT_ENCODING,
+                extension: me.controller.context,
                 getBody: function() {
                     return rapi_helpers.readHttpBody(this.request.request);
                 },
@@ -416,6 +417,20 @@ export class ApiHost implements vscode.Disposable {
                                 }
                             }
 
+                            // globals
+                            {
+                                endpoints['globals'] = {
+                                    'get': '/api/globals',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
+                                    endpoints['globals']['delete'] = '/api/globals/{name}';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['globals']['put'] = '/api/globals/{name}';
+                                }
+                            }
+
                             // languages
                             {
                                 endpoints['languages'] = {
@@ -438,6 +453,20 @@ export class ApiHost implements vscode.Disposable {
                                 if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
                                     endpoints['outputs']['patch'] = '/api/outputs/{id}';
                                     endpoints['outputs']['put'] = '/api/outputs/{id}';
+                                }
+                            }
+
+                            // state
+                            {
+                                endpoints['state'] = {
+                                    'get': '/api/state',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
+                                    endpoints['state']['delete'] = '/api/state/{name}';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['state']['put'] = '/api/state/{name}';
                                 }
                             }
 
