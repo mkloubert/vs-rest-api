@@ -29,6 +29,7 @@ import * as FS from 'fs';
 import * as HTTP from 'http';
 import * as HTTPs from 'https';
 import * as Moment from 'moment';
+import * as OS from 'os';
 import * as Path from 'path';
 import * as rapi_contracts from './contracts';
 import * as rapi_controller from './controller';
@@ -579,6 +580,16 @@ export class ApiHost implements vscode.Disposable {
             // API
             let apiResponse: rapi_contracts.ApiResponse = {
                 code: 0,
+                env: {
+                    app: {
+                        name: rapi_helpers.toStringSafe(vscode.env.appName),
+                        version: rapi_helpers.toStringSafe(vscode.version),
+                    },
+                    host: rapi_helpers.normalizeString(OS.hostname()),
+                    lang: rapi_helpers.normalizeString(vscode.env.language),
+                    machine: rapi_helpers.toStringSafe(vscode.env.machineId),
+                    session: rapi_helpers.toStringSafe(vscode.env.sessionId),
+                }
             };
             
             me.handleApi(ctx, apiResponse);

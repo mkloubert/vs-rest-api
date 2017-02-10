@@ -236,6 +236,40 @@ export interface ApiResponse {
      */
     data?: any;
     /**
+     * Information about the environment.
+     */
+    env: {
+        /**
+         * Information about the app.
+         */
+        app: {
+            /**
+             * The name.
+             */
+            name: string;
+            /**
+             * The version.
+             */
+            version: string;
+        };
+        /**
+         * Hostname of the machine.
+         */
+        host: string;
+        /**
+         * The language.
+         */
+        lang: string;
+        /**
+         * ID of the machine.
+         */
+        machine: string;
+        /**
+         * The ID of the session.
+         */
+        session: string;
+    },
+    /**
      * The message.
      */
     msg?: string;
