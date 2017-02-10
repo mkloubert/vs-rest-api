@@ -154,6 +154,7 @@ class User implements rapi_contracts.User {
 
                 // check parent directory
                 if (rapi_helpers.normalizeString(dir) == parentDir) {
+                    // there is no parent directory to check
                     checkThisDirectory();
                 }
                 else {

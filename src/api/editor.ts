@@ -167,12 +167,12 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
 
         let notFound = () => {
             args.sendNotFound();
-
             completed();
         };
 
         if (!canOpen) {
-            notFound();
+            args.sendForbidden();
+            completed();
             return;
         }
 

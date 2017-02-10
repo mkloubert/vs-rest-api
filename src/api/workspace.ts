@@ -39,6 +39,9 @@ import * as vscode from 'vscode';
  */
 export const HEADER_FILE_TYPE = 'X-vscode-restapi-type';
 
+const TYPE_DIRECTORY = 'directory';
+const TYPE_FILE = 'file';
+
 interface DirectoryItem extends FileSystemItem {
 }
 
@@ -95,6 +98,8 @@ function deleteItem(args: rapi_contracts.ApiMethodArguments, fullPath: string): 
                             if (stats.isDirectory()) {
                                 args.request.user.isDirVisible(fullPath, args.request.config.withDot).then((isVisible) => {
                                     if (isVisible) {
+                                        args.headers[HEADER_FILE_TYPE] = TYPE_DIRECTORY;
+
                                         deleteItem();
                                     }
                                     else {
@@ -107,6 +112,8 @@ function deleteItem(args: rapi_contracts.ApiMethodArguments, fullPath: string): 
                             else if (stats.isFile()) {
                                 args.request.user.isFileVisible(fullPath, args.request.config.withDot).then((isVisible) => {
                                     if (isVisible) {
+                                        args.headers[HEADER_FILE_TYPE] = TYPE_FILE;
+
                                         deleteItem();
                                     }
                                     else {
@@ -202,7 +209,7 @@ function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): 
             }
         };
 
-        args.headers[HEADER_FILE_TYPE] = 'directory';
+        args.headers[HEADER_FILE_TYPE] = TYPE_DIRECTORY;
 
         FS.readdir(dir, (err, items) => {
             if (err) {
@@ -277,7 +284,7 @@ function handleFile(args: rapi_contracts.ApiMethodArguments, file: string): Prom
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
-        args.headers[HEADER_FILE_TYPE] = 'file';
+        args.headers[HEADER_FILE_TYPE] = TYPE_FILE;
 
         switch (args.request.method) {
             case 'get':
@@ -355,6 +362,7 @@ function request(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
                     });
                     return;
 
+                case 'patch':
                 case 'post':
                 case 'put':
                     writeFile(args, fullPath).then(() => {
@@ -434,14 +442,6 @@ function request(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     });
 }
 
-function toISODateString(dt: Date): string {
-    if (!dt) {
-        return;
-    }
-
-    return Moment(dt).utc().toISOString();
-}
-
 function toDirectory(dirItem: DirectoryItem, dirPath: string): rapi_contracts.Directory {
     if (!dirItem) {
         return;
@@ -482,6 +482,14 @@ function toFile(fileItem: FileItem, canOpen: boolean, filePath: string): rapi_co
     return newFileItem;
 }
 
+function toISODateString(dt: Date): string {
+    if (!dt) {
+        return;
+    }
+
+    return Moment(dt).utc().toISOString();
+}
+
 function writeFile(args: rapi_contracts.ApiMethodArguments,
                    fullPath: string): PromiseLike<any> {
     let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
@@ -496,9 +504,13 @@ function writeFile(args: rapi_contracts.ApiMethodArguments,
         };
 
         if (!canWrite) {
-            forbidden();
+            args.sendNotFound();
+            completed();
+
             return;
         }
+
+        args.headers[HEADER_FILE_TYPE] = TYPE_FILE;
         
         try {
             let writeBodyToFile = () => {
@@ -595,12 +607,22 @@ function writeFile(args: rapi_contracts.ApiMethodArguments,
             if ('put' == args.request.method) {
                 writeBodyToFile();
             }
+            else if ('patch' == args.request.method) {
+                FS.exists(fullPath, (exists) => {
+                    if (exists) {
+                        writeBodyToFile();
+                    }
+                    else {
+                        forbidden();
+                    }
+                });
+            }
             else {
                 // POST
 
                 FS.exists(fullPath, (exists) => {
                     if (exists) {
-                        forbidden();  // do not overwrite existing files
+                        forbidden();
                     }
                     else {
                         writeBodyToFile();
@@ -617,5 +639,6 @@ function writeFile(args: rapi_contracts.ApiMethodArguments,
 
 export const DELETE = request;
 export const GET = request;
+export const PATCH = request;
 export const POST = request;
 export const PUT = request;

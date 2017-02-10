@@ -72,14 +72,10 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
-        let notFound = () => {
-            args.sendNotFound();
-
-            completed();
-        };
-
         if (!canExecute) {
-            notFound();
+            args.sendForbidden();
+            completed();
+
             return;
         }
 
@@ -146,7 +142,10 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                     });
                 }
                 else {
-                    notFound();  // no matching command(s) found
+                      // no matching command(s) found
+
+                    args.sendNotFound();
+                    completed();
                 }
             }
             else {

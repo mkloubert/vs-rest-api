@@ -269,7 +269,7 @@ export function sendUnauthorized(ctx: rapi_contracts.RequestContext, code = 401)
     try {
         let realm = rapi_helpers.toStringSafe(ctx.config.realm);
         if (rapi_helpers.isEmptyString(realm)) {
-            realm = 'REST API for Visual Studio Code';
+            realm = 'REST API for Visual Studio Code (vs-rest-api)';
         }
 
         let headers: any = {
