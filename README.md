@@ -14,6 +14,7 @@ A [Visual Studio Code](https://code.visualstudio.com/) (VS Code) extension that 
    * [Build-in endpoints](#build-in-endpoints-)
    * [Custom endpoints](#custom-endpoints-)
    * [Commands](#commands--1)
+3. [Documentation](#documentation-)
 
 ## Install [[&uarr;](#table-of-contents)]
 
@@ -134,7 +135,7 @@ The `./my-endpoint.js` must contain a public function with the name of the curre
 
 For example if you want to make a simple `GET` request
 
-```
+```http
 GET /api/myendpoint
 ```
 
@@ -246,3 +247,9 @@ Press `F1` to open the list of commands and select one of the following commands
 | `REST API: Starts or stops the api server` | Toggles the state of the API's HTTP server. | `extension.restApi.toggleHostState` |
 | `REST API: (Re)start the api server` | (Re-)Starts the API's HTTP server. | `extension.restApi.startHost` |
 | `REST API: Stop the api server` | Stops the API. | `extension.restApi.stopHost` |
+
+## Documentation [[&uarr;](#table-of-contents)]
+
+The full documentation of the extension's API can be found [here](https://mkloubert.github.io/vs-rest-api/).
+
+Detailed information on how to use the extension, can be found at the [wiki](https://github.com/mkloubert/vs-rest-api/wiki).

@@ -32,6 +32,38 @@ import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
 
+// [DELETE] /editor
+export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    let canClose = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_CLOSE);
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        if (!canClose) {
+            args.sendForbidden();
+            completed();
+            return;
+        }
+
+        try {
+            let editor = vscode.window.activeTextEditor;
+            if (editor) {
+                // DEPRECATED
+                editor.hide();
+            }
+            else {
+                // no (matching) tab found
+                args.sendNotFound();
+            }
+
+            completed();
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
 // [GET] /editor
 export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
@@ -62,6 +94,57 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
             }, (err) => {
                 completed(err);
             });
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
+// [PATCH] /editor
+export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        if (!canWrite) {
+            args.sendForbidden();
+            completed();
+            return;
+        }
+
+        try {
+            let editor = vscode.window.activeTextEditor;
+            if (editor) {
+                rapi_helpers.readHttpBody(args.request.request).then((body) => {
+                    try {
+                        let str = (body || Buffer.alloc(0)).toString('utf8');
+
+                        rapi_helpers.setContentOfTextEditor(editor, str).then((doc) => {
+                            rapi_helpers.textDocumentToObject(editor.document, args.request.user).then((obj) => {
+                                args.response.data = obj;
+
+                                completed();
+                            }, (err) => {
+                                completed(err);
+                            });
+                        }, (err) => {
+                            completed(err);
+                        });
+                    }
+                    catch (e) {
+                        completed(e);
+                    }
+                }, (err) => {
+                    completed(err);
+                });
+            }
+            else {
+                args.sendNotFound();
+
+                completed();
+            }
         }
         catch (e) {
             completed(e);
@@ -163,6 +246,50 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
             }
             else {
                 openFile();  // open untiled tab
+            }
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
+// [PUT] /editor
+export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        if (!canWrite) {
+            args.sendForbidden();
+            completed();
+            return;
+        }
+
+        try {
+            let editor = vscode.window.activeTextEditor;
+            let doc: vscode.TextDocument;
+
+            if (editor) {
+                doc = editor.document;
+            }
+
+            if (doc) {
+                doc.save();
+
+                rapi_helpers.textDocumentToObject(doc, args.request.user).then((obj) => {
+                    args.response.data = obj;
+
+                    completed();
+                }, (err) => {
+                    completed(err);
+                });
+            }
+            else {
+                args.sendNotFound();
+
+                completed();
             }
         }
         catch (e) {
