@@ -81,19 +81,14 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
             }
 
             rapi_helpers.textDocumentToObject(doc, args.request.user).then((obj) => {
-                try {
-                    if (obj) {
-                        args.response.data = obj;
-                    }
-                    else {
-                        args.sendNotFound();
-                    }
+                if (obj) {
+                    args.response.data = obj;
+                }
+                else {
+                    args.sendNotFound();
+                }
 
-                    completed();
-                }
-                catch (e) {
-                    completed(e);
-                }
+                completed();
             }, (err) => {
                 completed(err);
             });
