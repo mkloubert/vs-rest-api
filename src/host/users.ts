@@ -70,18 +70,21 @@ const DEFAULT_USER: rapi_contracts.Account = {
 
 
 class User implements rapi_contracts.User {
-    protected readonly _ACCOUNT: rapi_contracts.Account;
+    protected _account: rapi_contracts.Account;
     protected readonly _CONTEXT: rapi_contracts.RequestContext;
     protected readonly _IS_GUEST: boolean;
 
     constructor(ctx: rapi_contracts.RequestContext, account: rapi_contracts.Account, isGuest: boolean) {
-        this._ACCOUNT = account;
+        this._account = account;
         this._CONTEXT = ctx;
         this._IS_GUEST = rapi_helpers.toBooleanSafe(isGuest);
     }
 
     public get account(): rapi_contracts.Account {
-        return this._ACCOUNT;
+        return this._account;
+    }
+    public set account(newValue: rapi_contracts.Account) {
+        this._account = newValue;
     }
 
     public get context(): rapi_contracts.RequestContext {
@@ -337,116 +340,211 @@ class User implements rapi_contracts.User {
  * 
  * @param {rapi_contracts.RequestContext} ctx The request context.
  * 
- * @return {rapi_contracts.User} The user (if found).
+ * @return {PromiseLike<rapi_contracts.User>} The promise.
  */
-export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User {
-    let result: User;
+export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_contracts.User> {
+    return new Promise<rapi_contracts.User>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
-    let createGuestUser = (account?: rapi_contracts.Account) => {
-        if (!account) {
-            //TODO: create by IP
+        try {
+            let result: User;
 
-            account = DEFAULT_USER;
-        }
+            let nextAction = () => {
+                completed(null, result);
+            };
 
-        result = new User(ctx, account, true);
-    };
+            let createGuestUser = (account?: rapi_contracts.Account) => {
+                if (!account) {
+                    //TODO: create by IP
 
-    try {
-        let headers = ctx.request.headers;
+                    account = DEFAULT_USER;
+                }
 
-        let usernameAndPassword: string;
-        if (headers) {
-            for (let p in headers) {
-                if (rapi_helpers.normalizeString(p) == 'authorization') {
-                    let value = rapi_helpers.toStringSafe(headers[p]).trim();
-                    if (0 == value.toLowerCase().indexOf('basic ')) {
-                        usernameAndPassword = value.substr(6).trim();
+                result = new User(ctx, account, true);
+            };
+
+            try {
+                let headers = ctx.request.headers;
+
+                let usernameAndPassword: string;
+                if (headers) {
+                    for (let p in headers) {
+                        if (rapi_helpers.normalizeString(p) == 'authorization') {
+                            let value = rapi_helpers.toStringSafe(headers[p]).trim();
+                            if (0 == value.toLowerCase().indexOf('basic ')) {
+                                usernameAndPassword = value.substr(6).trim();
+                            }
+                        }
+                    }
+                }
+
+                let activeUsers = rapi_helpers.asArray(ctx.config.users)
+                                            .filter(x => x)
+                                            .filter(x => rapi_helpers.toBooleanSafe(x.isActive, true));
+
+                if ((activeUsers.length > 0) || !rapi_helpers.isEmptyString(usernameAndPassword)) {
+                    let temp = new Buffer(usernameAndPassword, 'base64').toString('utf8');
+
+                    let username: string;
+                    let password: string
+                    if (!rapi_helpers.isEmptyString(temp)) {
+                        let sepIndex = temp.indexOf(':');
+                        if (sepIndex > -1) {
+                            username = temp.substr(0, sepIndex);
+                            password = temp.substr(sepIndex + 1);
+                        }
+                        else {
+                            username = temp;
+                        }
+                    }
+
+                    username = rapi_helpers.normalizeString(username);
+                    password = rapi_helpers.toStringSafe(password);
+                    
+                    for (let i = 0; i < activeUsers.length; i++) {
+                        let user = activeUsers[i];
+                        if (rapi_helpers.normalizeString(user.name) != username) {
+                            continue;
+                        }
+
+                        let doesMatch = password === rapi_helpers.toStringSafe(user.password);
+                        if (doesMatch) {
+                            result = new User(ctx, user, false);
+
+                            break;
+                        }
+                    }
+                }
+                else {
+                    // check guest
+
+                    if ('object' === typeof ctx.config.guest) {
+                        if (rapi_helpers.toBooleanSafe(ctx.config.guest.isActive, true)) {
+                            createGuestUser(ctx.config.guest);
+                        }
+                    }
+                    else {
+                        if (rapi_helpers.toBooleanSafe(ctx.config.guest, true)) {
+                            createGuestUser();
+                        }
                     }
                 }
             }
-        }
-
-        let activeUsers = rapi_helpers.asArray(ctx.config.users)
-                                      .filter(x => x)
-                                      .filter(x => rapi_helpers.toBooleanSafe(x.isActive, true));
-
-        if ((activeUsers.length > 0) || !rapi_helpers.isEmptyString(usernameAndPassword)) {
-            let temp = new Buffer(usernameAndPassword, 'base64').toString('utf8');
-
-            let username: string;
-            let password: string
-            if (!rapi_helpers.isEmptyString(temp)) {
-                let sepIndex = temp.indexOf(':');
-                if (sepIndex > -1) {
-                    username = temp.substr(0, sepIndex);
-                    password = temp.substr(sepIndex + 1);
-                }
-                else {
-                    username = temp;
-                }
+            catch (e) {
+                result = null;
             }
 
-            username = rapi_helpers.normalizeString(username);
-            password = rapi_helpers.toStringSafe(password);
+            // apply default values
+            if (result) {
+                // can activate?
+                result.set(VAR_CAN_ACTIVATE, rapi_helpers.toBooleanSafe(result.account.canActivate));
+                // can close?
+                result.set(VAR_CAN_CLOSE, rapi_helpers.toBooleanSafe(result.account.canClose));
+                // can create?
+                result.set(VAR_CAN_CREATE, rapi_helpers.toBooleanSafe(result.account.canCreate));
+                // can delete files and folders?
+                result.set(VAR_CAN_DELETE, rapi_helpers.toBooleanSafe(result.account.canDelete));
+                // can execute commands?
+                result.set(VAR_CAN_EXECUTE, rapi_helpers.toBooleanSafe(result.account.canExecute));
+                // can open tabs in editor?
+                result.set(VAR_CAN_OPEN, rapi_helpers.toBooleanSafe(result.account.canOpen));
+                // can write (files)?
+                result.set(VAR_CAN_WRITE, rapi_helpers.toBooleanSafe(result.account.canWrite));
+
+                // custom values
+                if (result.account.values) {
+                    for (let p in result.account.values) {
+                        result.set(p, result.account.values[p]);
+                    }
+                }
+
+                if (!rapi_helpers.isNullOrUndefined(ctx.config.preparer)) {
+                    let accountPreparer: rapi_contracts.AccountPreparer;
+                    if ('object' !== typeof ctx.config.preparer) {
+                        let script = rapi_helpers.toStringSafe(ctx.config.preparer);
+                        if (!rapi_helpers.isEmptyString(script)) {
+                            accountPreparer = {
+                                script: script,
+                            };
+                        }
+                    }
+                    else {
+                        accountPreparer = ctx.config.preparer;
+                    }
+
+                    if (accountPreparer) {
+                        let preparerScript = accountPreparer.script;
+                        if (!Path.isAbsolute(preparerScript)) {
+                            preparerScript = Path.join(vscode.workspace.rootPath, preparerScript);
+                        }
+                        preparerScript = Path.resolve(preparerScript);
+
+                        let preparerModule = rapi_helpers.loadModuleSync<rapi_contracts.AccountPreparerModule>(preparerScript);
+                        if (preparerModule) {
+                            if (preparerModule.prepare) {
+                                let prepareArgs: rapi_contracts.AccountPreparerArguments = {
+                                    account: result.account,
+                                    globals: rapi_helpers.cloneObject(ctx.config.globals),
+                                    globalState: undefined,
+                                    options: accountPreparer.options,
+                                    require: function(id) {
+                                        return rapi_helpers.requireModule(id);
+                                    },
+                                    state: undefined,
+                                    workspaceState: undefined,
+                                };
+
+                                // prepareArgs.globalState
+                                Object.defineProperty(prepareArgs, 'globalState', {
+                                    enumerable: true,
+                                    get: function() {
+                                        return this.workspaceState['globalAccountPreparerStates'];
+                                    }
+                                });
+
+                                // prepareArgs.state
+                                Object.defineProperty(prepareArgs, 'state', {
+                                    enumerable: true,
+                                    get: function() {
+                                        return this.workspaceState['globalAccountPreparerScriptStates'][preparerScript];
+                                    },
+                                    set: function(newValue) {
+                                        this.workspaceState['globalAccountPreparerScriptStates'][preparerScript] = newValue;
+                                    }
+                                });
+
+                                // prepareArgs.workspaceState
+                                Object.defineProperty(prepareArgs, 'workspaceState', {
+                                    enumerable: true,
+                                    get: () => {
+                                        return ctx.workspaceState;
+                                    }
+                                });
+
+                                let preparerResult = preparerModule.prepare(prepareArgs);
+                                if (preparerResult) {
+                                    nextAction = null;
+
+                                    preparerResult.then((account) => {
+                                        result.account = account || result.account;
+
+                                        completed();
+                                    }, (err) => {
+                                        completed(err);
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             
-            for (let i = 0; i < activeUsers.length; i++) {
-                let user = activeUsers[i];
-                if (rapi_helpers.normalizeString(user.name) != username) {
-                    continue;
-                }
-
-                let doesMatch = password === rapi_helpers.toStringSafe(user.password);
-                if (doesMatch) {
-                    result = new User(ctx, user, false);
-
-                    break;
-                }
+            if (nextAction) {
+                nextAction();
             }
         }
-        else {
-            // check guest
-
-            if ('object' === typeof ctx.config.guest) {
-                if (rapi_helpers.toBooleanSafe(ctx.config.guest.isActive, true)) {
-                    createGuestUser(ctx.config.guest);
-                }
-            }
-            else {
-                if (rapi_helpers.toBooleanSafe(ctx.config.guest, true)) {
-                    createGuestUser();
-                }
-            }
+        catch (e) {
+            completed(e);
         }
-    }
-    catch (e) {
-        result = null;
-    }
-
-    // apply default values
-    if (result) {
-        // can activate?
-        result.set(VAR_CAN_ACTIVATE, rapi_helpers.toBooleanSafe(result.account.canActivate));
-        // can close?
-        result.set(VAR_CAN_CLOSE, rapi_helpers.toBooleanSafe(result.account.canClose));
-        // can create?
-        result.set(VAR_CAN_CREATE, rapi_helpers.toBooleanSafe(result.account.canCreate));
-        // can delete files and folders?
-        result.set(VAR_CAN_DELETE, rapi_helpers.toBooleanSafe(result.account.canDelete));
-        // can execute commands?
-        result.set(VAR_CAN_EXECUTE, rapi_helpers.toBooleanSafe(result.account.canExecute));
-        // can open tabs in editor?
-        result.set(VAR_CAN_OPEN, rapi_helpers.toBooleanSafe(result.account.canOpen));
-        // can write (files)?
-        result.set(VAR_CAN_WRITE, rapi_helpers.toBooleanSafe(result.account.canWrite));
-
-        // custom values
-        if (result.account.values) {
-            for (let p in result.account.values) {
-                result.set(p, result.account.values[p]);
-            }
-        }
-    }
-
-    return result;
+    });
 }

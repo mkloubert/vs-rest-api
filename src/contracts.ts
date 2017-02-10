@@ -90,6 +90,49 @@ export interface Account {
 }
 
 /**
+ * Settings for preparing an account object.
+ */
+export interface AccountPreparer {
+    /**
+     * The options for the execution.
+     */
+    options?: any;
+    /**
+     * The path to the script to execute.
+     */
+    script: string;
+}
+
+/**
+ * Prepares an account.
+ * 
+ * @param {AccountPreparerArguments} args The arguments for the execution.
+ * 
+ * @returns {PromiseLike<Account>|void} The result.
+ */
+export type AccountPreparerExecutor = (args: AccountPreparerArguments) => PromiseLike<Account> | void;
+
+/**
+ * Arguments for a account preparer.
+ */
+export interface AccountPreparerArguments extends ScriptArguments {
+    /**
+     * The account to prepare.
+     */
+    account: Account;
+}
+
+/**
+ * A module for preparing accounts.
+ */
+export interface AccountPreparerModule extends ScriptModule {
+    /**
+     * Prepares an account.
+     */
+    prepare: AccountPreparerExecutor;
+}
+
+/**
  * An API endpoint.
  */
 export interface ApiEndpoint {
@@ -154,10 +197,6 @@ export interface ApiMethodArguments extends ScriptArguments {
      * The response headers to send.
      */
     headers: { [key: string]: any };
-    /**
-     * Options for the execution.
-     */
-    options?: any;
     /**
      * The output channel that can be used.
      */
@@ -281,6 +320,10 @@ export interface Configuration {
      * The TCP port the HTTP server should listen on.
      */
     port?: number;
+    /**
+     * A script that prepares an account (object).
+     */
+    preparer?: string | AccountPreparer;
     /**
      * The name of the realm for the authentication.
      */
@@ -490,6 +533,10 @@ export interface RequestContext {
      * The current user.
      */
     user?: User;
+    /**
+     * Object to share and access data workspace wide.
+     */
+    workspaceState: Object;
 }
 
 /**
@@ -504,6 +551,10 @@ export interface ScriptArguments {
      * Gets the object to share data between all scripts of this type.
      */
     readonly globalState: Object;
+    /**
+     * Options for the execution.
+     */
+    options: any;
     /**
      * Loads a module from the script / extension context.
      */
@@ -625,10 +676,6 @@ export interface ValidatorArguments<T> extends ScriptArguments {
      * Additional context data, defined by "caller".
      */
     context?: any;
-    /**
-     * The options for validation.
-     */
-    options?: any;
     /**
      * The value to check.
      */

@@ -181,6 +181,8 @@ export class Controller implements vscode.Disposable {
 
         let cfg = <rapi_contracts.Configuration>vscode.workspace.getConfiguration("rest.api");
         me._workspaceState = {
+            globalAccountPreparerStates: {},
+            globalAccountPreparerScriptStates: {},
             outputChannels: [],
         };
 

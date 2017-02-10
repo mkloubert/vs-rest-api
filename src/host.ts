@@ -148,6 +148,7 @@ export class ApiHost implements vscode.Disposable {
                 headers: {
                     'Content-type': 'application/json; charset=utf-8',
                 },
+                options: undefined,
                 outputChannel: me.controller.outputChannel,
                 path: parts.join('/'),
                 request: ctx,
@@ -536,148 +537,162 @@ export class ApiHost implements vscode.Disposable {
                             response: resp,
                             time: Moment().utc(),
                             url: url,
+                            workspaceState: undefined,
                         };
+
+                        // ctx.workspaceState
+                        Object.defineProperty(ctx, 'workspaceState', {
+                            enumerable: true,
+                            get: () => {
+                                return me.controller.workspaceState;
+                            }
+                        });
 
                         if (!ctx.method) {
                             ctx.method = 'get';
                         }
 
-                        ctx.user = rapi_users.getUser(ctx);
-                        if (!ctx.user) {
-                            rapi_host_helpers.sendUnauthorized(ctx);
-                            return;
-                        }
+                        rapi_users.getUser(ctx).then((user) => {
+                            ctx.user = user;
+                            if (!ctx.user) {
+                                rapi_host_helpers.sendUnauthorized(ctx);
+                                return;
+                            }
 
-                        try {
-                            let validatorArgs: rapi_contracts.ValidatorArguments<rapi_contracts.RemoteClient> = {
-                                context: {
-                                    config: ctx.config,
-                                    method: ctx.method,
-                                    request: req,
-                                    response: resp,
-                                    statusCode: 404,
-                                    time: ctx,
-                                },
-                                globals: me.controller.getGlobals(),
-                                globalState: undefined,
-                                require: function(id) {
-                                    return rapi_helpers.requireModule(id);
-                                },
-                                state: undefined,
-                                value: ctx.client,
-                                workspaceState: undefined,
-                            };
+                            try {
+                                let validatorArgs: rapi_contracts.ValidatorArguments<rapi_contracts.RemoteClient> = {
+                                    context: {
+                                        config: ctx.config,
+                                        method: ctx.method,
+                                        request: req,
+                                        response: resp,
+                                        statusCode: 404,
+                                        time: ctx,
+                                    },
+                                    globals: me.controller.getGlobals(),
+                                    globalState: undefined,
+                                    options: undefined,
+                                    require: function(id) {
+                                        return rapi_helpers.requireModule(id);
+                                    },
+                                    state: undefined,
+                                    value: ctx.client,
+                                    workspaceState: undefined,
+                                };
 
-                            // validatorArgs.globalState
-                            Object.defineProperty(validatorArgs, 'globalState', {
-                                enumerable: true,
-                                get: () => {
-                                    return me._VALIDATOR_STATE;
-                                }
-                            });
-
-                            // validatorArgs.state
-                            Object.defineProperty(validatorArgs, 'state', {
-                                enumerable: true,
-                                get: () => {
-                                    return me.controller.workspaceState;
-                                }
-                            });
-
-                            let validator: rapi_contracts.Validator<rapi_contracts.RemoteClient>;
-                            if (!rapi_helpers.isNullOrUndefined(cfg.validator)) {
-                                let validatorScript: string;
-
-                                let initialState: any;
-                                if ('object' === typeof cfg.validator) {
-                                    validatorScript = cfg.validator.script;
-
-                                    validatorArgs.options = cfg.validator.options;
-                                    initialState = cfg.validator.state;
-                                }
-                                else {
-                                    validatorScript = rapi_helpers.toStringSafe(cfg.validator);
-                                }
-
-                                if (!rapi_helpers.isEmptyString(validatorScript)) {
-                                    if (!Path.isAbsolute(validatorScript)) {
-                                        validatorScript = Path.join(vscode.workspace.rootPath, validatorScript);
+                                // validatorArgs.globalState
+                                Object.defineProperty(validatorArgs, 'globalState', {
+                                    enumerable: true,
+                                    get: () => {
+                                        return me._VALIDATOR_STATE;
                                     }
-                                    validatorScript = Path.resolve(validatorScript);
+                                });
 
-                                    if ('undefined' === typeof me._VALIDATOR_SCRIPT_STATES[validatorScript]) {
-                                        me._VALIDATOR_SCRIPT_STATES[validatorScript] = initialState;
+                                // validatorArgs.state
+                                Object.defineProperty(validatorArgs, 'state', {
+                                    enumerable: true,
+                                    get: () => {
+                                        return me.controller.workspaceState;
+                                    }
+                                });
+
+                                let validator: rapi_contracts.Validator<rapi_contracts.RemoteClient>;
+                                if (!rapi_helpers.isNullOrUndefined(cfg.validator)) {
+                                    let validatorScript: string;
+
+                                    let initialState: any;
+                                    if ('object' === typeof cfg.validator) {
+                                        validatorScript = cfg.validator.script;
+
+                                        validatorArgs.options = cfg.validator.options;
+                                        initialState = cfg.validator.state;
+                                    }
+                                    else {
+                                        validatorScript = rapi_helpers.toStringSafe(cfg.validator);
                                     }
 
-                                    let validatorModule = rapi_helpers.loadModuleSync<rapi_contracts.ValidatorModule<rapi_contracts.RemoteClient>>(validatorScript);
-                                    if (validatorModule) {
-                                        validator = validatorModule.validate;
-                                    }
-
-                                    // validatorArgs.state
-                                    Object.defineProperty(validatorArgs, 'state', {
-                                        enumerable: true,
-                                        get: () => {
-                                            return me._VALIDATOR_SCRIPT_STATES[validatorScript];
-                                        },
-                                        set: (newValue) => {
-                                            me._VALIDATOR_SCRIPT_STATES[validatorScript] = newValue;
+                                    if (!rapi_helpers.isEmptyString(validatorScript)) {
+                                        if (!Path.isAbsolute(validatorScript)) {
+                                            validatorScript = Path.join(vscode.workspace.rootPath, validatorScript);
                                         }
-                                    });
-                                }
-                            }
-                            validator = rapi_helpers.toValidatorSafe(validator);
+                                        validatorScript = Path.resolve(validatorScript);
 
-                            let handleTheRequest = (isRequestValid: boolean) => {
-                                isRequestValid = rapi_helpers.toBooleanSafe(isRequestValid, true);
-
-                                if (isRequestValid) {
-                                    try {
-                                        me.handleRequest(ctx);
-                                    }
-                                    catch (e) {
-                                        rapi_host_helpers.sendError(e, ctx);
-                                    }
-                                }
-                                else {
-                                    try {
-                                        // not valid
-                                        let statusCode = validatorArgs.context.statusCode;
-                                        if (rapi_helpers.isEmptyString(statusCode)) {
-                                            statusCode = '404';
+                                        if ('undefined' === typeof me._VALIDATOR_SCRIPT_STATES[validatorScript]) {
+                                            me._VALIDATOR_SCRIPT_STATES[validatorScript] = initialState;
                                         }
-                                        statusCode = parseInt(rapi_helpers.normalizeString(statusCode));
 
-                                        ctx.response.statusCode = statusCode;
+                                        let validatorModule = rapi_helpers.loadModuleSync<rapi_contracts.ValidatorModule<rapi_contracts.RemoteClient>>(validatorScript);
+                                        if (validatorModule) {
+                                            validator = validatorModule.validate;
+                                        }
 
-                                        ctx.response.end();
-                                    }
-                                    catch (e) {
-                                        rapi_helpers.log(`[ERROR] ApiHost.start().requestListener(): ${rapi_helpers.toStringSafe(e)}`);
+                                        // validatorArgs.state
+                                        Object.defineProperty(validatorArgs, 'state', {
+                                            enumerable: true,
+                                            get: () => {
+                                                return me._VALIDATOR_SCRIPT_STATES[validatorScript];
+                                            },
+                                            set: (newValue) => {
+                                                me._VALIDATOR_SCRIPT_STATES[validatorScript] = newValue;
+                                            }
+                                        });
                                     }
                                 }
-                            };
+                                validator = rapi_helpers.toValidatorSafe(validator);
 
-                            let validatorResult = validator(validatorArgs);
-                            if (rapi_helpers.isNullOrUndefined(validatorResult)) {
-                                handleTheRequest(true);
-                            }
-                            else {
-                                if ('object' === typeof validatorResult) {
-                                    validatorResult.then((isValid) => {
-                                        handleTheRequest(isValid);
-                                    }, (err) => {
-                                        rapi_host_helpers.sendError(err, ctx);
-                                    });
+                                let handleTheRequest = (isRequestValid: boolean) => {
+                                    isRequestValid = rapi_helpers.toBooleanSafe(isRequestValid, true);
+
+                                    if (isRequestValid) {
+                                        try {
+                                            me.handleRequest(ctx);
+                                        }
+                                        catch (e) {
+                                            rapi_host_helpers.sendError(e, ctx);
+                                        }
+                                    }
+                                    else {
+                                        try {
+                                            // not valid
+                                            let statusCode = validatorArgs.context.statusCode;
+                                            if (rapi_helpers.isEmptyString(statusCode)) {
+                                                statusCode = '404';
+                                            }
+                                            statusCode = parseInt(rapi_helpers.normalizeString(statusCode));
+
+                                            ctx.response.statusCode = statusCode;
+
+                                            ctx.response.end();
+                                        }
+                                        catch (e) {
+                                            rapi_helpers.log(`[ERROR] ApiHost.start().requestListener(): ${rapi_helpers.toStringSafe(e)}`);
+                                        }
+                                    }
+                                };
+
+                                let validatorResult = validator(validatorArgs);
+                                if (rapi_helpers.isNullOrUndefined(validatorResult)) {
+                                    handleTheRequest(true);
                                 }
                                 else {
-                                    handleTheRequest(validatorResult);
+                                    if ('object' === typeof validatorResult) {
+                                        validatorResult.then((isValid) => {
+                                            handleTheRequest(isValid);
+                                        }, (err) => {
+                                            rapi_host_helpers.sendError(err, ctx);
+                                        });
+                                    }
+                                    else {
+                                        handleTheRequest(validatorResult);
+                                    }
                                 }
                             }
-                        }
-                        catch (e) {
-                            rapi_host_helpers.sendError(e, ctx);
-                        }
+                            catch (e) {
+                                rapi_host_helpers.sendError(e, ctx);
+                            }
+                        }, (err) => {
+                            rapi_host_helpers.sendError(err, ctx);
+                        });  
                     }
                     catch (e) {
                         try {
