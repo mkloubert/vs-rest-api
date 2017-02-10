@@ -32,6 +32,10 @@ import * as vscode from 'vscode';
 
 
 /**
+ * Name of a variable that defines if an user has the right activate extensions or not.
+ */
+export const VAR_CAN_ACTIVATE = 'can_activate';
+/**
  * Name of a variable that defines if an user has the right to close editor tabs or not.
  */
 export const VAR_CAN_CLOSE = 'can_close';
@@ -417,6 +421,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): rapi_contracts.User
 
     // apply default values
     if (result) {
+        // can activate?
+        result.set(VAR_CAN_ACTIVATE, rapi_helpers.toBooleanSafe(result.account.canActivate));
         // can close?
         result.set(VAR_CAN_CLOSE, rapi_helpers.toBooleanSafe(result.account.canClose));
         // can delete files and folders?

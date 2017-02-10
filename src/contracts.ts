@@ -40,6 +40,10 @@ export interface Account {
     __globals: { [action: string]: any };
 
     /**
+     * Defines if account is able to activate extensions or not.
+     */
+    canActivate?: boolean;
+    /**
      * Defines if account is able to close editor tabs or not.
      */
     canClose?: boolean;

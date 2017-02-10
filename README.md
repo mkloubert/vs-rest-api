@@ -100,6 +100,8 @@ Visit the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#build-in-endpoint
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]
 
+Detailed information can be found at the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#custom-endpoints-). Otherwise...
+
 You can define custom endpoints that are executed via script.
 
 Define one ore more regular expressions in your [settings](#settings-) and the scripts that should be executed, if a patter matches:

@@ -77,22 +77,24 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 
 // [POST] /extensions/{id}
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    let canActivate = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_ACTIVATE);
+
     return new Promise<any>((resolve, reject) => {
-        let completed = (err?: any, extensions?: Object[]) => {
+        let completed = (err?: any) => {
             if (err) {
                 reject(err);
             }
             else {
-                if (extensions.length < 1) {
-                    args.sendNotFound();
-                }
-                else {
-                    args.response.data = extensions;
-                }
-
                 resolve();
             }
         };
+
+        if (!canActivate) {
+            args.sendForbidden();
+            completed();
+            
+            return;
+        }
 
         try {
             let parts = args.path.split('/');
@@ -109,7 +111,14 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
             let nextExtension: () => void;
             nextExtension = () => {
                 if (extensions.length < 1) {
-                    completed(null, result);
+                    if (result.length < 1) {
+                        args.sendNotFound();
+                    }
+                    else {
+                        args.response.data = result;
+                    }
+
+                    completed();
                     return;
                 }
 

@@ -49,9 +49,11 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
             let editor = getEditorById(args);
 
             if (editor) {
+                // DEPRECATED
                 editor.editor.hide();
             }
             else {
+                // no (matching) tab found
                 args.sendNotFound();
             }
 
@@ -74,9 +76,13 @@ function editorToObject(editor: EditorWithId, user: rapi_contracts.User): Promis
             }
 
             rapi_helpers.textDocumentToObject(editor.editor.document, user).then((obj) => {
-                if (obj && !rapi_helpers.isNullOrUndefined(editor.id)) {
-                    obj['id'] = editor.id;
-                    obj['path'] = '/api/editors/' + editor.id;
+                if (obj) {
+                    delete obj['openPath'];
+
+                    if (!rapi_helpers.isNullOrUndefined(editor.id)) {
+                        obj['id'] = editor.id;
+                        obj['path'] = '/api/editors/' + editor.id;
+                    }
                 }
 
                 completed(null, obj);
@@ -176,43 +182,6 @@ function getEditorById(args: rapi_contracts.ApiMethodArguments): EditorWithId {
     return editor;
 }
 
-// [POST] /editors(/{id})
-export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
-
-    return new Promise<any>((resolve, reject) => {
-        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
-
-        if (!canOpen) {
-            args.sendForbidden();
-            completed();
-            return;
-        }
-
-        try {
-            let editor = getEditorById(args);
-            if (editor) {
-                editor.editor.show();
-
-                editorToObject(editor, args.request.user).then((obj) => {
-                    args.response.data = obj;
-
-                    completed();
-                }, (err) => {
-                    completed(err);
-                });
-            }
-            else {
-                args.sendNotFound();
-                completed();
-            }
-        }
-        catch (e) {
-            completed(e);
-        }
-    });
-}
-
 // [PATCH] /editors(/{id})
 export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
@@ -264,6 +233,44 @@ export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any>
         }
     });
 }
+
+// [POST] /editors(/{id})
+export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        if (!canOpen) {
+            args.sendForbidden();
+            completed();
+            return;
+        }
+
+        try {
+            let editor = getEditorById(args);
+            if (editor) {
+                editor.editor.show();
+
+                editorToObject(editor, args.request.user).then((obj) => {
+                    args.response.data = obj;
+
+                    completed();
+                }, (err) => {
+                    completed(err);
+                });
+            }
+            else {
+                args.sendNotFound();
+                completed();
+            }
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
 
 // [PUT] /editors(/{id})
 export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
