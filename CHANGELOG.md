@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.4.0 (February 11th, 2017; HTML documents)
+
+* can open custom [HTML documents](https://github.com/mkloubert/vs-rest-api/wiki/buildin_endpoints_post_html) now
+
 ## 1.3.0 (February 11th, 2017; cleanups and improvements)
 
 * added `executeBuildIn()` method to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html)

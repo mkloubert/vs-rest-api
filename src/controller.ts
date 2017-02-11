@@ -184,6 +184,8 @@ export class Controller implements vscode.Disposable {
             globalAccountPreparerScriptStates: {},
             outputChannels: [],
         };
+        me._workspaceState[rapi_contracts.VAR_HTML_DOCS] = [];
+        me._workspaceState[rapi_contracts.VAR_NEXT_HTML_DOC_ID] = -1;
 
         let nextSteps = (err?: any) => {
             if (err) {

@@ -153,26 +153,6 @@ export function compressForResponse(data: any,
 }
 
 /**
- * Returns the value from a "parameter" object.
- * 
- * @param {Object} params The object.
- * @param {string} name The name of the parameter.
- * 
- * @return {string} The value of the parameter (if found).
- */
-export function getUrlParam(params: Object, name: string): string {
-    if (params) {
-        name = rapi_helpers.normalizeString(name);
-
-        for (let p in params) {
-            if (rapi_helpers.normalizeString(p) == name) {
-                return rapi_helpers.toStringSafe(params[p]);
-            }
-        }
-    }
-}
-
-/**
  * Sends an error response.
  * 
  * @param {any} err The error to send.

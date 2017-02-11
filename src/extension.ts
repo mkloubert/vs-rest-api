@@ -26,8 +26,10 @@
 // DEALINGS IN THE SOFTWARE.
 
 import * as FS from 'fs';
+import * as i18 from './i18';
 import * as Moment from 'moment';
 import * as Path from 'path';
+import * as rapi_content from './content';
 import * as rapi_contracts from './contracts';
 import * as rapi_controller from './controller';
 import * as rapi_helpers from './helpers';
@@ -73,7 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
         controller.start().then(() => {
             //TODO
         }, (err) => {
-            // vscode.window.showErrorMessage(`[REST API START]: ${rapi_helpers.toStringSafe(err)}`);
+            rapi_helpers.log(`[ERROR] extension.restApi.startHost: ${err}`);
         });
     });
 
@@ -82,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
         controller.stop().then(() => {
             //TODO
         }, (err) => {
-            // vscode.window.showErrorMessage(`[REST API STOP]: ${rapi_helpers.toStringSafe(err)}`);
+            rapi_helpers.log(`[ERROR] extension.restApi.stopHost: ${err}`);
         });
     });
     
@@ -91,16 +93,51 @@ export function activate(context: vscode.ExtensionContext) {
         controller.toggleHostState().then(() => {
             //TODO
         }, (err) => {
-            // vscode.window.showErrorMessage(`[REST API TOGGLE]: ${rapi_helpers.toStringSafe(err)}`);
+            rapi_helpers.log(`[ERROR] extension.restApi.toggleHostState: ${err}`);
         });
     });
+
+    // open HTML document
+    let openHtmlDoc = vscode.commands.registerCommand('extension.restApi.openHtmlDoc', (doc: rapi_contracts.Document) => {
+        try {
+            let htmlDocs = controller.workspaceState[rapi_contracts.VAR_HTML_DOCS];
+
+            let url = vscode.Uri.parse(`vs-rest-api-html://authority/html?id=${rapi_helpers.normalizeString(doc.id)}` + 
+                                       `&x=${encodeURIComponent(rapi_helpers.toStringSafe(new Date().getTime()))}`);
+
+            let title = rapi_helpers.toStringSafe(doc.title).trim();
+            if (!title) {
+                title = `[vs-rest-api] HTML document #${rapi_helpers.toStringSafe(doc.id)}`;
+            }
+
+            vscode.commands.executeCommand('vscode.previewHtml', url, vscode.ViewColumn.One, title).then((success) => {
+                rapi_helpers.removeDocuments(doc, htmlDocs);
+            }, (err) => {
+                rapi_helpers.removeDocuments(doc, htmlDocs);
+
+                rapi_helpers.log(`[ERROR] extension.restApi.openHtmlDoc(2): ${err}`);
+            });
+        }
+        catch (e) {
+            rapi_helpers.log(`[ERROR] extension.restApi.openHtmlDoc(1): ${e}`);
+        }
+    });
+
+    let htmlViewer = vscode.workspace.registerTextDocumentContentProvider('vs-rest-api-html',
+                                                                          new rapi_content.HtmlTextDocumentContentProvider(controller));
+
+    // viewers
+    context.subscriptions
+           .push(htmlViewer);
 
     // notfiy setting changes
     context.subscriptions
            .push(vscode.workspace.onDidChangeConfiguration(controller.onDidChangeConfiguration, controller));
 
+    // commands
     context.subscriptions
-           .push(startHost, stopHost, toggleServerState);
+           .push(startHost, stopHost, toggleServerState,
+                 openHtmlDoc);
 
     controller.onActivated();
 }

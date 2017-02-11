@@ -449,6 +449,26 @@ export function getStateRepository(memento: vscode.Memento, varName = rapi_contr
 }
 
 /**
+ * Returns the value from a "parameter" object.
+ * 
+ * @param {Object} params The object.
+ * @param {string} name The name of the parameter.
+ * 
+ * @return {string} The value of the parameter (if found).
+ */
+export function getUrlParam(params: Object, name: string): string {
+    if (params) {
+        name = normalizeString(name);
+
+        for (let p in params) {
+            if (normalizeString(p) == name) {
+                return toStringSafe(params[p]);
+            }
+        }
+    }
+}
+
+/**
  * Checks if data is binary or text content.
  * 
  * @param {Buffer} data The data to check.
@@ -760,6 +780,37 @@ export function readHttpBodyAsJSON<T>(msg: HTTP.IncomingMessage, encoding?: stri
 }
 
 /**
+ * Removes documents from a storage.
+ * 
+ * @param {rapi_contracts.Document|rapi_contracts.Document[]} docs The document(s) to remove.
+ * @param {rapi_contracts.Document[]} storage The storage.
+ * 
+ * @return {rapi_contracts.Document[]} The removed documents.
+ */
+export function removeDocuments(docs: rapi_contracts.Document | rapi_contracts.Document[],
+                                storage: rapi_contracts.Document[]): rapi_contracts.Document[] {
+    let ids = asArray(docs).filter(x => x)
+                           .map(x => x.id);
+
+    let removed = [];
+
+    if (storage) {
+        for (let i = 0; i < storage.length; ) {
+            let d = storage[i];
+            if (ids.indexOf(d.id) > -1) {
+                removed.push(d);
+                storage.splice(i, 1);
+            }
+            else {
+                ++i;
+            }
+        }
+    }
+
+    return removed;
+}
+
+/**
  * Replaces all occurrences of a string.
  * 
  * @param {string} str The input string.
@@ -1042,4 +1093,33 @@ export function tryDispose(obj: vscode.Disposable): boolean {
 
         return false;
     }
+}
+
+/**
+ * Extracts the query parameters of an URI to an object.
+ * 
+ * @param {vscode.Uri} uri The URI.
+ * 
+ * @return {Object} The parameters of the URI as object.
+ */
+export function uriParamsToObject(uri: vscode.Uri): Object {
+    if (!uri) {
+        return uri;
+    }
+
+    let params: any;
+    if (!isEmptyString(uri.query)) {
+        // s. https://css-tricks.com/snippets/jquery/get-query-params-object/
+        params = uri.query.replace(/(^\?)/,'')
+                          .split("&")
+                          .map(function(n) { return n = n.split("="), this[normalizeString(n[0])] =
+                                                                           toStringSafe(decodeURIComponent(n[1])), this}
+                          .bind({}))[0];
+    }
+
+    if (!params) {
+        params = {};
+    }
+
+    return params;
 }

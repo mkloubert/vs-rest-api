@@ -29,6 +29,14 @@ import * as URL from 'url';
 import * as vscode from 'vscode';
 
 /**
+ * Variable for storing HTML documents.
+ */
+export const VAR_HTML_DOCS = 'vsraHtmlDoc';
+/**
+ * Variable for storing the next ID for HTML documents.
+ */
+export const VAR_NEXT_HTML_DOC_ID = 'vsraNextHtmlDocId';
+/**
  * Variable for saving a state.
  */
 export const VAR_STATE = 'vsraState';
@@ -404,6 +412,32 @@ export interface Directory extends FileSystemItem {
      * The type.
      */
     type: "dir";
+}
+
+/**
+ * A document.
+ */
+export interface Document {
+    /**
+     * The body / content of the document.
+     */
+    body: Buffer;
+    /**
+     * The encoding.
+     */
+    encoding?: string;
+    /**
+     * The ID.
+     */
+    id?: any;
+    /**
+     * The MIME type.
+     */
+    mime?: string;
+    /**
+     * The title.
+     */
+    title?: string;
 }
 
 /**

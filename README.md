@@ -113,6 +113,7 @@ Visit the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#build-in-endpoint
 | [/api/extensions](https://github.com/mkloubert/vs-rest-api/wiki#apiextensions-) | Accesses resources of all known extensions.  |
 | [/api/files](https://github.com/mkloubert/vs-rest-api/wiki#apifiles-) | Accesses resources for handling file operations.  |
 | [/api/globals](https://github.com/mkloubert/vs-rest-api/wiki#apiglobals-) | Accesses permanent data for all users.  |
+| [/api/html](https://github.com/mkloubert/vs-rest-api/wiki#apihtml-) | Accesses resources for handling HTML documents.  |
 | [/api/languages](https://github.com/mkloubert/vs-rest-api/wiki#apilanguages-) | Accesses resources of all known languages.  |
 | [/api/outputs](https://github.com/mkloubert/vs-rest-api/wiki#apioutputs-) | Accesses resources of output channels handled by the extension.  |
 | [/api/popups](https://github.com/mkloubert/vs-rest-api/wiki#apipopups-) | Accesses resources for handling popup messages.  |
