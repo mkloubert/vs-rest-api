@@ -27,6 +27,7 @@ import * as rapi_helpers from '../helpers';
 import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
+
 interface EditorWithId {
     editor: vscode.TextEditor;
     id?: number;

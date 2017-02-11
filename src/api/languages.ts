@@ -25,8 +25,8 @@
 
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
-import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
+
 
 // [GET] /languages
 export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {

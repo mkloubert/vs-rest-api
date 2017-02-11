@@ -25,7 +25,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-
 import * as FS from 'fs';
 import * as Moment from 'moment';
 import * as Path from 'path';

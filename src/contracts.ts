@@ -25,7 +25,6 @@
 
 import * as HTTP from 'http';
 import * as Moment from 'moment';
-import * as rapi_host from './host';
 import * as URL from 'url';
 import * as vscode from 'vscode';
 
@@ -140,6 +139,15 @@ export interface ApiMethodArguments extends ScriptArguments {
      * The text encoding to use.
      */
     encoding: string;
+    /**
+     * Executes a build method.
+     * 
+     * @param {string} [endpoint] The custom endpoint to use.
+     * @param {ApiMethodArguments} [args] The custom arguments to use.
+     * 
+     * @return {PromiseLike<any>} The promise.
+     */
+    readonly executeBuildIn: (endpoint?: string, args?: ApiMethodArguments) => PromiseLike<any>;
     /**
      * The extension context.
      */

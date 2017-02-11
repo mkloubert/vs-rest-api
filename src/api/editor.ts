@@ -27,7 +27,6 @@ import * as FS from 'fs';
 import * as Path from 'path';
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
-import * as rapi_host from '../host';
 import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 

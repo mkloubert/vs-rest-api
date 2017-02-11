@@ -1,5 +1,11 @@
 # Change Log (vs-rest-api)
 
+## 1.3.0 (February 11th, 2017; cleanups and improvements)
+
+* added `executeBuildIn()` method to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html)
+* code cleanups and improvements
+* bugfixes
+
 ## 1.2.0 (February 11th, 2017; translation)
 
 * bugfixes

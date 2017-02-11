@@ -24,28 +24,30 @@
 // DEALINGS IN THE SOFTWARE.
 
 import * as rapi_contracts from '../contracts';
-import * as rapi_host from '../host';
-import * as rapi_host_helpers from './helpers';
-import * as rapi_host_users from '../host/users';
+import * as rapi_helpers from '../helpers';
 
 
-/**
- * Handles a local file.
- * 
- * @param {string} file The local file.
- * @param {rapi_contracts.RequestContext} ctx The request context.
- */
-export function handleFile(file: string,
-                           ctx: rapi_contracts.RequestContext) {
-    ctx.user.isFileVisible(file, ctx.user.get<boolean>(rapi_host_users.VAR_WITH_DOT)).then((isVisible) => {
-        if (!isVisible) {
-            rapi_host_helpers.sendNotFound(ctx);
+// TESTCODE
+export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        let a = true;
+        if (a) {
+            args.sendNotFound();
+            completed();
             return;
         }
 
-        //TODO
-        ctx.response.end();
-    }, (err) => {
-        rapi_host_helpers.sendError(err, ctx);
+        try {
+            args.executeBuildIn('workspace').then((r) => {
+                completed(null, r);
+            }, (err) => {
+                completed(err);
+            });
+        }
+        catch (e) {
+            completed(e);
+        }
     });
 }

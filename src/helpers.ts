@@ -23,7 +23,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-
 import * as ChildProcess from 'child_process';
 const Entities = require('html-entities').AllHtmlEntities;
 import * as FS from 'fs';

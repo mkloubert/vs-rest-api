@@ -23,8 +23,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-
-const Entities = require('html-entities').AllHtmlEntities;
 import * as FS from 'fs';
 import * as HTTP from 'http';
 import * as HTTPs from 'https';
@@ -35,8 +33,6 @@ import * as Path from 'path';
 import * as rapi_contracts from './contracts';
 import * as rapi_controller from './controller';
 import * as rapi_helpers from './helpers';
-import * as rapi_host_dirs from './host/dirs';
-import * as rapi_host_files from './host/files';
 import * as rapi_host_helpers from './host/helpers';
 import * as rapi_host_users from './host/users';
 import * as rapi_users from './host/users';
@@ -56,6 +52,40 @@ export const DEFAULT_PORT = 1781;
  * Checks if URL path represents an API request.
  */
 export const REGEX_API = /^(\/)(api)(\/)?/i;
+
+/**
+ * Context for validating a connection / user.
+ */
+export interface ValidateConnectionContext {
+    /**
+     * The app settings.
+     */
+    config: rapi_contracts.Configuration;
+    /**
+     * The request method.
+     */
+    readonly method: string;
+    /**
+     * The request context.
+     */
+    request: HTTP.IncomingMessage;
+    /**
+     * The response context.
+     */
+    response: HTTP.ServerResponse;
+    /**
+     * The status code to return if connection is invalid.
+     */
+    statusCode: number;
+    /**
+     * The timestamp.
+     */
+    readonly time: Moment.Moment;
+    /**
+     * The user.
+     */
+    readonly user: rapi_contracts.User;
+}
 
 
 /**
@@ -137,8 +167,71 @@ export class ApiHost implements vscode.Disposable {
                                       .map(x => decodeURIComponent(x))
                                       .filter(x => !rapi_helpers.isEmptyString(x));
 
-            let apiArgs: rapi_contracts.ApiMethodArguments = {
+            let apiArgs: rapi_contracts.ApiMethodArguments;
+            apiArgs = {
                 encoding: DEFAULT_ENCODING,
+                executeBuildIn: function(endpoint?, args?) {
+                    args = args || apiArgs;
+
+                    return new Promise<any>((resolve, reject) => {
+                        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+                        try {
+                            endpoint = rapi_helpers.normalizeString(endpoint);
+                            if (!endpoint) {
+                                // try use default
+                                if (parts.length > 0) {
+                                    endpoint = rapi_helpers.normalizeString(parts[0]);
+                                }
+                            }
+
+                            let buildInMethod: rapi_contracts.ApiMethod;
+                            if (endpoint) {
+                                try {
+                                    let buildInModule: rapi_contracts.ApiModule = require('./api/' + endpoint);
+                                    if (buildInModule) {
+                                        let upperMethod = ctx.method.toUpperCase();
+                                        for (let p in buildInModule) {
+                                            if (p == upperMethod) {
+                                                if ('function' === typeof buildInModule[p]) {
+                                                    // found
+
+                                                    buildInMethod = buildInModule[p];
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (e) { /* not found */ }
+                            }
+
+                            if (buildInMethod) {
+                                let buildInMethodResult = buildInMethod(args);
+                                if (buildInMethodResult) {
+                                    // Promise => async
+
+                                    buildInMethodResult.then((r) => {
+                                        completed(null, r);
+                                    }, (err) => {
+                                        completed(err);
+                                    });
+                                }
+                                else {
+                                    completed();
+                                }
+                            }
+                            else {
+                                args.sendMethodNotAllowed();
+
+                                completed();
+                            }
+                        }
+                        catch (e) {
+                            completed(e);
+                        }
+                    });
+                },
                 extension: me.controller.context,
                 getBody: function() {
                     return rapi_helpers.readHttpBody(this.request.request);
@@ -741,16 +834,18 @@ export class ApiHost implements vscode.Disposable {
                             }
 
                             try {
+                                let validatorCtx: ValidateConnectionContext = {
+                                    config: ctx.config,
+                                    method: ctx.method,
+                                    request: req,
+                                    response: resp,
+                                    statusCode: 404,
+                                    time: ctx.time,
+                                    user: user,
+                                };
+
                                 let validatorArgs: rapi_contracts.ValidatorArguments<rapi_contracts.RemoteClient> = {
-                                    context: {
-                                        config: ctx.config,
-                                        method: ctx.method,
-                                        request: req,
-                                        response: resp,
-                                        statusCode: 404,
-                                        time: ctx,
-                                        user: user,
-                                    },
+                                    context: validatorCtx,
                                     globals: me.controller.getGlobals(),
                                     globalState: undefined,
                                     options: undefined,
