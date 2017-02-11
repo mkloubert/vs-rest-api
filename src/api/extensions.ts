@@ -78,7 +78,7 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 
 // [POST] /extensions/{id}
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canActivate = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_ACTIVATE);
+    let canActivate = args.request.user.can('activate');
 
     return new Promise<any>((resolve, reject) => {
         let completed = (err?: any) => {

@@ -55,6 +55,10 @@ export interface Account {
      */
     canActivate?: boolean;
     /**
+     * Defines if account is able to do anything with the API or not.
+     */
+    canAnything?: boolean;
+    /**
      * Defines if account is able to close editor tabs or not.
      */
     canClose?: boolean;
@@ -675,6 +679,14 @@ export interface User {
      * Gets the underlying request context.
      */
     readonly context: RequestContext;
+    /**
+     * Checks if this user is able to do something.
+     * 
+     * @param {string} acl The name of the (ACL) resource.
+     * 
+     * @returns {boolean} Is able to do or not.
+     */
+    readonly can: (acl: string, defaultValue?: boolean) => boolean;
     /**
      * Gets a variable of the user.
      * 

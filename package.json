@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -102,6 +102,11 @@
                   "properties": {
                     "canActivate": {
                       "description": "Defines if guest is able to activate extensions or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "canAnything": {
+                      "description": "Defines if guest is able to do anything with the API or not.",
                       "type": "boolean",
                       "default": false
                     },
@@ -277,6 +282,11 @@
                       "type": "boolean",
                       "default": false
                     },
+                    "canAnything": {
+                      "description": "Defines if user is able to do anything with the API or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "canClose": {
                       "description": "Defines if user is able to close editor tabs or not.",
                       "type": "boolean",
@@ -379,6 +389,11 @@
                     "properties": {
                       "canActivate": {
                         "description": "Defines if user is able to activate extensions or not.",
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "canAnything": {
+                        "description": "Defines if user is able to do anything with the API or not.",
                         "type": "boolean",
                         "default": false
                       },

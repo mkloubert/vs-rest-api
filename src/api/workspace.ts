@@ -58,7 +58,7 @@ interface FileSystemItem {
 }
 
 function deleteItem(args: rapi_contracts.ApiMethodArguments, fullPath: string): PromiseLike<any> {
-    let canDelete = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_DELETE);
+    let canDelete = args.request.user.can('delete');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -140,7 +140,7 @@ function deleteItem(args: rapi_contracts.ApiMethodArguments, fullPath: string): 
 }
 
 function handleDirectory(args: rapi_contracts.ApiMethodArguments, dir: string): PromiseLike<any> {
-    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+    let canOpen = args.request.user.can('open');
 
     return new Promise<any>((resolve, reject) => {
         let dirs: DirectoryItem[] = [];
@@ -491,8 +491,8 @@ function toISODateString(dt: Date): string {
 
 function writeFile(args: rapi_contracts.ApiMethodArguments,
                    fullPath: string): PromiseLike<any> {
-    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
-    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+    let canOpen = args.request.user.can('open');
+    let canWrite = args.request.user.can('write');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);

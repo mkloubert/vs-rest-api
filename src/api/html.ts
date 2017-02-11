@@ -45,7 +45,7 @@ export interface NewHtmlDocument {
 
 // [POST] /html
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+    let canOpen = args.request.user.can('open');
 
     return new Promise<any>((resolve, reject) => {
         let htmlDocs: rapi_contracts.Document[] = args.workspaceState[rapi_contracts.VAR_HTML_DOCS];

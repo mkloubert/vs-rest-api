@@ -35,7 +35,7 @@ interface EditorWithId {
 
 // [DELETE] /editors(/{id})
 export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canClose = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_CLOSE);
+    let canClose = args.request.user.can('close');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -185,7 +185,7 @@ function getEditorById(args: rapi_contracts.ApiMethodArguments): EditorWithId {
 
 // [PATCH] /editors(/{id})
 export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+    let canWrite = args.request.user.can('write');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -237,7 +237,7 @@ export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any>
 
 // [POST] /editors(/{id})
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+    let canOpen = args.request.user.can('open');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -274,7 +274,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
 
 // [PUT] /editors(/{id})
 export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+    let canWrite = args.request.user.can('write');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);

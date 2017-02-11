@@ -65,7 +65,7 @@ function normalizePath(p: string) {
 
 // [POST] /files
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+    let canOpen = args.request.user.can('open');
     
     return new Promise<any>((resolve, reject) => {
         let files: rapi_contracts.File[] = [];

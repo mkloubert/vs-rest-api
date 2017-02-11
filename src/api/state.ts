@@ -30,7 +30,7 @@ import * as rapi_host_users from '../host/users';
 
 // [DELETE] /state/{name}
 export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canDelete = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_DELETE);
+    let canDelete = args.request.user.can('delete');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -120,7 +120,7 @@ function getVarName(args: rapi_contracts.ApiMethodArguments): string {
 
 // [PUT] /state/{name}
 export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+    let canWrite = args.request.user.can('write');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);

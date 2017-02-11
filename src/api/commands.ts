@@ -31,7 +31,7 @@ import * as vscode from 'vscode';
 
 // [GET] /commands
 export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
+    let canExecute = args.request.user.can('execute');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -67,7 +67,7 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 
 // [POST] /commands/{commandId}
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canExecute = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_EXECUTE);
+    let canExecute = args.request.user.can('execute');
     
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);

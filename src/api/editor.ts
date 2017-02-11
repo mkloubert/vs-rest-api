@@ -33,7 +33,7 @@ import * as vscode from 'vscode';
 
 // [DELETE] /editor
 export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canClose = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_CLOSE);
+    let canClose = args.request.user.can('close');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -100,7 +100,7 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 
 // [PATCH] /editor
 export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+    let canWrite = args.request.user.can('write');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -151,7 +151,7 @@ export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any>
 
 // [POST] /editor[/{file}]
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canOpen = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_OPEN);
+    let canOpen = args.request.user.can('open');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -253,7 +253,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
 
 // [PUT] /editor
 export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
-    let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
+    let canWrite = args.request.user.can('write');
 
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);

@@ -36,6 +36,10 @@ import * as vscode from 'vscode';
  */
 export const VAR_CAN_ACTIVATE = 'can_activate';
 /**
+ * Name of a variable that defines if an user has the right to do anything with the API or not.
+ */
+export const VAR_CAN_ANYTHING = 'can_anything';
+/**
  * Name of a variable that defines if an user has the right to close editor tabs or not.
  */
 export const VAR_CAN_CLOSE = 'can_close';
@@ -82,6 +86,16 @@ class User implements rapi_contracts.User {
 
     public get account(): rapi_contracts.Account {
         return this._ACCOUNT;
+    }
+
+    public can(name: string, defaultValue?: boolean): boolean {
+        name = this.parseVarName(name);
+
+        let value = this.get<boolean>('can_' + name,
+                                      rapi_helpers.toBooleanSafe(defaultValue));
+
+        return rapi_helpers.toBooleanSafe(value ||
+                                          this.get(VAR_CAN_ANYTHING, false));
     }
 
     public get context(): rapi_contracts.RequestContext {
@@ -433,6 +447,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
 
             // apply default values
             if (result) {
+                // can anything?
+                result.set(VAR_CAN_ANYTHING, rapi_helpers.toBooleanSafe(result.account.canAnything));
                 // can activate?
                 result.set(VAR_CAN_ACTIVATE, rapi_helpers.toBooleanSafe(result.account.canActivate));
                 // can close?
