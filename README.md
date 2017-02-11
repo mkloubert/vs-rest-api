@@ -132,7 +132,7 @@ Define one ore more [regular expressions](https://en.wikipedia.org/wiki/Regular_
     "rest.api": {
         // ...
         
-        "enpoints": {
+        "endpoints": {
             "myendpoint": {
                 "script": "./my-endpoint.js",
                 "options": "Hello!"
