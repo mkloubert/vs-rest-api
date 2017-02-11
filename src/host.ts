@@ -616,6 +616,15 @@ export class ApiHost implements vscode.Disposable {
                                     };
                                 }
                             }
+
+                            // html
+                            {
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_OPEN)) {
+                                    endpoints['html'] = {
+                                        'post': '/api/html',
+                                    };
+                                }
+                            }
                         }
 
                         if (!ctx.user.isGuest) {
