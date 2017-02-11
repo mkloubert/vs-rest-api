@@ -7,5 +7,5 @@ src/**
 .gitignore
 tsconfig.json
 demos/**
-/pushall.sh
-/typedoc.cmd
+pushall.sh
+typedoc.cmd
