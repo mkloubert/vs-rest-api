@@ -107,6 +107,7 @@ Visit the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#build-in-endpoint
 | [/api/editor](https://github.com/mkloubert/vs-rest-api/wiki#apieditor-) | Accesses resources of the active editor (tab).  |
 | [/api/editors](https://github.com/mkloubert/vs-rest-api/wiki#apieditors-) | Accesses resources of all opened editors.  |
 | [/api/extensions](https://github.com/mkloubert/vs-rest-api/wiki#apiextensions-) | Accesses resources of all known extensions.  |
+| [/api/files](https://github.com/mkloubert/vs-rest-api/wiki#apifiles-) | Accesses resources for handling file operations.  |
 | [/api/globals](https://github.com/mkloubert/vs-rest-api/wiki#apiglobals-) | Accesses permanent data for all users.  |
 | [/api/languages](https://github.com/mkloubert/vs-rest-api/wiki#apilanguages-) | Accesses resources of all known languages.  |
 | [/api/outputs](https://github.com/mkloubert/vs-rest-api/wiki#apioutputs-) | Accesses resources of output channels handled by the extension.  |
