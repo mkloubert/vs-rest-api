@@ -115,6 +115,7 @@ Visit the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#build-in-endpoint
 | [/api/globals](https://github.com/mkloubert/vs-rest-api/wiki#apiglobals-) | Accesses permanent data for all users.  |
 | [/api/languages](https://github.com/mkloubert/vs-rest-api/wiki#apilanguages-) | Accesses resources of all known languages.  |
 | [/api/outputs](https://github.com/mkloubert/vs-rest-api/wiki#apioutputs-) | Accesses resources of output channels handled by the extension.  |
+| [/api/popups](https://github.com/mkloubert/vs-rest-api/wiki#apipopups-) | Accesses resources for handling popup messages.  |
 | [/api/state](https://github.com/mkloubert/vs-rest-api/wiki#apistate-) | Accesses permanent data for the current user / guest.  |
 | [/api/workspace](https://github.com/mkloubert/vs-rest-api/wiki#apiworkspace-) | Accesses or manipulates resources, like files or folders, inside the current workspace.  |
 
