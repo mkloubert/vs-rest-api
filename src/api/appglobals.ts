@@ -29,7 +29,7 @@ import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
 
-// [DELETE] /state/{name}
+// [DELETE] /appglobals/{name}
 export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canDelete = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_DELETE);
 
@@ -52,7 +52,7 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
             let oldValue = item.item[name];
             delete item.item[name];
 
-            args.extension.workspaceState.update(rapi_contracts.VAR_STATE, item.repository);
+            args.extension.globalState.update(rapi_contracts.VAR_STATE, item.repository);
 
             args.response.data = {};
             if (exists) {
@@ -67,7 +67,7 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
     });
 }
 
-// [GET] /state
+// [GET] /appglobals
 export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -88,22 +88,10 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 function getRepoItem(args: rapi_contracts.ApiMethodArguments): rapi_contracts.StateRepositoryWithItem {
     let item: rapi_contracts.StateRepositoryWithItem = {
         item: undefined,
-        repository: rapi_helpers.getStateRepository(args.extension.workspaceState, rapi_contracts.VAR_STATE),
+        repository: rapi_helpers.getStateRepository(args.extension.globalState, rapi_contracts.VAR_STATE),
     };
 
-    if (args.request.user.isGuest) {
-        item.item = item.repository.guest;
-    }
-    else {
-        let user: rapi_contracts.UserAccount = <any>args.request.user;
-        let username = rapi_helpers.normalizeString(user.name);
-
-        if (!item.repository.users[username]) {
-            item.repository.users[username] = {};
-        }
-
-        item.item = item.repository.users[username];
-    }
+    item.item = item.repository.globals;
 
     return item;
 }
@@ -119,7 +107,7 @@ function getVarName(args: rapi_contracts.ApiMethodArguments): string {
     return rapi_helpers.normalizeString(name);
 }
 
-// [PUT] /state/{name}
+// [PUT] /appglobals/{name}
 export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
 
@@ -144,7 +132,7 @@ export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
                     let oldValue = item.item[name];
                     item.item[name] = newValue;
 
-                    args.extension.workspaceState.update(rapi_contracts.VAR_STATE, item.repository);
+                    args.extension.globalState.update(rapi_contracts.VAR_STATE, item.repository);
 
                     args.response.data = {
                         isNew: isNew,

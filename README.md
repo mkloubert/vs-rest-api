@@ -101,6 +101,8 @@ Visit the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#build-in-endpoint
 
 | Name | Description |
 | ---- | --------- |
+| [/api/appglobals](https://github.com/mkloubert/vs-rest-api/wiki#apiappglobals-) | Accesses permanent data for all users outside the current workspace.  |
+| [/api/appstate](https://github.com/mkloubert/vs-rest-api/wiki#apiappstate-) | Accesses permanent data for the current user / guest outside the current workspace.  |
 | [/api/commands](https://github.com/mkloubert/vs-rest-api/wiki#apicommands-) | Accesses commands.  |
 | [/api/editor](https://github.com/mkloubert/vs-rest-api/wiki#apieditor-) | Accesses resources of the active editor (tab).  |
 | [/api/editors](https://github.com/mkloubert/vs-rest-api/wiki#apieditors-) | Accesses resources of all opened editors.  |

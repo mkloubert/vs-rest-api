@@ -388,6 +388,34 @@ export class ApiHost implements vscode.Disposable {
                                 }
                             }
 
+                            // app globals
+                            {
+                                endpoints['app_globals'] = {
+                                    'get': '/api/appglobals',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
+                                    endpoints['app_globals']['delete'] = '/api/appglobals/{name}';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['app_globals']['put'] = '/api/appglobals/{name}';
+                                }
+                            }
+
+                            // app state
+                            {
+                                endpoints['app_state'] = {
+                                    'get': '/api/appstate',
+                                };
+
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
+                                    endpoints['app_state']['delete'] = '/api/appstate/{name}';
+                                }
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
+                                    endpoints['app_state']['put'] = '/api/appstate/{name}';
+                                }
+                            }
+
                             // open editor
                             {
                                 endpoints['open_editors'] = {
@@ -711,6 +739,7 @@ export class ApiHost implements vscode.Disposable {
                                         response: resp,
                                         statusCode: 404,
                                         time: ctx,
+                                        user: user,
                                     },
                                     globals: me.controller.getGlobals(),
                                     globalState: undefined,

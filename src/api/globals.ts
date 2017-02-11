@@ -29,7 +29,7 @@ import * as rapi_host_users from '../host/users';
 import * as vscode from 'vscode';
 
 
-// [DELETE] /state/{name}
+// [DELETE] /globals/{name}
 export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canDelete = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_DELETE);
 
@@ -47,12 +47,17 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
 
             let item = getRepoItem(args);
 
+            let exists = (<Object>item.item).hasOwnProperty(name);
+
             let oldValue = item.item[name];
             delete item.item[name];
 
             args.extension.workspaceState.update(rapi_contracts.VAR_STATE, item.repository);
 
-            args.response.data = oldValue;
+            args.response.data = {};
+            if (exists) {
+                args.response.data['old'] = oldValue;
+            }
 
             completed();
         }
@@ -62,7 +67,7 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
     });
 }
 
-// [GET] /state
+// [GET] /globals
 export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
@@ -102,7 +107,7 @@ function getVarName(args: rapi_contracts.ApiMethodArguments): string {
     return rapi_helpers.normalizeString(name);
 }
 
-// [PUT] /state/{name}
+// [PUT] /globals/{name}
 export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canWrite = args.request.user.get<boolean>(rapi_host_users.VAR_CAN_WRITE);
 
@@ -122,10 +127,18 @@ export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 
             rapi_helpers.readHttpBodyAsJSON<any>(args.request.request).then((newValue) => {
                 try {
+                    let isNew = !(<Object>item.item).hasOwnProperty(name);
+
+                    let oldValue = item.item[name];
                     item.item[name] = newValue;
+
                     args.extension.workspaceState.update(rapi_contracts.VAR_STATE, item.repository);
 
-                    args.response = newValue;
+                    args.response.data = {
+                        isNew: isNew,
+                        new: newValue,
+                        old: oldValue,
+                    };
 
                     completed();
                 }
