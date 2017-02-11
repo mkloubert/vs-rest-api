@@ -29,8 +29,18 @@ import { Translation } from '../i18';
 // 
 // Translated by: Marcel Joachim Kloubert (https://github.com/mkloubert)
 export const TRANSLATION: Translation = {
+    browser: {
+        openFailed: "Konnte Adresse {0:trim,surround} nicht ÖFFNEN: {1:trim}",
+    },
     errors: {
         withCategory: '[ERROR] {0:trim}: {1}',
+    },
+    host: {
+        notStarted: "Der Dienst wurde NICHT gestartet!",
+        started: "Der Dienst läuft nun auf Port {0:trim}",
+        startFailed: "Der Dienst konnte nicht GESTARTET werden: {0:trim}",
+        stopFailed: "Der Dienst konnte nicht ANGEHALTEN werden: {0:trim}",
+        stopped: "Der Dienst wurde ANGEHALTEN.",
     },
     isNo: {
         file: "{0:trim,surround} ist keine Datei!",

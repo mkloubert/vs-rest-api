@@ -120,9 +120,9 @@ export interface ApiEndpoint {
  * 
  * @param {ApiMethodArguments} args The arguments.
  * 
- * @returns {PromiseLike<any>|void} The result.
+ * @returns {ApiMethodResult} The result.
  */
-export type ApiMethod = (args: ApiMethodArguments) => PromiseLike<any> | void;
+export type ApiMethod = (args: ApiMethodArguments) => ApiMethodResult;
 
 /**
  * Arguments for an API method.
@@ -224,6 +224,11 @@ export interface ApiMethodArguments extends ScriptArguments {
      */
     readonly write: (data: any) => ApiMethodArguments;
 }
+
+/**
+ * The result of an API method.
+ */
+export type ApiMethodResult = PromiseLike<any> | void;
 
 /**
  * An API module.

@@ -34,8 +34,18 @@ import * as vscode from 'vscode';
  * Stores the strings of a translation.
  */
 export interface Translation {
+    browser: {
+        openFailed: string;
+    },
     errors: {
         withCategory: string;
+    },
+    host: {
+        notStarted: string;
+        started: string;
+        startFailed: string;
+        stopFailed: string;
+        stopped: string;
     },
     isNo: {
         file: string;

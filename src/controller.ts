@@ -194,6 +194,8 @@ export class Controller implements vscode.Disposable {
 
             me._config = cfg;
 
+            me.showNewVersionPopup();
+
             if (rapi_helpers.toBooleanSafe(cfg.autoStart)) {
                 this.start().then(() => {
                     //TODO
@@ -223,116 +225,6 @@ export class Controller implements vscode.Disposable {
         }
     }
 
-    /**
-     * Starts the host.
-     * 
-     * @return {PromiseLike<rapi_host.VSCodeRemoteHost>} The promise.
-     */
-    public start(): PromiseLike<rapi_host.ApiHost> {
-        let me = this;
-
-        let cfg = me.config;
-
-        let port = cfg.port;
-        if (rapi_helpers.isEmptyString(port)) {
-            port = rapi_host.DEFAULT_PORT;
-        }
-        port = parseInt(rapi_helpers.normalizeString(port));
-
-        return new Promise<rapi_host.ApiHost>((resolve, reject) => {
-            let completed = (err: any, h?: rapi_host.ApiHost) => {
-                if (err) {
-                    vscode.window.showErrorMessage(`[vs-rest-api] Could not start host: ${rapi_helpers.toStringSafe(err)}`);
-
-                    reject(err);
-                }
-                else {
-                    if (rapi_helpers.toBooleanSafe(cfg.showPopupOnSuccess, true)) {
-                        vscode.window.showInformationMessage(`[vs-rest-api] Host now runs on port ${port}.`);
-                    }
-
-                    let protocol = 'http';
-                    if (cfg.ssl) {
-                        protocol += 's';
-                    }
-
-                    let browserUrl = `${protocol}://127.0.0.1:${port}/api/`;
-
-                    me.outputChannel.appendLine(`Host now runs on port ${port}:`);
-                    try {
-                        me.outputChannel.appendLine(`\t- ${protocol}://${rapi_helpers.normalizeString(OS.hostname())}:${port}/api/`);
-
-                        let networkInterfaces = OS.networkInterfaces();
-                        let networkInterfaceNames = Object.keys(networkInterfaces);
-
-                        if (networkInterfaceNames.length > 0) {
-                            networkInterfaceNames.forEach((ifName) => {
-                                let ifaces = networkInterfaces[ifName].filter(x => {
-                                    let addr = rapi_helpers.normalizeString(x.address);
-                                    if ('IPv4' == x.family) {
-                                        return !/^(127\.[\d.]+|[0:]+1|localhost)$/.test(addr);
-                                    }
-
-                                    return false;
-                                });
-
-                                ifaces.forEach((x) => {
-                                    me.outputChannel.appendLine(`\t- ${protocol}://${x.address}:${port}/api/`);
-                                });
-                            });
-                        }
-                    }
-                    catch (e) {
-                        me.log(`[ERROR] Controller.start(1): ${rapi_helpers.toStringSafe(e)}`);
-                    }
-                    me.outputChannel.appendLine('');
-
-                    if (rapi_helpers.toBooleanSafe(cfg.openInBrowser)) {
-                        rapi_helpers.open(browserUrl).then(() => {
-                            //TODO
-                        }, (err) => {
-                            vscode.window.showWarningMessage(`[vs-rest-api] Could not open url '${browserUrl}': ${rapi_helpers.toStringSafe(err)}`);
-                        });
-                    }
-
-                    resolve(h);
-                }
-            };
-
-            let startHost = () => {
-                me._host = null;
-
-                let newHost = new rapi_host.ApiHost(me);
-
-                newHost.start(port).then((started) => {
-                    if (started) {
-                        me._host = newHost;
-
-                        completed(null, newHost);
-                    }
-                    else {
-                        completed(new Error("[vs-rest-api] Server has not been started!"));
-                    }
-                }, (err) => {
-                    completed(err);
-                });
-            };
-
-            let currentHost = me._host;
-            if (currentHost) {
-                // restart
-
-                currentHost.stop().then(() => {
-                    startHost();
-                }, (err) => {
-                    completed(err);
-                });
-            }
-            else {
-                startHost();
-            }
-        });
-    }
 
     /**
      * Shows the popup for a new version.
@@ -406,6 +298,117 @@ export class Controller implements vscode.Disposable {
     }
 
     /**
+     * Starts the host.
+     * 
+     * @return {PromiseLike<rapi_host.VSCodeRemoteHost>} The promise.
+     */
+    public start(): PromiseLike<rapi_host.ApiHost> {
+        let me = this;
+
+        let cfg = me.config;
+
+        let port = cfg.port;
+        if (rapi_helpers.isEmptyString(port)) {
+            port = rapi_host.DEFAULT_PORT;
+        }
+        port = parseInt(rapi_helpers.normalizeString(port));
+
+        return new Promise<rapi_host.ApiHost>((resolve, reject) => {
+            let completed = (err: any, h?: rapi_host.ApiHost) => {
+                if (err) {
+                    vscode.window.showErrorMessage(`[vs-rest-api] ${i18.t('host.startFailed', err)}`);
+
+                    reject(err);
+                }
+                else {
+                    if (rapi_helpers.toBooleanSafe(cfg.showPopupOnSuccess, true)) {
+                        vscode.window.showInformationMessage(`[vs-rest-api] ${i18.t('host.started', port)}.`);
+                    }
+
+                    let protocol = 'http';
+                    if (cfg.ssl) {
+                        protocol += 's';
+                    }
+
+                    let browserUrl = `${protocol}://127.0.0.1:${port}/api/`;
+
+                    me.outputChannel.appendLine(`${i18.t('host.started', port)}:`);
+                    try {
+                        me.outputChannel.appendLine(`\t- ${protocol}://${rapi_helpers.normalizeString(OS.hostname())}:${port}/api/`);
+
+                        let networkInterfaces = OS.networkInterfaces();
+                        let networkInterfaceNames = Object.keys(networkInterfaces);
+
+                        if (networkInterfaceNames.length > 0) {
+                            networkInterfaceNames.forEach((ifName) => {
+                                let ifaces = networkInterfaces[ifName].filter(x => {
+                                    let addr = rapi_helpers.normalizeString(x.address);
+                                    if ('IPv4' == x.family) {
+                                        return !/^(127\.[\d.]+|[0:]+1|localhost)$/.test(addr);
+                                    }
+
+                                    return false;
+                                });
+
+                                ifaces.forEach((x) => {
+                                    me.outputChannel.appendLine(`\t- ${protocol}://${x.address}:${port}/api/`);
+                                });
+                            });
+                        }
+                    }
+                    catch (e) {
+                        me.log(i18.t('errors.withCategory', e));
+                    }
+                    me.outputChannel.appendLine('');
+
+                    if (rapi_helpers.toBooleanSafe(cfg.openInBrowser)) {
+                        rapi_helpers.open(browserUrl).then(() => {
+                            //TODO
+                        }, (err) => {
+                            vscode.window.showWarningMessage(`[vs-rest-api] ${i18.t('browser.openFailed', browserUrl, err)}`);
+                        });
+                    }
+
+                    resolve(h);
+                }
+            };
+
+            let startHost = () => {
+                me._host = null;
+
+                let newHost = new rapi_host.ApiHost(me);
+
+                newHost.start(port).then((started) => {
+                    if (started) {
+                        me._host = newHost;
+
+                        completed(null, newHost);
+                    }
+                    else {
+                        completed(new Error(`[vs-rest-api] ${i18.t('host.notStarted')}`));
+                    }
+                }, (err) => {
+                    completed(err);
+                });
+            };
+
+            let currentHost = me._host;
+            if (currentHost) {
+                // restart
+
+                currentHost.stop().then(() => {
+                    startHost();
+                }, (err) => {
+                    completed(err);
+                });
+            }
+            else {
+                startHost();
+            }
+        });
+    }
+
+    /**
      * Stops the host.
      * 
      * @return {PromiseLike<boolean>} The promise.
@@ -418,13 +421,15 @@ export class Controller implements vscode.Disposable {
         return new Promise<boolean>((resolve, reject) => {
             let completed = (err: any, stopped?: boolean) => {
                 if (err) {
-                    vscode.window.showErrorMessage(`[vs-rest-api] Could not stop host: ${rapi_helpers.toStringSafe(err)}`);
+                    vscode.window.showErrorMessage(`[vs-rest-api] ${i18.t('host.stopFailed', err)}`);
 
                     reject(err);
                 }
                 else {
-                    if (rapi_helpers.toBooleanSafe(cfg.showPopupOnSuccess, true)) {
-                        vscode.window.showInformationMessage(`[vs-rest-api] Host has been STOPPED.`);
+                    if (stopped) {
+                        if (rapi_helpers.toBooleanSafe(cfg.showPopupOnSuccess, true)) {
+                            vscode.window.showInformationMessage(`[vs-rest-api] ${i18.t('host.stopped')}`);
+                        }
                     }
                     
                     resolve(stopped);
@@ -433,10 +438,10 @@ export class Controller implements vscode.Disposable {
 
             let currentHost = me._host;
             if (currentHost) {
-                currentHost.stop().then(() => {
+                currentHost.stop().then((stopped) => {
                     me._host = null;
 
-                    completed(null, true);
+                    completed(null, stopped);
                 }, (err) => {
                     completed(err);
                 });

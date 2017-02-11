@@ -30,8 +30,18 @@ import { Translation } from '../i18';
 // 
 // Translated by: Marcel Joachim Kloubert (https://github.com/mkloubert)
 export const TRANSLATION: Translation = {
+    browser: {
+        openFailed: "Could not OPEN url {0:trim,surround}: {1:trim}",
+    },
     errors: {
         withCategory: '[FEHLER] {0:trim}: {1}',
+    },
+    host: {
+        notStarted: "Server has NOT been started!",
+        started: "Host now runs on port {0:trim}",
+        startFailed: "The host could not be STARTED: {0:trim}",
+        stopFailed: "The host could not be STOPPED: {0:trim}",
+        stopped: "Host has been STOPPED.",
     },
     isNo: {
         file: "{0:trim,surround} is no file!",

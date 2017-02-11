@@ -28,6 +28,7 @@ const Entities = require('html-entities').AllHtmlEntities;
 import * as FS from 'fs';
 import * as HTTP from 'http';
 import * as HTTPs from 'https';
+import * as i18 from './i18';
 import * as Moment from 'moment';
 import * as OS from 'os';
 import * as Path from 'path';
@@ -109,7 +110,7 @@ export class ApiHost implements vscode.Disposable {
         me.stop().then(() => {
             //TODO
         }, (err) => {
-            me.controller.log(`[ERROR] host.dispose(): ${rapi_helpers.toStringSafe(err)}`);
+            me.controller.log(i18.t('errors.withCategory', 'ApiHost.dispose()', err));
         });
     }
 
@@ -513,6 +514,15 @@ export class ApiHost implements vscode.Disposable {
                                     endpoints['workspace']['put'] = '/api/workspace/{path}';
                                 }
                             }
+
+                            // popups
+                            {
+                                if (ac.request.user.get(rapi_host_users.VAR_CAN_EXECUTE)) {
+                                    endpoints['popups'] = {
+                                        'post': '/api/popups',
+                                    };
+                                }
+                            }
                         }
 
                         if (!ctx.user.isGuest) {
@@ -568,7 +578,7 @@ export class ApiHost implements vscode.Disposable {
                                     ctx.response.end();
                                 }
                                 catch (e) {
-                                    //TODO: log
+                                    me.controller.log(i18.t('errors.withCategory', 'ApiHost.handleApi.sendResponseData()', e));
                                 }
                             };
 
@@ -584,7 +594,7 @@ export class ApiHost implements vscode.Disposable {
 
                                     sendResponseData(compressResult.dataToSend);
                                 }, (err) => {
-                                    //TODO: log
+                                    me.controller.log(i18.t('errors.withCategory', 'ApiHost.handleApi.compressForResponse()', err));
 
                                     sendResponseData(responseData);
                                 });
@@ -837,7 +847,7 @@ export class ApiHost implements vscode.Disposable {
                                             ctx.response.end();
                                         }
                                         catch (e) {
-                                            rapi_helpers.log(`[ERROR] ApiHost.start().requestListener(): ${rapi_helpers.toStringSafe(e)}`);
+                                            rapi_helpers.log(i18.t('errors.withCategory', 'ApiHost.start().requestListener()', e));
                                         }
                                     }
                                 };
@@ -872,7 +882,7 @@ export class ApiHost implements vscode.Disposable {
                             resp.end();
                         }
                         catch (e) {
-                            //TODO: log
+                            me.controller.log(i18.t('errors.withCategory', 'ApiHost.handleApi.HTTP_500', e));
                         }
                     }
                 };
