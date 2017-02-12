@@ -531,7 +531,7 @@ function writeFile(args: rapi_contracts.ApiMethodArguments,
                     let writeBody = () => {
                         //TODO check for file visibility even if file does not exist
 
-                        rapi_helpers.readHttpBody(args.request.request).then((data) => {
+                        args.getBody().then((data) => {
                             FS.writeFile(fullPath, data || Buffer.alloc(0), (err) => {
                                 if (err) {
                                     completed(err);

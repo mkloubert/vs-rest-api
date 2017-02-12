@@ -84,7 +84,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
             return;
         }
 
-        rapi_helpers.readHttpBodyAsJSON<any>(args.request.request).then((obj) => {
+        args.getJSON<any>().then((obj) => {
             try {
                 let opts: ShowMessageOptions = obj;
                 if (opts) {

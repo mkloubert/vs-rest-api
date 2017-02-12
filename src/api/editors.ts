@@ -200,7 +200,7 @@ export function PATCH(args: rapi_contracts.ApiMethodArguments): PromiseLike<any>
             let editor = getEditorById(args);
 
             if (editor) {
-                rapi_helpers.readHttpBody(args.request.request).then((body) => {
+                args.getBody().then((body) => {
                     try {
                         let str = (body || Buffer.alloc(0)).toString('utf8');
 

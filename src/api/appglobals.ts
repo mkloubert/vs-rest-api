@@ -124,7 +124,7 @@ export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
 
             let item = getRepoItem(args);
 
-            rapi_helpers.readHttpBodyAsJSON<any>(args.request.request).then((newValue) => {
+            args.getJSON<any>().then((newValue) => {
                 try {
                     let isNew = !(<Object>item.item).hasOwnProperty(name);
 

@@ -85,7 +85,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
             }
         };
 
-        rapi_helpers.readHttpBodyAsJSON<FindFilesOptions>(args.request.request).then((opts) => {
+        args.getJSON<FindFilesOptions>().then((opts) => {
             opts = opts || {
                 include: undefined,
             };

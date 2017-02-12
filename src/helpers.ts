@@ -804,7 +804,7 @@ export function readHttpBody(msg: HTTP.IncomingMessage): PromiseLike<Buffer> {
 }
 
 /**
- * Reads the content of the HTTP request body as returns it as parsed object.
+ * Reads the content of the HTTP request body and returns it as parsed object.
  * 
  * @param {HTTP.IncomingMessag} msg The HTTP message with the body.
  * @param {string} encoding The custom text encoding to use.
@@ -828,6 +828,37 @@ export function readHttpBodyAsJSON<T>(msg: HTTP.IncomingMessage, encoding?: stri
                 }
 
                 completed(null, obj);
+            }
+            catch (e) {
+                completed(e);
+            }
+        }, (err) => {
+            completed(err);
+        });
+    });
+}
+
+/**
+ * Reads the content of the HTTP request body and returns it as string.
+ * 
+ * @param {HTTP.IncomingMessag} msg The HTTP message with the body.
+ * @param {string} encoding The custom text encoding to use.
+ * 
+ * @returns {PromiseLike<string>} The promise.
+ */
+export function readHttpBodyAsString(msg: HTTP.IncomingMessage, encoding?: string): PromiseLike<string> {
+    encoding = normalizeString(encoding);
+    if (!encoding) {
+        encoding = 'utf8';
+    }
+    
+    return new Promise<string>((resolve, reject) => {
+        let completed = createSimplePromiseCompletedAction(resolve, reject);
+
+        readHttpBody(msg).then((body) => {
+            try {
+                completed(null,
+                          !isNullOrUndefined(body) ? body.toString(encoding) : <any>body);
             }
             catch (e) {
                 completed(e);

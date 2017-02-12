@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.9.0 (February 12th, 2017; ApiMethodArguments interface)
+
+* added `getString()` method to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) interface
+
 ## 1.8.0 (February 12th, 2017; open HTML documents in tabs from scripts)
 
 * added `openHtml()` method to [ScriptArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.scriptarguments.html) interface

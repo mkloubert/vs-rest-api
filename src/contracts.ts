@@ -261,11 +261,19 @@ export interface ApiMethodArguments extends ScriptArguments {
     /**
      * Gets the body as parsed JSON object.
      * 
-     * @param {string} encoding The custom text encoding to use.
+     * @param {string} [encoding] The custom text encoding to use.
      * 
      * @returns {PromiseLike<T>} The promise.
      */
     getJSON<T>(encoding?: string): PromiseLike<T>;
+    /**
+     * Gets the body as string.
+     * 
+     * @param {string} [encoding] The custom text encoding to use.
+     * 
+     * @returns {PromiseLike<string>} The promise.
+     */
+    readonly getString: (encoding?: string) => PromiseLike<string>;
     /**
      * The response headers to send.
      */

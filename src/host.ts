@@ -251,8 +251,20 @@ export class ApiHost implements vscode.Disposable {
                     return rapi_helpers.readHttpBody(this.request.request);
                 },
                 getJSON: function() {
-                    return rapi_helpers.readHttpBodyAsJSON(this.request.request,
-                                                           this.encoding);
+                    let enc = this.encoding;
+                    if (arguments.length > 0) {
+                        enc = arguments[0];
+                    }
+
+                    return rapi_helpers.readHttpBodyAsJSON(this.request.request, enc);
+                },
+                getString: function() {
+                    let enc = this.encoding;
+                    if (arguments.length > 0) {
+                        enc = arguments[0];
+                    }
+
+                    return rapi_helpers.readHttpBodyAsString(this.request.request, enc);
                 },
                 globals: me.controller.getGlobals(),
                 globalState: undefined,

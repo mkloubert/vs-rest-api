@@ -71,7 +71,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
 
         let enc = 'utf8';
 
-        rapi_helpers.readHttpBodyAsJSON<NewHtmlDocument | string>(args.request.request, enc).then((obj) => {
+        args.getJSON<NewHtmlDocument | string>(enc).then((obj) => {
             try {
                 newHtmlDoc = {
                     body: undefined,
