@@ -184,6 +184,11 @@ export class ApiHost implements vscode.Disposable {
                                                 hook, args);
                 },
                 encoding: DEFAULT_ENCODING,
+                endpoint: {
+                    arguments: undefined,
+                    isRoot: undefined,
+                    name: undefined,
+                },
                 executeBuildIn: function(endpoint?, args?) {
                     args = args || apiArgs;
 
@@ -282,6 +287,7 @@ export class ApiHost implements vscode.Disposable {
                 options: undefined,
                 outputChannel: me.controller.outputChannel,
                 package: rapi_helpers.cloneObject(me.controller.packageFile),
+                parameters: undefined,
                 path: parts.join('/'),
                 request: ctx,
                 require: function(id) {
@@ -338,6 +344,7 @@ export class ApiHost implements vscode.Disposable {
                 },
                 state: undefined,
                 statusCode: 200,
+                url: undefined,
                 workspaceState: undefined,
                 write: function(data) {
                     if (!data) {
@@ -364,6 +371,22 @@ export class ApiHost implements vscode.Disposable {
                 }
             });
 
+            // apiArgs.parameters
+            Object.defineProperty(apiArgs, 'parameters', {
+                enumerable: true,
+                get: () => {
+                    return rapi_host_helpers.urlParamsToObject(ctx.url);
+                }
+            });
+
+            // apiArgs.url
+            Object.defineProperty(apiArgs, 'url', {
+                enumerable: true,
+                get: () => {
+                    return ctx.url;
+                }
+            });
+
             // apiArgs.workspaceState
             Object.defineProperty(apiArgs, 'workspaceState', {
                 enumerable: true,
@@ -371,6 +394,35 @@ export class ApiHost implements vscode.Disposable {
                     return me.controller.workspaceState;
                 }
             });
+
+            // apiArgs.endpoint.*
+            {
+                // apiArgs.endpoint.arguments
+                Object.defineProperty(apiArgs.endpoint, 'arguments', {
+                    enumerable: true,
+                    get: function() {
+                        return parts.filter((x, i) => i > 0)
+                                    .map(x => decodeURIComponent(rapi_helpers.toStringSafe(x)));
+                    }
+                });
+
+                // apiArgs.endpoint.isRoot
+                Object.defineProperty(apiArgs.endpoint, 'isRoot', {
+                    enumerable: true,
+                    get: function() {
+                        return rapi_helpers.isEmptyString(this.name);
+                    }
+                });
+
+                // apiArgs.endpoint.name
+                Object.defineProperty(apiArgs.endpoint, 'name', {
+                    enumerable: true,
+                    get: function() {
+                        return parts.length > 0 ? rapi_helpers.normalizeString(parts[0])
+                                                : null;
+                    }
+                });
+            }
 
             // check for user specific endpoints
             let accountEP: rapi_contracts.AccountEndpoint;

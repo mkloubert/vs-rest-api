@@ -240,6 +240,23 @@ export interface ApiMethodArguments extends ScriptArguments {
      */
     encoding: string;
     /**
+     * Information about the endpoint.
+     */
+    endpoint: {
+        /**
+         * The (decoded) parts of the URL path beside the endpoint name.
+         */
+        readonly arguments: string[];
+        /**
+         * Indicates if this represents the "root" endpoint or not.
+         */
+        readonly isRoot: boolean;
+        /**
+         * The lower case name of the endpoint.
+         */
+        readonly name: string;
+    },
+    /**
      * Executes a build method.
      * 
      * @param {string} [endpoint] The custom endpoint to use.
@@ -286,6 +303,10 @@ export interface ApiMethodArguments extends ScriptArguments {
      * Information about the extension.
      */
     package: PackageFile;
+    /**
+     * The decoded URL parameters.
+     */
+    readonly parameters: { [name: string]: string };
     /**
      * The path.
      */
@@ -337,6 +358,10 @@ export interface ApiMethodArguments extends ScriptArguments {
      * The status code.
      */
     statusCode?: number;
+    /**
+     * The underlying URL.
+     */
+    readonly url: URL.Url;
     /**
      * Writes data to the response.
      * 

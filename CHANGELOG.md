@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.10.0 (February 12th, 2017; ApiMethodArguments interface)
+
+* added `endpoint`, `parameters` and `url` properties to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) interface
+
 ## 1.9.0 (February 12th, 2017; ApiMethodArguments interface)
 
 * added `getString()` method to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) interface
