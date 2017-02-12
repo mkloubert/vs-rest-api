@@ -33,6 +33,7 @@ import * as Path from 'path';
 import * as rapi_contracts from './contracts';
 import * as rapi_controller from './controller';
 import * as rapi_helpers from './helpers';
+import * as rapi_hooks from './hooks';
 import * as rapi_host_helpers from './host/helpers';
 import * as rapi_host_users from './host/users';
 import * as rapi_users from './host/users';
@@ -169,6 +170,19 @@ export class ApiHost implements vscode.Disposable {
 
             let apiArgs: rapi_contracts.ApiMethodArguments;
             apiArgs = {
+                doNotEmitHook: false,
+                emitHook: function(hook, args) {
+                    hook = rapi_helpers.normalizeString(hook);
+                    if (!hook) {
+                        hook = '.' + ctx.method;
+                        if (parts.length > 0) {
+                            hook = parts[0].trim() + hook;
+                        }
+                    }
+
+                    return rapi_hooks.emitHooks(apiArgs,
+                                                hook, args);
+                },
                 encoding: DEFAULT_ENCODING,
                 executeBuildIn: function(endpoint?, args?) {
                     args = args || apiArgs;
@@ -245,8 +259,13 @@ export class ApiHost implements vscode.Disposable {
                 headers: {
                     'Content-type': 'application/json; charset=utf-8',
                 },
+                log: function(msg) {
+                    me.controller.log(msg);
+                    return this;
+                },
                 options: undefined,
                 outputChannel: me.controller.outputChannel,
+                package: rapi_helpers.cloneObject(me.controller.packageFile),
                 path: parts.join('/'),
                 request: ctx,
                 require: function(id) {
@@ -678,6 +697,10 @@ export class ApiHost implements vscode.Disposable {
                                     ctx.response.write(rapi_helpers.asBuffer(finalDataToSend));
 
                                     ctx.response.end();
+
+                                    if (!rapi_helpers.toBooleanSafe(apiArgs.doNotEmitHook)) {
+                                        apiArgs.emitHook();
+                                    }
                                 }
                                 catch (e) {
                                     me.controller.log(i18.t('errors.withCategory', 'ApiHost.handleApi.sendResponseData()', e));
@@ -857,6 +880,10 @@ export class ApiHost implements vscode.Disposable {
                                     context: validatorCtx,
                                     globals: me.controller.getGlobals(),
                                     globalState: undefined,
+                                    log: function(msg) {
+                                        me.controller.log(msg);
+                                        return this;
+                                    },
                                     options: undefined,
                                     require: function(id) {
                                         return rapi_helpers.requireModule(id);

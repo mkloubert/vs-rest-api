@@ -498,6 +498,10 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                                 let prepareArgs: rapi_contracts.UserPreparerArguments = {
                                     globals: rapi_helpers.cloneObject(ctx.config.globals),
                                     globalState: undefined,
+                                    log: function(msg) {
+                                        rapi_helpers.log(msg);
+                                        return this;
+                                    },
                                     options: userPreparer.options,
                                     require: function(id) {
                                         return rapi_helpers.requireModule(id);

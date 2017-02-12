@@ -127,6 +127,63 @@ export interface ApiEndpoint {
 }
 
 /**
+ * An API hook.
+ */
+export interface ApiHook {
+    /**
+     * Data for the execution.
+     */
+    options?: any;
+    /**
+     * The path to the script to execute.
+     */
+    script: string;
+}
+
+/**
+ * Executes an api hook.
+ * 
+ * @param {ApiHookExecutorArguments} args The arguments for the execution.
+ * 
+ * @returns {ApiHookResult} The result.
+ */
+export type ApiHookExecutor = (args: ApiHookExecutorArguments) => ApiHookResult;
+
+/**
+ * The arguments for a hook execution.
+ */
+export interface ApiHookExecutorArguments extends ScriptArguments {
+    /**
+     * Arguments of the underlying api call.
+     */
+    readonly api: ApiMethodArguments;
+    /**
+     * The name of the hook.
+     */
+    readonly hook: string;
+}
+
+/**
+ * An API hook module.
+ */
+export interface ApiHookModule {
+    /**
+     * The executor of an API hook.
+     */
+    onHook: ApiHookExecutor;
+}
+
+/**
+ * The result of an API hook execution.
+ */
+export type ApiHookResult = PromiseLike<any> | void;
+
+/**
+ * Type of an API hook entry.
+ */
+export type ApiHookType = string | ApiHook;
+
+/**
  * An API method.
  * 
  * @param {ApiMethodArguments} args The arguments.
@@ -147,6 +204,19 @@ export interface ApiMethodArguments extends ScriptArguments {
      * The content to use instead of 'ApiMethodArguments.response'.
      */
     content?: any;
+    /**
+     * Do NOT emit hook automatically on success?
+     */
+    doNotEmitHook: boolean;
+    /**
+     * Emits hook(s).
+     * 
+     * @param {string} [hook] The custom name of the hook.
+     * @param {any[]} [args] One or more argument for the hook(s).
+     * 
+     * @returns {boolean} Hooks were emitted or not.
+     */
+    readonly emitHook: (hook?: string, args?: any[]) => boolean;
     /**
      * The text encoding to use.
      */
@@ -186,6 +256,10 @@ export interface ApiMethodArguments extends ScriptArguments {
      * The output channel that can be used.
      */
     readonly outputChannel: vscode.OutputChannel;
+    /**
+     * Information about the extension.
+     */
+    package: PackageFile;
     /**
      * The path.
      */
@@ -332,6 +406,10 @@ export interface Configuration {
      * Configuration for the "guest" account.
      */
     guest?: Account | boolean;
+    /**
+     * List of API hooks.
+     */
+    hooks?: { [ hook: string ]: ApiHookType | ApiHookType[] };
     /**
      * The custom language to use.
      */
@@ -601,6 +679,14 @@ export interface ScriptArguments {
      * Gets the object to share data between all scripts of this type.
      */
     readonly globalState: Object;
+    /**
+     * Logs a message.
+     * 
+     * @param {any} msg The message to log.
+     * 
+     * @chainable
+     */
+    readonly log: (msg: any) => ScriptArguments;
     /**
      * Options for the execution.
      */

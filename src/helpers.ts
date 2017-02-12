@@ -314,6 +314,10 @@ export function formatArray(formatStr: any, args: any[]): string {
                         resultValue = JSON.stringify(resultValue);
                         break;
 
+                    case 'json_pretty':
+                        resultValue = JSON.stringify(resultValue, null, 4);
+                        break;
+
                     case 'leading_space':
                         resultValue = toStringSafe(resultValue);
                         if (resultValue) {

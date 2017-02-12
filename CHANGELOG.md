@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.6.0 (February 12th, 2017; hooks)
+
+* added support for [hooks](https://github.com/mkloubert/vs-rest-api/wiki/settings_hooks)
+
 ## 1.4.0 (February 11th, 2017; HTML documents)
 
 * can open custom [HTML documents](https://github.com/mkloubert/vs-rest-api/wiki/buildin_endpoints_post_html) now

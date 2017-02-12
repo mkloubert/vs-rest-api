@@ -182,6 +182,8 @@ export class Controller implements vscode.Disposable {
         me._workspaceState = {
             globalAccountPreparerStates: {},
             globalAccountPreparerScriptStates: {},
+            globalHookStates: {},
+            globalHookScriptStates: {},
             outputChannels: [],
         };
         me._workspaceState[rapi_contracts.VAR_HTML_DOCS] = [];
