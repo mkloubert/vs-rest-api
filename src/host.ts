@@ -401,8 +401,7 @@ export class ApiHost implements vscode.Disposable {
                 Object.defineProperty(apiArgs.endpoint, 'arguments', {
                     enumerable: true,
                     get: function() {
-                        return parts.filter((x, i) => i > 0)
-                                    .map(x => decodeURIComponent(rapi_helpers.toStringSafe(x)));
+                        return parts.filter((x, i) => i > 0);
                     }
                 });
 
