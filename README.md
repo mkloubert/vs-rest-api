@@ -28,7 +28,9 @@ Launch VS Code Quick Open (Ctrl+P), paste the following command, and press enter
 ext install vs-rest-api
 ```
 
-Or search for things like `vs-deploy` in your editor.
+Or search for things like `vs-rest-api` in your editor:
+
+![Demo Search and install extension](https://raw.githubusercontent.com/mkloubert/vs-rest-api/master/demos/screenshot1.png)
 
 ## How to use [[&uarr;](#table-of-contents)]
 
