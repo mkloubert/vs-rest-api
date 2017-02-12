@@ -90,6 +90,10 @@ export function emitHooks(apiArgs: rapi_contracts.ApiMethodArguments,
                                                 apiArgs.log(msg);
                                                 return this;
                                             },
+                                            openHtml: (html, title, docId) => {
+                                                return rapi_helpers.openHtmlDocument(apiArgs.workspaceState[rapi_contracts.VAR_HTML_DOCS],
+                                                                                     html, title, docId);
+                                            },
                                             options: h.options,
                                             require: (id) => {
                                                 return rapi_helpers.requireModule(id);

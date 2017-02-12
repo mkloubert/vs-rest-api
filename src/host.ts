@@ -263,6 +263,10 @@ export class ApiHost implements vscode.Disposable {
                     me.controller.log(msg);
                     return this;
                 },
+                openHtml: function(html, title, docId) {
+                    return rapi_helpers.openHtmlDocument(this.workspaceState[rapi_contracts.VAR_HTML_DOCS],
+                                                         html, title, docId);
+                },
                 options: undefined,
                 outputChannel: me.controller.outputChannel,
                 package: rapi_helpers.cloneObject(me.controller.packageFile),
@@ -1019,6 +1023,10 @@ export class ApiHost implements vscode.Disposable {
                                     log: function(msg) {
                                         me.controller.log(msg);
                                         return this;
+                                    },
+                                    openHtml: (html, title, docId) => {
+                                        return rapi_helpers.openHtmlDocument(me.controller.workspaceState[rapi_contracts.VAR_HTML_DOCS],
+                                                                             html, title, docId);
                                     },
                                     options: undefined,
                                     require: function(id) {

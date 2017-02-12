@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.8.0 (February 12th, 2017; open HTML documents in tabs from scripts)
+
+* added `openHtml()` method to [ScriptArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.scriptarguments.html) interface
+
 ## 1.7.0 (February 12th, 2017; user specific endpoints)
 
 * can define [whitelists for users and guests](https://github.com/mkloubert/vs-rest-api/wiki#user--guest-endpoints-) now, that define the endpoints which are available for the underlying account(s)

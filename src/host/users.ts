@@ -502,6 +502,10 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                                         rapi_helpers.log(msg);
                                         return this;
                                     },
+                                    openHtml: (html, title, docId) => {
+                                        return rapi_helpers.openHtmlDocument(ctx.workspaceState[rapi_contracts.VAR_HTML_DOCS],
+                                                                             html, title, docId);
+                                    },
                                     options: userPreparer.options,
                                     require: function(id) {
                                         return rapi_helpers.requireModule(id);

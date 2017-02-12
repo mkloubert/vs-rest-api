@@ -102,7 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
         try {
             let htmlDocs = controller.workspaceState[rapi_contracts.VAR_HTML_DOCS];
 
-            let url = vscode.Uri.parse(`vs-rest-api-html://authority/html?id=${rapi_helpers.normalizeString(doc.id)}` + 
+            let url = vscode.Uri.parse(`vs-rest-api-html://authority/html?id=${encodeURIComponent(rapi_helpers.toStringSafe(doc.id))}` + 
                                        `&x=${encodeURIComponent(rapi_helpers.toStringSafe(new Date().getTime()))}`);
 
             let title = rapi_helpers.toStringSafe(doc.title).trim();

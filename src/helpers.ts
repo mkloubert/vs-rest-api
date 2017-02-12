@@ -37,7 +37,6 @@ import * as rapi_host_users from './host/users';
 import * as vscode from 'vscode';
 import * as ZLib from 'zlib';
 
-
 /**
  * Options for open function.
  */
@@ -63,6 +62,9 @@ export interface OpenOptions {
  * @param {TResult} [result] The result.
  */
 export type SimpleCompletedAction<TResult> = (err?: any, result?: TResult) => void;
+
+
+let nextHtmlDocId = -1;
 
 /**
  * Returns a value as array.
@@ -705,6 +707,59 @@ export function open(target: string, opts?: OpenOptions): PromiseLike<ChildProce
 
                 completed(null, cp);
             }
+        }
+        catch (e) {
+            completed(e);
+        }
+    });
+}
+
+/**
+ * Opens a HTML document in a new tab for a document storage.
+ * 
+ * @param {rapi_contracts.Document[]} storage The storage to open for.
+ * @param {string} html The HTML document (source code).
+ * @param {string} [title] The custom title for the tab.
+ * @param {any} [id] The custom ID for the document in the storage.
+ * 
+ * @returns {Promise<any>} The promise.
+ */
+export function openHtmlDocument(storage: rapi_contracts.Document[],
+                                 html: string, title?: string, id?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+        let completed = createSimplePromiseCompletedAction(resolve, reject);
+
+        try {
+            let body: Buffer;
+            let enc = 'utf8';
+            if (html) {
+                body = new Buffer(toStringSafe(html), enc);
+            }
+
+            if (isNullOrUndefined(id)) {
+                id = 'vsraGlobalHtmlDocs::302b46ff-1539-48fd-893e-d7b83d763f93::' + (++nextHtmlDocId);
+            }
+
+            let doc: rapi_contracts.Document = {
+                body: body,
+                encoding: enc,
+                id: id,
+                mime: 'text/html',
+            };
+
+            if (!isEmptyString(title)) {
+                doc.title = toStringSafe(title).trim();
+            }
+
+            if (storage) {
+                storage.push(doc);
+            }
+
+            vscode.commands.executeCommand('extension.restApi.openHtmlDoc', doc).then((result: any) => {
+                completed(null, result);
+            }, (err) => {
+                completed(err);
+            });
         }
         catch (e) {
             completed(e);

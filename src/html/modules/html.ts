@@ -35,15 +35,15 @@ export function execute(args: rapi_content.HtmlViewerExecutorArguments): string 
 
     let params = rapi_helpers.uriParamsToObject(args.uri);
 
-    let idValue = rapi_helpers.getUrlParam(params, 'id');
+    let idValue = decodeURIComponent(rapi_helpers.getUrlParam(params, 'id'));
     if (!rapi_helpers.isEmptyString(idValue)) {
-        let id = parseInt(idValue.trim());
+        let id = idValue.trim();
         
         // search for document
         for (let i = 0; i < htmlDocs.length; i++) {
             let d = htmlDocs[i];
 
-            if (d.id == id) {
+            if (rapi_helpers.toStringSafe(d.id).trim() == id) {
                 doc = d;
                 break;
             }

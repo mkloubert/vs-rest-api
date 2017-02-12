@@ -706,6 +706,16 @@ export interface ScriptArguments {
      */
     readonly log: (msg: any) => ScriptArguments;
     /**
+     * Opens a HTML document in a new tab.
+     * 
+     * @param {string} html The HTML document (source code).
+     * @param {string} [title] The custom title for the tab.
+     * @param {any} [id] The custom ID for the document in the storage.
+     * 
+     * @returns {Promise<any>} The promise.
+     */
+    readonly openHtml: (html: string, title?: string, id?: any) => PromiseLike<any>;
+    /**
      * Options for the execution.
      */
     options: any;
