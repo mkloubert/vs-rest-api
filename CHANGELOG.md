@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.7.0 (February 12th, 2017; user specific endpoints)
+
+* can define [whitelists for users and guests](https://github.com/mkloubert/vs-rest-api/wiki#user--guest-endpoints-) now, that define the endpoints which are available for the underlying account(s)
+
 ## 1.6.0 (February 12th, 2017; hooks)
 
 * added support for [hooks](https://github.com/mkloubert/vs-rest-api/wiki/settings_hooks)

@@ -356,6 +356,64 @@ export class ApiHost implements vscode.Disposable {
                 }
             });
 
+            // check for user specific endpoints
+            let accountEP: rapi_contracts.AccountEndpoint;
+            let isAvaiableForUser = true;
+
+            if (!rapi_helpers.isEmptyString(apiArgs.path)) {
+                // no root
+
+                if (ctx.user.account.endpoints) {
+                    isAvaiableForUser = false;  // here we are in "whitelist" mode
+
+                    for (let pattern in ctx.user.account.endpoints) {
+                        let isMatching = true;
+                        if (pattern) {
+                            let regex = new RegExp(rapi_helpers.toStringSafe(pattern), 'i');
+
+                            isMatching = regex.test(apiArgs.path);
+                        }
+
+                        if (!isMatching) {
+                            continue;
+                        }
+
+                        let ep = ctx.user.account.endpoints[pattern];
+                        if (!ep) {
+                            ep = {};
+                        }
+
+                        isAvaiableForUser = rapi_helpers.toBooleanSafe(ep.isAvailable, true);
+                        if (isAvaiableForUser) {
+                            accountEP = ep;  // found
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!isAvaiableForUser) {
+                rapi_host_helpers.sendNotFound(ctx);
+                return;
+            }
+
+            // check for HTTP methods?
+            if (accountEP) {
+                let allowedMethods = rapi_helpers.asArray(accountEP.methods)
+                                                 .map(x => rapi_helpers.normalizeString(x))
+                                                 .filter(x => x);
+
+                if (allowedMethods.length > 0) {
+                    // defined, so do check...
+
+                    if (allowedMethods.indexOf(ctx.method) < 0) {
+                        // not alllowed
+                        rapi_host_helpers.sendMethodNotAllowed(ctx);
+                        return;
+                    }
+                }
+            }
+
             // search for a matching external API module
             if (ctx.config.endpoints) {
                 for (let pattern in ctx.config.endpoints) {
@@ -464,6 +522,7 @@ export class ApiHost implements vscode.Disposable {
 
                 if (isRoot) {
                     // root
+
                     method = (ac) => {
                         ac.response.data = {
                             addr: ctx.request.connection.remoteAddress,
@@ -475,173 +534,240 @@ export class ApiHost implements vscode.Disposable {
                         {
                             let endpoints: { [key: string]: any } = ac.response.data['endpoints'];
 
+                            let isEndpointAvailableForUser = (endpointName: string, httpMethod: string, acl?: string) => {
+                                if (!rapi_helpers.isEmptyString(acl) && !ac.request.user.can(acl)) {
+                                    // no right in the ACL
+                                    return false;
+                                }
+
+                                let isEPAvailable = true;
+                                httpMethod = rapi_helpers.normalizeString(httpMethod);
+
+                                if (ctx.user.account.endpoints) {
+                                    isEPAvailable = false;
+
+                                    for (let pattern in ctx.user.account.endpoints) {
+                                        let isMatching = true;
+                                        if (pattern) {
+                                            let regex = new RegExp(rapi_helpers.toStringSafe(pattern), 'i');
+
+                                            isMatching = regex.test(endpointName);
+                                        }
+
+                                        if (!isMatching) {
+                                            continue;  // pattern does not match
+                                        }
+
+                                        let ep = ctx.user.account.endpoints[pattern];
+                                        if (!ep) {
+                                            ep = {};
+                                        }
+
+                                        isEPAvailable = rapi_helpers.toBooleanSafe(ep.isAvailable, true);
+
+                                        if (isEPAvailable) {
+                                            // check HTTP methods
+                                            let allowedEPMethods = rapi_helpers.asArray(ep.methods)
+                                                                               .map(x => rapi_helpers.normalizeString(x))
+                                                                               .filter(x => x);
+                                            if (allowedEPMethods.length > 0) {
+                                                isEPAvailable = allowedEPMethods.indexOf(httpMethod) > -1;
+                                            }
+                                        }
+
+                                        if (isEPAvailable) {
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                return isEPAvailable;
+                            };
+
+                            let setEndpointDescription = (category: string, httpMethod: string, path: string) => {
+                                if (!endpoints[category]) {
+                                    endpoints[category] = {};
+                                }
+
+                                endpoints[category][httpMethod] = '/api/' + path;
+                            };
+
                             // commands
-                            if (ac.request.user.get(rapi_host_users.VAR_CAN_EXECUTE)) {
-                                endpoints['commands'] = {
-                                    'get': '/api/commands',
-                                    'post': '/api/commands/{commandId}',
-                                };
+                            {
+                                if (isEndpointAvailableForUser('commands', 'get', 'execute')) {
+                                    setEndpointDescription('commands', 'get', 'commands');
+                                }
+
+                                if (isEndpointAvailableForUser('commands', 'post', 'execute')) {
+                                    setEndpointDescription('commands', 'post', 'commands/{commandId}');
+                                }
                             }
 
                             // active editor
                             {
-                                endpoints['active_editor'] = {
-                                    'get': '/api/editor',
-                                };
+                                if (isEndpointAvailableForUser('editor', 'get')) {
+                                    setEndpointDescription('active_editor', 'get', 'editor');
+                                }
 
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_CLOSE)) {
-                                    endpoints['active_editor']['delete'] = '/api/editor';
+                                if (isEndpointAvailableForUser('editor', 'delete', 'close')) {
+                                    setEndpointDescription('active_editor', 'delete', 'editor');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_OPEN)) {
-                                    endpoints['active_editor']['post'] = '/api/editor(/{file})';
+                                if (isEndpointAvailableForUser('editor', 'patch', 'write')) {
+                                    setEndpointDescription('active_editor', 'patch', 'editor');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['active_editor']['patch'] = '/api/editor';
-                                    endpoints['active_editor']['put'] = '/api/editor';
+                                if (isEndpointAvailableForUser('editor', 'post', 'open')) {
+                                    setEndpointDescription('active_editor', 'post', 'editor(/{file})');
+                                }
+                                if (isEndpointAvailableForUser('editor', 'put', 'write')) {
+                                    setEndpointDescription('active_editor', 'put', 'editor');
                                 }
                             }
 
                             // app globals
                             {
-                                endpoints['app_globals'] = {
-                                    'get': '/api/appglobals',
-                                };
-
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
-                                    endpoints['app_globals']['delete'] = '/api/appglobals/{name}';
+                                if (isEndpointAvailableForUser('appglobals', 'get')) {
+                                    setEndpointDescription('app_globals', 'get', 'appglobals');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['app_globals']['put'] = '/api/appglobals/{name}';
+
+                                if (isEndpointAvailableForUser('appglobals', 'delete', 'delete')) {
+                                    setEndpointDescription('app_globals', 'delete', 'appglobals/{name}');
+                                }
+                                if (isEndpointAvailableForUser('appglobals', 'put', 'write')) {
+                                    setEndpointDescription('app_globals', 'put', 'appglobals/{name}');
                                 }
                             }
 
                             // app state
                             {
-                                endpoints['app_state'] = {
-                                    'get': '/api/appstate',
-                                };
-
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
-                                    endpoints['app_state']['delete'] = '/api/appstate/{name}';
+                                if (isEndpointAvailableForUser('appstate', 'get')) {
+                                    setEndpointDescription('app_state', 'get', 'appstate');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['app_state']['put'] = '/api/appstate/{name}';
+
+                                if (isEndpointAvailableForUser('appstate', 'delete', 'delete')) {
+                                    setEndpointDescription('app_state', 'delete', 'appstate/{name}');
+                                }
+                                if (isEndpointAvailableForUser('appstate', 'put', 'write')) {
+                                    setEndpointDescription('app_state', 'put', 'appstate/{name}');
                                 }
                             }
 
                             // open editor
                             {
-                                endpoints['open_editors'] = {
-                                    'get': '/api/editors',
-                                };
+                                if (isEndpointAvailableForUser('editors', 'get')) {
+                                    setEndpointDescription('open_editors', 'get', 'editors');
+                                }
 
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_CLOSE)) {
-                                    endpoints['open_editors']['delete'] = '/api/editors(/{id})';
+                                if (isEndpointAvailableForUser('editors', 'delete', 'delete')) {
+                                    setEndpointDescription('open_editors', 'delete', 'editors(/{id})');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_OPEN)) {
-                                    endpoints['open_editors']['post'] = '/api/editors(/{id})';
+                                if (isEndpointAvailableForUser('editors', 'patch', 'write')) {
+                                    setEndpointDescription('open_editors', 'patch', 'editors(/{id})');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['open_editors']['patch'] = '/api/editors(/{id})';
-                                    endpoints['open_editors']['put'] = '/api/editors(/{id})';
+                                if (isEndpointAvailableForUser('editors', 'post', 'open')) {
+                                    setEndpointDescription('open_editors', 'post', 'editors(/{id})');
+                                }
+                                if (isEndpointAvailableForUser('editors', 'put', 'write')) {
+                                    setEndpointDescription('open_editors', 'put', 'editors(/{id})');
                                 }
                             }
 
                             // extensions
                             {
-                                endpoints['extensions'] = {
-                                    'get': '/api/extensions',
-                                };
+                                if (isEndpointAvailableForUser('extensions', 'get')) {
+                                    setEndpointDescription('extensions', 'get', 'extensions');
+                                }
 
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_ACTIVATE)) {
-                                    endpoints['extensions']['post'] = '/api/editors/{id}';
+                                if (isEndpointAvailableForUser('extensions', 'post', 'activate')) {
+                                    setEndpointDescription('extensions', 'post', 'extensions/{id}');
                                 }
                             }
 
                             // globals
                             {
-                                endpoints['globals'] = {
-                                    'get': '/api/globals',
-                                };
-
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
-                                    endpoints['globals']['delete'] = '/api/globals/{name}';
+                                if (isEndpointAvailableForUser('globals', 'get')) {
+                                    setEndpointDescription('globals', 'get', 'globals');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['globals']['put'] = '/api/globals/{name}';
+
+                                if (isEndpointAvailableForUser('globals', 'delete', 'delete')) {
+                                    setEndpointDescription('globals', 'delete', 'globals/{name}');
+                                }
+                                if (isEndpointAvailableForUser('globals', 'put', 'write')) {
+                                    setEndpointDescription('globals', 'put', 'globals/{name}');
                                 }
                             }
 
                             // languages
                             {
-                                endpoints['languages'] = {
-                                    'get': '/api/languages',
-                                };
+                                if (isEndpointAvailableForUser('languages', 'get')) {
+                                    setEndpointDescription('languages', 'get', 'languages');
+                                }
                             }
 
                             // output channels
                             {
-                                endpoints['outputs'] = {
-                                    'get': '/api/outputs',
-                                };
+                                if (isEndpointAvailableForUser('outputs', 'get')) {
+                                    setEndpointDescription('outputs', 'get', 'outputs');
+                                }
 
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
-                                    endpoints['outputs']['delete'] = '/api/outputs/{id}';
+                                if (isEndpointAvailableForUser('outputs', 'delete', 'delete')) {
+                                    setEndpointDescription('outputs', 'delete', 'outputs/{id}');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_CREATE)) {
-                                    endpoints['outputs']['post'] = '/api/outputs/{name}';
+                                if (isEndpointAvailableForUser('outputs', 'post', 'create')) {
+                                    setEndpointDescription('outputs', 'post', 'outputs/{name}');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['outputs']['patch'] = '/api/outputs/{id}';
-                                    endpoints['outputs']['put'] = '/api/outputs/{id}';
+                                if (isEndpointAvailableForUser('outputs', 'patch', 'write')) {
+                                    setEndpointDescription('outputs', 'patch', 'outputs/{id}');
+                                }
+                                if (isEndpointAvailableForUser('outputs', 'put', 'write')) {
+                                    setEndpointDescription('outputs', 'put', 'outputs/{id}');
                                 }
                             }
 
                             // state
                             {
-                                endpoints['state'] = {
-                                    'get': '/api/state',
-                                };
-
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
-                                    endpoints['state']['delete'] = '/api/state/{name}';
+                                if (isEndpointAvailableForUser('state', 'get')) {
+                                    setEndpointDescription('state', 'get', 'state');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['state']['put'] = '/api/state/{name}';
+
+                                if (isEndpointAvailableForUser('state', 'delete', 'delete')) {
+                                    setEndpointDescription('state', 'delete', 'state/{name}');
+                                }
+                                if (isEndpointAvailableForUser('state', 'put', 'write')) {
+                                    setEndpointDescription('state', 'put', 'state/{name}');
                                 }
                             }
 
                             // workspace
                             {
-                                endpoints['workspace'] = {
-                                    'get': '/api/workspace(/{path})',
-                                };
-
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_DELETE)) {
-                                    endpoints['workspace']['delete'] = '/api/workspace/{path}';
+                                if (isEndpointAvailableForUser('workspace', 'get')) {
+                                    setEndpointDescription('workspace', 'get', 'workspace(/{path})');
                                 }
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_WRITE)) {
-                                    endpoints['workspace']['patch'] = '/api/workspace/{path}';
-                                    endpoints['workspace']['post'] = '/api/workspace/{path}';
-                                    endpoints['workspace']['put'] = '/api/workspace/{path}';
+
+                                if (isEndpointAvailableForUser('workspace', 'delete', 'delete')) {
+                                    setEndpointDescription('workspace', 'delete', 'workspace/{path}');
+                                }
+                                if (isEndpointAvailableForUser('workspace', 'patch', 'write')) {
+                                    setEndpointDescription('workspace', 'patch', 'workspace/{path}');
+                                }
+                                if (isEndpointAvailableForUser('workspace', 'post', 'write')) {
+                                    setEndpointDescription('workspace', 'post', 'workspace/{path}');
+                                }
+                                if (isEndpointAvailableForUser('workspace', 'put', 'write')) {
+                                    setEndpointDescription('workspace', 'put', 'workspace/{path}');
                                 }
                             }
 
                             // popups
                             {
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_EXECUTE)) {
-                                    endpoints['popups'] = {
-                                        'post': '/api/popups',
-                                    };
+                                if (isEndpointAvailableForUser('popups', 'post', 'execute')) {
+                                    setEndpointDescription('popups', 'post', 'popups');
                                 }
                             }
 
                             // html
                             {
-                                if (ac.request.user.get(rapi_host_users.VAR_CAN_OPEN)) {
-                                    endpoints['html'] = {
-                                        'post': '/api/html',
-                                    };
+                                if (isEndpointAvailableForUser('html', 'post', 'open')) {
+                                    setEndpointDescription('html', 'post', 'html');
                                 }
                             }
                         }
@@ -651,6 +777,16 @@ export class ApiHost implements vscode.Disposable {
                                 name: rapi_helpers.normalizeString(ctx.user.account['name']),
                             };
                         }
+
+                        // ACL
+                        ac.response.data['acl'] = {};
+                        ac.response.data.acl['canActivate'] = ctx.user.can('activate');
+                        ac.response.data.acl['canClose'] = ctx.user.can('close');
+                        ac.response.data.acl['canCreate'] = ctx.user.can('create');
+                        ac.response.data.acl['canDelete'] = ctx.user.can('delete');
+                        ac.response.data.acl['canExecute'] = ctx.user.can('execute');
+                        ac.response.data.acl['canOpen'] = ctx.user.can('open');
+                        ac.response.data.acl['canWrite'] = ctx.user.can('write');
                     };
                 }
             }

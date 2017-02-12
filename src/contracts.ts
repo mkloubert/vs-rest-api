@@ -83,6 +83,10 @@ export interface Account {
      */
     canWrite?: boolean;
     /**
+     * If defined: This is a whitelist of endpoints that are visible for that account.
+     */
+    endpoints?: { [pattern: string]: AccountEndpoint };
+    /**
      * One or more glob patterns with files to exclude.
      */
     exclude?: string | string[];
@@ -102,6 +106,20 @@ export interface Account {
      * Show (directories) with leading '.' character for the account or not.
      */
     withDot?: boolean;
+}
+
+/**
+ * An account specific endpoint.
+ */
+export interface AccountEndpoint {
+    /**
+     * Is available for account or not.
+     */
+    isAvailable?: boolean;
+    /**
+     * If defined: The whitelist of HTTP methods that are allowed for the account.
+     */
+    methods?: string | string[];
 }
 
 /**
