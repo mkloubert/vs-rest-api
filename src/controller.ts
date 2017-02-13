@@ -126,6 +126,13 @@ export class Controller implements vscode.Disposable {
     }
 
     /**
+     * Get the name that represents that machine.
+     */
+    public get name(): string {
+        return rapi_helpers.normalizeString(OS.hostname());
+    }
+
+    /**
      * The 'on activated' event.
      */
     public onActivated() {
@@ -228,7 +235,6 @@ export class Controller implements vscode.Disposable {
         }
     }
 
-
     /**
      * Shows the popup for a new version.
      */
@@ -310,11 +316,28 @@ export class Controller implements vscode.Disposable {
 
         let cfg = me.config;
 
-        let port = cfg.port;
-        if (rapi_helpers.isEmptyString(port)) {
-            port = rapi_host.DEFAULT_PORT;
+        let port: number;
+        let defaultPort = rapi_host.DEFAULT_PORT;
+        if ('object' === typeof cfg.port) {
+            for (let p in cfg.port) {
+                if (rapi_helpers.normalizeString(p) == me.name) {
+                    port = parseInt(rapi_helpers.toStringSafe(cfg.port[p]).trim());
+                    break;
+                }
+                
+                if (rapi_helpers.isEmptyString(p)) {
+                    defaultPort = parseInt(rapi_helpers.toStringSafe(cfg.port[p]).trim());
+                }
+            }
         }
-        port = parseInt(rapi_helpers.normalizeString(port));
+        else {
+            if (!rapi_helpers.isEmptyString(cfg.port)) {
+                port = parseInt(rapi_helpers.toStringSafe(cfg.port).trim());
+            }
+        }
+        if (rapi_helpers.isNullOrUndefined(port)) {
+            port = defaultPort;
+        }
 
         return new Promise<rapi_host.ApiHost>((resolve, reject) => {
             let completed = (err: any, h?: rapi_host.ApiHost) => {

@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -319,11 +319,28 @@
               ]
             },
             "port": {
-              "description": "The TCP port the HTTP server should listen on.",
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 65535,
-              "default": 8080
+              "oneOf":[
+                {
+                  "description": "The TCP port the HTTP server should listen on.",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "default": 1781  
+                },
+                {
+                  "description": "Each property represents the machine (name) and its TCP port.",
+                  "type": "object",
+                  "patternProperties": {
+                    "(.*)": {
+                      "description": "The TCP port the HTTP server should listen on that machine.",
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535,
+                      "default": 1781
+                    }
+                  }
+                }
+              ]
             },
             "realm": {
               "description": "The name of the realm for the authentication.",

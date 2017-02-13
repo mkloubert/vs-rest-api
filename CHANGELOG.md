@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.11.0 (February 13th, 2017; machine specific TCP ports)
+
+* can define more than one TCP port in the [settings](https://github.com/mkloubert/vs-rest-api/wiki#settings-) now
+
 ## 1.10.0 (February 12th, 2017; ApiMethodArguments interface)
 
 * added `endpoint`, `parameters` and `url` properties to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) interface

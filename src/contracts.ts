@@ -472,7 +472,7 @@ export interface Configuration {
     /**
      * The TCP port the HTTP server should listen on.
      */
-    port?: number;
+    port?: number | { [machine: string]: any };
     /**
      * A script that prepares an account (object).
      */
