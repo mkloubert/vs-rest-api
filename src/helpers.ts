@@ -812,19 +812,14 @@ export function readHttpBody(msg: HTTP.IncomingMessage): PromiseLike<Buffer> {
  * @returns {PromiseLike<T>} The promise.
  */
 export function readHttpBodyAsJSON<T>(msg: HTTP.IncomingMessage, encoding?: string): PromiseLike<T> {
-    encoding = normalizeString(encoding);
-    if (!encoding) {
-        encoding = 'utf8';
-    }
-    
     return new Promise<T>((resolve, reject) => {
         let completed = createSimplePromiseCompletedAction(resolve, reject);
 
-        readHttpBody(msg).then((body) => {
+        readHttpBodyAsString(msg, encoding).then((str) => {
             try {
                 let obj: T;
-                if (body && body.length > 0) {
-                    obj = JSON.parse(body.toString(encoding));
+                if (str && str.length > 0) {
+                    obj = JSON.parse(str);
                 }
 
                 completed(null, obj);

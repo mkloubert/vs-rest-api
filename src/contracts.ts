@@ -470,9 +470,9 @@ export interface Configuration {
      */
     openInBrowser?: boolean;
     /**
-     * The TCP port the HTTP server should listen on.
+     * The TCP port(s) the HTTP server should listen on.
      */
-    port?: number | { [machine: string]: any };
+    port?: number | { [machine: string]: number };
     /**
      * A script that prepares an account (object).
      */
