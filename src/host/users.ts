@@ -52,6 +52,10 @@ export const VAR_CAN_CREATE = 'can_create';
  */
 export const VAR_CAN_DELETE = 'can_delete';
 /**
+ * Name of a variable that defines if an user has the right to deploy files or not.
+ */
+export const VAR_CAN_DEPLOY = 'can_deploy';
+/**
  * Name of a variable that defines if an user can execute commands or not.
  */
 export const VAR_CAN_EXECUTE = 'can_execute';
@@ -457,6 +461,8 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                 result.set(VAR_CAN_CREATE, rapi_helpers.toBooleanSafe(result.account.canCreate));
                 // can delete files and folders?
                 result.set(VAR_CAN_DELETE, rapi_helpers.toBooleanSafe(result.account.canDelete));
+                // can deploy?
+                result.set(VAR_CAN_DEPLOY, rapi_helpers.toBooleanSafe(result.account.canDeploy));
                 // can execute commands?
                 result.set(VAR_CAN_EXECUTE, rapi_helpers.toBooleanSafe(result.account.canExecute));
                 // can open tabs in editor?

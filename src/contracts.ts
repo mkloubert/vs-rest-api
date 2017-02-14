@@ -71,6 +71,10 @@ export interface Account {
      */
     canDelete?: boolean;
     /**
+     * Defines if account is able to deploy files or not.
+     */
+    canDeploy?: boolean;
+    /**
      * Defines if account is able to execute commands or not.
      */
     canExecute?: boolean;
@@ -345,6 +349,14 @@ export interface ApiMethodArguments extends ScriptArguments {
      * @chainable
      */
     readonly sendNotFound: () => ApiMethodArguments;
+    /**
+     * Sets up a generic response.
+     * 
+     * @param {number} code The status code.
+     * 
+     * @chainable
+     */
+    readonly sendResponse: (code: number) => ApiMethodArguments;
     /**
      * Sets the content of 'ApiMethodArguments.content'.
      * 

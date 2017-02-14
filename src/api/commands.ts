@@ -142,7 +142,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                     });
                 }
                 else {
-                      // no matching command(s) found
+                    // no matching command(s) found
 
                     args.sendNotFound();
                     completed();

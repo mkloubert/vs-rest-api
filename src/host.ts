@@ -342,6 +342,14 @@ export class ApiHost implements vscode.Disposable {
 
                     return this;
                 },
+                sendResponse: function(code) {
+                    this.statusCode = code;
+
+                    delete this.response;
+                    delete this.headers;
+                    
+                    return this;
+                },
                 state: undefined,
                 statusCode: 200,
                 url: undefined,

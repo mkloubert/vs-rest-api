@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.13.0 (February 14th, 2017; deploy files)
+
+* added endpoint to [deploy files](https://github.com/mkloubert/vs-rest-api/wiki#apideploy-)
+
 ## 1.11.0 (February 13th, 2017; machine specific TCP ports)
 
 * can define more than one TCP port in the [settings](https://github.com/mkloubert/vs-rest-api/wiki#settings-) now
