@@ -845,6 +845,17 @@ export class ApiHost implements vscode.Disposable {
                                     setEndpointDescription('html', 'post', 'html');
                                 }
                             }
+
+                            // deploy
+                            {
+                                if (isEndpointAvailableForUser('deploy', 'get', 'deploy')) {
+                                    setEndpointDescription('deploy', 'get', 'deploy');
+                                }
+
+                                if (isEndpointAvailableForUser('deploy', 'post', 'deploy')) {
+                                    setEndpointDescription('deploy', 'post', 'deploy/{file}');
+                                }
+                            }
                         }
 
                         if (!ctx.user.isGuest) {

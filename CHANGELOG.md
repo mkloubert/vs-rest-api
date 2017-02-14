@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.14.0 (February 14th, 2017; deploy files)
+
+* can receive a list of available [deploy targets](https://github.com/mkloubert/vs-rest-api/wiki/buildin_endpoints_get_deploy) now
+
 ## 1.13.0 (February 14th, 2017; deploy files)
 
 * added endpoint to [deploy files](https://github.com/mkloubert/vs-rest-api/wiki#apideploy-)

@@ -29,12 +29,97 @@ import * as rapi_helpers from '../helpers';
 import * as vscode from 'vscode';
 
 /**
+ * A deploy target entry.
+ */
+export interface DeployTargetEntry {
+    /**
+     * The description.
+     */
+    description?: string;
+    /**
+     * The name.
+     */
+    name?: string;
+    /**
+     * The type.
+     */
+    type?: string;
+}
+
+/**
  * Possible types for deploy targets.
  */
 export type DeployTargets = string | string[];
 
 
-// [POST] /deploy
+// [GET] /deploy
+export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    let canDeploy = args.request.user.can('deploy');
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        let notFound = () => {
+            args.sendNotFound();
+            completed();
+
+            return;
+        };
+
+        if (!canDeploy) {
+            args.sendForbidden();
+            completed();
+
+            return;
+        }
+
+        vscode.commands.getCommands(true).then((commands) => {
+            let deployCmd = commands.filter(x => 'extension.deploy.getTargets' == x);
+            if (deployCmd.length < 1) {  // 'vs-deploy' is NOT installed
+                args.sendResponse(410);
+                completed();
+                
+                return;
+            }
+
+            try {
+                let callback = (err, targets: DeployTargetEntry[]) => {
+                    try {
+                        if (!err) {
+                            if (targets) {
+                                args.response.data = targets.filter(x => x).map(x => {
+                                    return {
+                                        description: rapi_helpers.isEmptyString(x.description) ? undefined : rapi_helpers.toStringSafe(x.description).trim(),
+                                        name: x.name ? rapi_helpers.toStringSafe(x.name) : <any>x.name,
+                                        type: rapi_helpers.isEmptyString(x.type) ? 'open' : rapi_helpers.normalizeString(x.type),
+                                    };
+                                });
+                            }
+                        }
+
+                        completed(err);
+                    }
+                    catch (e) {
+                        completed(e);
+                    }
+                };
+
+                vscode.commands.executeCommand(deployCmd[0], callback).then(() => {
+                    //TODO
+                }, (err) => {
+                    completed(err);
+                });
+            }
+            catch (e) {
+                completed(e);
+            }
+        }, (err) => {
+            completed(err);
+        });
+    });
+}
+
+// [POST] /deploy/{file}
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canDeploy = args.request.user.can('deploy');
 
@@ -55,7 +140,6 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
             return;
         }
 
-        // extension.deploy.filesTo
         vscode.commands.getCommands(true).then((commands) => {
             let deployCmd = commands.filter(x => 'extension.deploy.filesTo' == x);
             if (deployCmd.length < 1) {  // 'vs-deploy' is NOT installed
