@@ -101,7 +101,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                     type: "i",
                 };
 
-                let items: ActionMessageItem[] = rapi_helpers.asArray(opts.items).map(x => {
+                let items: ActionMessageItem[] = rapi_helpers.asArray(opts.items).filter(x => x).map(x => {
                     let msgItem: ActionMessageItem = {
                         action: undefined,
                         title: rapi_helpers.toStringSafe(x.title),
@@ -154,14 +154,11 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                             i.action();
                         }
                         catch (e) {
-                            rapi_helpers.log(`[ERROR] api.popups.POST: ${rapi_helpers.toStringSafe(e)}`);
+                            rapi_helpers.log(`[ERROR] api.popups.POST(1): ${rapi_helpers.toStringSafe(e)}`);
                         }
                     }
-                    else {
-                        completed();
-                    }
                 }, (err) => {
-                    completed(err);
+                    rapi_helpers.log(`[ERROR] api.popups.POST(2): ${rapi_helpers.toStringSafe(err)}`);
                 });
 
                 completed();
