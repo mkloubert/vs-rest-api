@@ -548,7 +548,7 @@ export class ApiHost implements vscode.Disposable {
 
             if (apiModule) {
                 // custom method from external API module
-                method = apiModule[ctx.method];
+                method = apiModule[ctx.method.toUpperCase()];
             }
             else {
                 // no custom method found

@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.14.1 (February 16th, 2017; bugfixes)
+
+* fixed search for API methods in [modules](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimodule.html) as described in the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#custom-endpoints-)
+
 ## 1.14.0 (February 14th, 2017; deploy files)
 
 * can receive a list of available [deploy targets](https://github.com/mkloubert/vs-rest-api/wiki/buildin_endpoints_get_deploy) now
