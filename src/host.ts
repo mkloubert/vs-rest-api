@@ -856,6 +856,25 @@ export class ApiHost implements vscode.Disposable {
                                     setEndpointDescription('deploy', 'post', 'deploy/{file}');
                                 }
                             }
+
+                            // cron
+                            {
+                                if (isEndpointAvailableForUser('cron', 'get')) {
+                                    setEndpointDescription('cron', 'get', 'cron');
+                                }
+
+                                if (isEndpointAvailableForUser('cron', 'delete', 'activate')) {
+                                    setEndpointDescription('cron', 'delete', 'cron(/{name})');
+                                }
+
+                                if (isEndpointAvailableForUser('cron', 'post', 'activate')) {
+                                    setEndpointDescription('cron', 'post', 'cron(/{name})');
+                                }
+
+                                if (isEndpointAvailableForUser('cron', 'put', 'activate')) {
+                                    setEndpointDescription('cron', 'put', 'cron(/{name})');
+                                }
+                            }
                         }
 
                         if (!ctx.user.isGuest) {
