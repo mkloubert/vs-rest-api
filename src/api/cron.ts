@@ -89,15 +89,18 @@ export function DELETE(args: rapi_contracts.ApiMethodArguments): PromiseLike<any
             let machtingJobs = filterJobs();
             if (!jobName || machtingJobs.length > 0) {
                 vscode.commands.getCommands(true).then((commands) => {
-                    let restartsJobsCmd = commands.filter(x => 'extension.cronJons.stopJobsByName' == x);
-                    if (restartsJobsCmd.length < 1) {  // 'vs-cron' is NOT installed
+                    let stopJobsCmd = commands.filter(x => 'extension.cronJons.stopJobsByName' == x);
+                    if (stopJobsCmd.length < 1) {  // 'vs-cron' is NOT installed
                         completed(null, false);
                         return;
                     }
 
-                    vscode.commands.executeCommand(restartsJobsCmd[0], machtingJobs.map(x => x.name)).then(() => {
+                    vscode.commands.executeCommand(stopJobsCmd[0], machtingJobs.map(x => x.name)).then(() => {
                         getJobs().then((upToDateJobs) => {
                             if (false !== upToDateJobs) {
+                                upToDateJobs = upToDateJobs.filter(utdj => machtingJobs.map(mj => rapi_helpers.normalizeString(mj.name))
+                                                                                       .indexOf(rapi_helpers.normalizeString(utdj.name)) > -1);
+
                                 args.response.data = filterJobs(upToDateJobs).map(x => jobInfoToObject(x));
                             }
 
@@ -199,6 +202,7 @@ function jobInfoToObject(job: JobInfo): Object {
     return obj;
 }
 
+
 // [POST] /api/cron(/{name})
 export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let canActivate = args.request.user.can('activate');
@@ -233,16 +237,99 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
 
             let machtingJobs = filterJobs();
             if (!jobName || machtingJobs.length > 0) {
+                if (jobName && machtingJobs.filter(x => x.isRunning).length > 0) {
+                    // at least one job is running
+
+                    args.sendResponse(409);
+                    completed();
+                    
+                    return;
+                }
+
                 vscode.commands.getCommands(true).then((commands) => {
-                    let restartsJobsCmd = commands.filter(x => 'extension.cronJons.restartJobsByName' == x);
-                    if (restartsJobsCmd.length < 1) {  // 'vs-cron' is NOT installed
+                    let startJobsCmd = commands.filter(x => 'extension.cronJons.startJobsByName' == x);
+                    if (startJobsCmd.length < 1) {  // 'vs-cron' is NOT installed
                         completed(null, false);
                         return;
                     }
 
-                    vscode.commands.executeCommand(restartsJobsCmd[0], machtingJobs.map(x => x.name)).then(() => {
+                    vscode.commands.executeCommand(startJobsCmd[0], machtingJobs.map(x => x.name)).then(() => {
                         getJobs().then((upToDateJobs) => {
                             if (false !== upToDateJobs) {
+                                upToDateJobs = upToDateJobs.filter(utdj => machtingJobs.map(mj => rapi_helpers.normalizeString(mj.name))
+                                                                                       .indexOf(rapi_helpers.normalizeString(utdj.name)) > -1);
+
+                                args.response.data = filterJobs(upToDateJobs).map(x => jobInfoToObject(x));
+                            }
+
+                            completed();
+                        }, (err) => {
+                            completed(err);
+                        });
+                    }, (err) => {
+                        completed(err);
+                    });
+                });
+            }
+            else {
+                // not found
+
+                args.sendNotFound();
+                completed();
+            }
+        }, (err) => {
+            completed(err);    
+        });
+    });
+}
+
+// [PUT] /api/cron(/{name})
+export function PUT(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
+    let canActivate = args.request.user.can('activate');
+
+    return new Promise<any>((resolve, reject) => {
+        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+        if (!canActivate) {
+            args.sendForbidden();
+            completed();
+            
+            return;
+        }
+
+        getJobs().then((jobs) => {
+            if (false === jobs) {
+                args.sendResponse(410);  // 'vs-cron' is NOT installed
+                completed();
+
+                return;
+            }
+
+            let jobName: string;
+            if (args.endpoint.arguments.length > 0) {
+                jobName = rapi_helpers.normalizeString(args.endpoint.arguments[0]);
+            }
+
+            let filterJobs = (j?: JobInfo[]): JobInfo[] => {
+                return (j || jobs).filter(x => rapi_helpers.normalizeString(x.name) == jobName ||
+                                               !jobName);
+            };
+
+            let machtingJobs = filterJobs();
+            if (!jobName || machtingJobs.length > 0) {
+                vscode.commands.getCommands(true).then((commands) => {
+                    let restartJobsCmd = commands.filter(x => 'extension.cronJons.restartJobsByName' == x);
+                    if (restartJobsCmd.length < 1) {  // 'vs-cron' is NOT installed
+                        completed(null, false);
+                        return;
+                    }
+
+                    vscode.commands.executeCommand(restartJobsCmd[0], machtingJobs.map(x => x.name)).then(() => {
+                        getJobs().then((upToDateJobs) => {
+                            if (false !== upToDateJobs) {
+                                upToDateJobs = upToDateJobs.filter(utdj => machtingJobs.map(mj => rapi_helpers.normalizeString(mj.name))
+                                                                                       .indexOf(rapi_helpers.normalizeString(utdj.name)) > -1);
+
                                 args.response.data = filterJobs(upToDateJobs).map(x => jobInfoToObject(x));
                             }
 
