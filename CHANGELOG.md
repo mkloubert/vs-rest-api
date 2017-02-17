@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.15.0 (February 17th, 2017; cron jobs)
+
+* added endpoint to handle [cron jobs](https://github.com/mkloubert/vs-rest-api/wiki#apicron-)
+
 ## 1.14.1 (February 16th, 2017; bugfixes)
 
 * fixed search for API methods in [modules](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimodule.html) as described in the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#custom-endpoints-)

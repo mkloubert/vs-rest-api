@@ -59,13 +59,6 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     return new Promise<any>((resolve, reject) => {
         let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
 
-        let notFound = () => {
-            args.sendNotFound();
-            completed();
-
-            return;
-        };
-
         if (!canDeploy) {
             args.sendForbidden();
             completed();
