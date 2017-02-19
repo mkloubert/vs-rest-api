@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "1.15.2",
+  "version": "1.16.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -712,6 +712,30 @@
                   "required": [
                     "script"
                   ]
+                }
+              ]
+            },
+            "whiteboard": {
+              "oneOf": [
+                {
+                  "type": "boolean",
+                  "description": "Indicates if whiteboard feature should be active or not.",
+                  "default": true
+                },
+                {
+                  "type": "object",
+                  "description": "Settings for handling a virtual whiteboard.",
+                  "properties": {
+                    "dir": {
+                      "description": "The optional directory where to store the revisions.",
+                      "type": "string"
+                    },
+                    "isActive": {
+                      "type": "boolean",
+                      "description": "Indicates if whiteboard feature should be active or not.",
+                      "default": true
+                    }
+                  }
                 }
               ]
             },

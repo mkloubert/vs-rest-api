@@ -48,6 +48,7 @@ export interface Translation {
         stopped: string;
     },
     isNo: {
+        dir: string;
         file: string;
     },
     popups: {
@@ -55,6 +56,9 @@ export interface Translation {
             message: string;
             showChangeLog: string;
         },
+    },
+    whiteboard: {
+        initFailed: string;
     },
 }
 

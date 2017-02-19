@@ -44,6 +44,7 @@ export const TRANSLATION: Translation = {
         stopped: "Host has been STOPPED.",
     },
     isNo: {
+        dir: "{0:trim,surround} is no directory!",
         file: "{0:trim,surround} is no file!",
     },
     popups: {
@@ -51,5 +52,8 @@ export const TRANSLATION: Translation = {
             message: "You are running new version of 'vs-rest-api' ({0:trim})!",
             showChangeLog: 'Show changelog...',
         },
+    },
+    whiteboard: {
+        initFailed: "Could not initialize whiteboard: {0}",
     },
 };

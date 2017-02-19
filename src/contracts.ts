@@ -460,7 +460,7 @@ export interface Configuration {
     /**
      * One or more custom endpoints to define.
      */
-    endpoints?: { [pattern: string]: ApiEndpoint },
+    endpoints?: { [pattern: string]: ApiEndpoint };
     /**
      * Data that is accessable from everywhere, in scripts e.g.
      */
@@ -521,7 +521,7 @@ export interface Configuration {
          * Request unauthorized or not.
          */
         rejectUnauthorized?: boolean;
-    },
+    };
     /**
      * One or more user accounts.
      */
@@ -542,7 +542,11 @@ export interface Configuration {
          * The initial value for the execution arguments of the underlying script.
          */
         state?: any;
-    },
+    };
+    /**
+     * Settings for the whiteboard feature.
+     */
+    whiteboard?: boolean | WhiteboardConfiguration;
     /**
      * Show (directories) with leading '.' character or not.
      */
@@ -725,6 +729,10 @@ export interface RequestContext {
      */
     user?: User;
     /**
+     * Gets the underlying whiteboard (repository).
+     */
+    readonly whiteboard: WhiteboardRepository;
+    /**
      * Object to share and access data workspace wide.
      */
     workspaceState: Object;
@@ -772,6 +780,10 @@ export interface ScriptArguments {
      * Stores a permanent value for the current session for THIS script.
      */
     state: any;
+    /**
+     * Gets the underlying whiteboard (repository).
+     */
+    readonly whiteboard: WhiteboardRepository;
     /**
      * Gets the workspace wide object to share data, between ALL scripts e.g.
      */
@@ -992,4 +1004,91 @@ export interface ValidatorModule<T> extends ScriptModule {
      * Validates a value.
      */
     validate?: Validator<T>;
+}
+
+/**
+ * A whiteboard document.
+ */
+export interface Whiteboard extends Document {
+}
+
+/**
+ * Whiteboard configuration.
+ */
+export interface WhiteboardConfiguration {
+    /**
+     * The path to the optional directory to save revisions as files.
+     */
+    dir?: string;
+    /**
+     * Gets if the whiteboard is active or not.
+     */
+    isActive?: boolean;
+}
+
+/**
+ * A whiteboard repository.
+ */
+export interface WhiteboardRepository extends vscode.Disposable {
+    /**
+     * Adds a revisition.
+     * 
+     * @param {Whiteboard} board The document to add.
+     * 
+     * @returns {PromiseLike<WhiteboardRevision>} The promise.
+     */
+    readonly addRevision: (board: Whiteboard) => PromiseLike<WhiteboardRevision>;
+    /**
+     * Gets the current revision (if available).
+     */
+    readonly current: WhiteboardRevision;
+    /**
+     * Initializes the repository.
+     * 
+     * @returns {PromiseLike<boolean>} The promise.
+     */
+    readonly init: () => PromiseLike<boolean>;
+    /**
+     * Resets the repository with a new board.
+     * 
+     * @param {Whiteboard} board The new board.
+     * 
+     * @returns {PromiseLike<WhiteboardRevision>} The promise.
+     */
+    readonly setBoard: (board: Whiteboard) => PromiseLike<WhiteboardRevision>;
+}
+
+/**
+ * A revision of a whiteboard.
+ */
+export interface WhiteboardRevision {
+    /**
+     * [INTERNAL USE] The path to the underlying file.
+     */
+    __file?: string;
+
+    /**
+     * Gets the underlying document.
+     */
+    readonly board: Whiteboard;
+    /**
+     * Requests the next revision.
+     * 
+     * @returns {PromiseLike<WhiteboardRevision>} The promise.
+     */
+    readonly next: () => PromiseLike<WhiteboardRevision>;
+    /**
+     * Gets the number of the revision.
+     */
+    readonly nr: number;
+    /**
+     * Requests the previous revision.
+     * 
+     * @returns {PromiseLike<WhiteboardRevision>} The promise.
+     */
+    readonly previous: () => PromiseLike<WhiteboardRevision>;
+    /**
+     * Gets the time of the revision.
+     */
+    readonly time: Moment.Moment;
 }

@@ -99,6 +99,7 @@ export function emitHooks(apiArgs: rapi_contracts.ApiMethodArguments,
                                                 return rapi_helpers.requireModule(id);
                                             },
                                             state: undefined,
+                                            whiteboard: undefined,
                                             workspaceState: undefined,
                                         };
 
@@ -119,6 +120,14 @@ export function emitHooks(apiArgs: rapi_contracts.ApiMethodArguments,
                                             set: function(newValue) {
                                                 this.workspaceState['globalHookScriptStates'][hookScript] = newValue;
                                             }   
+                                        });
+
+                                        // executorArgs.whiteboard
+                                        Object.defineProperty(executorArgs, 'whiteboard', {
+                                            enumerable: true,
+                                            get: () => {
+                                                return apiArgs.whiteboard;
+                                            }
                                         });
 
                                         // executorArgs.workspaceState

@@ -518,6 +518,7 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                                     },
                                     state: undefined,
                                     user: result,
+                                    whiteboard: undefined,
                                     workspaceState: undefined,
                                 };
 
@@ -537,6 +538,14 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                                     },
                                     set: function(newValue) {
                                         this.workspaceState['globalAccountPreparerScriptStates'][preparerScript] = newValue;
+                                    }
+                                });
+
+                                // prepareArgs.whiteboard
+                                Object.defineProperty(prepareArgs, 'whiteboard', {
+                                    enumerable: true,
+                                    get: () => {
+                                        return ctx.whiteboard;
                                     }
                                 });
 

@@ -43,6 +43,7 @@ export const TRANSLATION: Translation = {
         stopped: "Der Dienst wurde ANGEHALTEN.",
     },
     isNo: {
+        dir: "{0:trim,surround} ist kein Verzeichnis!",
         file: "{0:trim,surround} ist keine Datei!",
     },
     popups: {
@@ -50,5 +51,8 @@ export const TRANSLATION: Translation = {
             message: "Sie nutzen die neue Version {0:trim} von 'vs-rest-api'!",
             showChangeLog: 'Änderungsprotokoll anzeigen (englisch)...',
         },
+    },
+    whiteboard: {
+        initFailed: "Whiteboard konnte nicht initialisiert werden: {0}",
     },
 };

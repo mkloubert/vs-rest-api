@@ -353,6 +353,7 @@ export class ApiHost implements vscode.Disposable {
                 state: undefined,
                 statusCode: 200,
                 url: undefined,
+                whiteboard: undefined,
                 workspaceState: undefined,
                 write: function(data) {
                     if (!data) {
@@ -392,6 +393,14 @@ export class ApiHost implements vscode.Disposable {
                 enumerable: true,
                 get: () => {
                     return ctx.url;
+                }
+            });
+
+            // apiArgs.whiteboard
+            Object.defineProperty(apiArgs, 'whiteboard', {
+                enumerable: true,
+                get: () => {
+                    return ctx.whiteboard;
                 }
             });
 
@@ -1084,8 +1093,17 @@ export class ApiHost implements vscode.Disposable {
                             response: resp,
                             time: Moment().utc(),
                             url: url,
+                            whiteboard: undefined,
                             workspaceState: undefined,
                         };
+
+                        // ctx.whiteboard
+                        Object.defineProperty(ctx, 'whiteboard', {
+                            enumerable: true,
+                            get: () => {
+                                return me.controller.whiteboard;
+                            }
+                        });
 
                         // ctx.workspaceState
                         Object.defineProperty(ctx, 'workspaceState', {
@@ -1135,6 +1153,7 @@ export class ApiHost implements vscode.Disposable {
                                     },
                                     state: undefined,
                                     value: ctx.client,
+                                    whiteboard: undefined,
                                     workspaceState: undefined,
                                 };
 
@@ -1151,6 +1170,14 @@ export class ApiHost implements vscode.Disposable {
                                     enumerable: true,
                                     get: () => {
                                         return me.controller.workspaceState;
+                                    }
+                                });
+
+                                // validatorArgs.whiteboard
+                                Object.defineProperty(validatorArgs, 'whiteboard', {
+                                    enumerable: true,
+                                    get: () => {
+                                        return ctx.whiteboard;
                                     }
                                 });
 

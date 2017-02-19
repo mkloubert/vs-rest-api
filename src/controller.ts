@@ -30,6 +30,7 @@ import * as rapi_contracts from './contracts';
 import * as rapi_helpers from './helpers';
 import * as rapi_host from './host';
 import * as vscode from 'vscode';
+import * as rapi_whiteboard from './whiteboard';
 
 
 /**
@@ -56,6 +57,10 @@ export class Controller implements vscode.Disposable {
      * Stores the package file of that extension.
      */
     protected readonly _PACKAGE_FILE: rapi_contracts.PackageFile;
+    /**
+     * Stores the current whiteboard (repository).
+     */
+    protected _whiteboard: rapi_contracts.WhiteboardRepository;
     /**
      * Stores the object that shares data workspace wide.
      */
@@ -203,6 +208,33 @@ export class Controller implements vscode.Disposable {
             }
 
             me._config = cfg;
+
+            // whiteboard
+            me._whiteboard = null;
+            {
+                let whiteboardCfg: rapi_contracts.WhiteboardConfiguration;
+                if (!rapi_helpers.isNullOrUndefined(cfg.whiteboard)) {
+                    if ('object' === typeof cfg.whiteboard) {
+                        whiteboardCfg = cfg.whiteboard;
+                    }
+                    else {
+                        whiteboardCfg = {
+                            isActive: rapi_helpers.toBooleanSafe(cfg.whiteboard, true),
+                        };
+                    }
+                }
+
+                if (rapi_helpers.toBooleanSafe(whiteboardCfg.isActive, true)) {
+                    let newWhiteboard: rapi_contracts.WhiteboardRepository = new rapi_whiteboard.MemoryWhitespaceRepository(me,
+                                                                                                                            whiteboardCfg);
+                    
+                    newWhiteboard.init().then(() => {
+                        me._whiteboard = newWhiteboard;
+                    }, (err) => {
+                        vscode.window.showErrorMessage('[vs-rest-api] ' + i18.t('whiteboard.initFailed', err));
+                    });
+                }
+            }
 
             me.showNewVersionPopup();
 
@@ -503,6 +535,13 @@ export class Controller implements vscode.Disposable {
                 });
             }
         });
+    }
+
+    /**
+     * Gets the current whiteboard (repository).
+     */
+    public get whiteboard(): rapi_contracts.WhiteboardRepository {
+        return this._whiteboard;
     }
 
     /**
