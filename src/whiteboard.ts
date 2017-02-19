@@ -327,6 +327,9 @@ export abstract class WhiteboardRepositoryBase implements rapi_contracts.Whitebo
     }
 
     /** @inheritdoc */
+    public abstract get(nr?: number): PromiseLike<rapi_contracts.WhiteboardRevision>;
+
+    /** @inheritdoc */
     public abstract init(): PromiseLike<boolean>;
 
     /** @inheritdoc */
@@ -525,6 +528,35 @@ export class MemoryWhitespaceRepository extends WhiteboardRepositoryBase {
         this._CONFIG.dir = null;
 
         this._revisions = [];
+    }
+
+    /** @inheritdoc */
+    public get(nr?: number): PromiseLike<rapi_contracts.WhiteboardRevision> {
+        let me = this;
+        
+        return new Promise<rapi_contracts.WhiteboardRevision>((resolve, reject) => {
+            let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+            try {
+                let revision: rapi_contracts.WhiteboardRevision;
+
+                nr = parseInt(rapi_helpers.toStringSafe(nr).trim());
+                if (isNaN(nr)) {
+                    revision = me.current;
+                }
+                else {
+                    let machtingRevision = me._revisions.filter(x => x.nr === nr);
+                    if (machtingRevision.length > 0) {
+                        revision = machtingRevision[machtingRevision.length - 1];
+                    }
+                }
+
+                completed(null, revision);
+            }
+            catch (e) {
+                completed(e);
+            }
+        });
     }
 
     /** @inheritdoc */

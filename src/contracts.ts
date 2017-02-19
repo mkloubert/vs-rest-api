@@ -1043,6 +1043,14 @@ export interface WhiteboardRepository extends vscode.Disposable {
      */
     readonly current: WhiteboardRevision;
     /**
+     * Returns the a revision of a specific numver.
+     * 
+     * @param {number} [nr] The revision number.
+     * 
+     * @returns {PromiseLike<WhiteboardRevision>} The promise.
+     */
+    readonly get: (nr?: number) => PromiseLike<WhiteboardRevision>;
+    /**
      * Initializes the repository.
      * 
      * @returns {PromiseLike<boolean>} The promise.

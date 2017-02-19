@@ -27,7 +27,7 @@ import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
 
 
-// [GET] /api/whiteboard
+// [GET] /api/whiteboard(/{revisiion})
 export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
     let whiteboard = args.whiteboard;
 
@@ -44,38 +44,48 @@ export function GET(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
             return;
         }
 
-        try {
-            let current = whiteboard.current;
-            if (current) {
-                let buffer: Buffer;
-                let mime: string;
-                if (current.board) {
-                    if (current.board.body) {
-                        buffer = current.board.body;
-                    }
+        let nr: number;
+        if (args.endpoint.arguments.length > 0) {
+            nr = parseInt(args.endpoint.arguments[0].trim());
+        }
 
-                    if (!rapi_helpers.isEmptyString(current.board.mime)) {
-                        mime = rapi_helpers.toStringSafe(current.board.mime);
+        whiteboard.get(nr).then((revision) => {
+            try {
+                if (revision) {
+                    let buffer: Buffer;
+                    let mime: string;
+                    if (revision.board) {
+                        if (revision.board.body) {
+                            buffer = revision.board.body;
+                        }
 
-                        if (!rapi_helpers.isEmptyString(current.board.encoding)) {
-                            mime += '; charset=' + rapi_helpers.normalizeString(current.board.encoding);
+                        if (!rapi_helpers.isEmptyString(revision.board.mime)) {
+                            mime = rapi_helpers.toStringSafe(revision.board.mime);
+
+                            if (!rapi_helpers.isEmptyString(revision.board.encoding)) {
+                                mime += '; charset=' + rapi_helpers.normalizeString(revision.board.encoding);
+                            }
                         }
                     }
-                }
 
-                if (!buffer) {
-                    buffer = Buffer.alloc(0);
-                }
+                    if (!buffer) {
+                        buffer = Buffer.alloc(0);
+                    }
 
-                args.setContent(buffer, mime);
-                completed();
+                    args.headers['X-Vscode-Restapi-Revision'] = revision.nr;
+
+                    args.setContent(buffer, mime);
+                    completed();
+                }
+                else {
+                    notFound();
+                }
             }
-            else {
-                notFound();
+            catch (e) {
+                completed(e);
             }
-        }
-        catch (e) {
-            completed(e);
-        }
+        }, (err) => {
+            completed(err);
+        });
     });
 }

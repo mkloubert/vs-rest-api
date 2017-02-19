@@ -884,6 +884,13 @@ export class ApiHost implements vscode.Disposable {
                                     setEndpointDescription('cron', 'put', 'cron(/{name})');
                                 }
                             }
+
+                            // whiteboard
+                            if (ctx.whiteboard) {
+                                if (isEndpointAvailableForUser('whiteboard', 'get')) {
+                                    setEndpointDescription('whiteboard', 'get', 'whiteboard(/{revision})');
+                                }
+                            }
                         }
 
                         if (!ctx.user.isGuest) {
