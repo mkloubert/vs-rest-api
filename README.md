@@ -122,6 +122,7 @@ Visit the [wiki](https://github.com/mkloubert/vs-rest-api/wiki#build-in-endpoint
 | [/api/outputs](https://github.com/mkloubert/vs-rest-api/wiki#apioutputs-) | Accesses resources of output channels handled by the extension.  |
 | [/api/popups](https://github.com/mkloubert/vs-rest-api/wiki#apipopups-) | Accesses resources for handling popup messages.  |
 | [/api/state](https://github.com/mkloubert/vs-rest-api/wiki#apistate-) | Accesses permanent data for the current user / guest.  |
+| [/api/whiteboard](https://github.com/mkloubert/vs-rest-api/wiki#apiwhiteboard-) | Accesses resources for handling a virtual whiteboard.  |
 | [/api/workspace](https://github.com/mkloubert/vs-rest-api/wiki#apiworkspace-) | Accesses or manipulates resources, like files or folders, inside the current workspace.  |
 
 ### Custom endpoints [[&uarr;](#how-to-use-)]
