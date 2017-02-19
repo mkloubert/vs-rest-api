@@ -585,6 +585,7 @@ export class MemoryWhitespaceRepository extends WhiteboardRepositoryBase {
                 let fn = REGEX_WHITEBOARD_FILE.exec(Path.basename(filePath));
 
                 let newRevision: rapi_contracts.WhiteboardRevision = {
+                    __file: filePath,
                     board: {
                         body: undefined,
                     },
