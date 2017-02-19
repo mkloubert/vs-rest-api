@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.16.0 (February 19th, 2017; whiteboards)
+
+* added feature for handling a virtual [whitebard](https://github.com/mkloubert/vs-rest-api/wiki/whiteboard)
+
 ## 1.15.0 (February 17th, 2017; cron jobs)
 
 * added endpoint to handle [cron jobs](https://github.com/mkloubert/vs-rest-api/wiki#apicron-)
