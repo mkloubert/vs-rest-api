@@ -421,14 +421,19 @@ export abstract class WhiteboardRepositoryBase implements rapi_contracts.Whitebo
                         fileContent.time = revision.time.toISOString();
                     }
 
-                    FS.writeFile(filePath, new Buffer(JSON.stringify(fileContent), 'utf8'), (err) => {
-                        if (err) {
-                            completed(err);
-                        }
-                        else {
-                            completed(null, filePath);
-                        }
-                    });
+                    try {
+                        FS.writeFile(filePath, new Buffer(JSON.stringify(fileContent), 'utf8'), (err) => {
+                            if (err) {
+                                completed(err);
+                            }
+                            else {
+                                completed(null, filePath);
+                            }
+                        });
+                    }
+                    catch (e) {
+                        completed(e);
+                    }
                 }, (err) => {
                     completed(err);
                 });
