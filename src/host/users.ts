@@ -343,9 +343,9 @@ class User implements rapi_contracts.User {
 
     public unset(name: string): User {
         name = this.parseVarName(name);
-        delete this.account.__globals['name'];
+        delete this.account.__globals[name];
 
-        return;
+        return this;
     }
 }
 
