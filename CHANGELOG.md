@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.17.0 (February 20th, 2017; custom endpoints only)
+
+* added `customOnly` properties for [global](https://github.com/mkloubert/vs-rest-api/wiki#settings-) and [guest/users](https://github.com/mkloubert/vs-rest-api/wiki#users-and-guests-) settings
+
 ## 1.16.0 (February 19th, 2017; whiteboards)
 
 * added feature for handling a virtual [whitebard](https://github.com/mkloubert/vs-rest-api/wiki/whiteboard)
