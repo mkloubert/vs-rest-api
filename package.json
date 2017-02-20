@@ -2,7 +2,7 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "1.16.2",
+  "version": "1.17.0",
   "publisher": "mkloubert",
   "engines": {
     "vscode": "^1.5.0"
@@ -47,6 +47,11 @@
           "properties": {
             "autoStart": {
               "description": "Start HTTP on startup or not.",
+              "type": "boolean",
+              "default": false
+            },
+            "customOnly": {
+              "description": "Indicates if build-in endpoints are disabled by default or not.",
               "type": "boolean",
               "default": false
             },
@@ -143,6 +148,11 @@
                     },
                     "canWrite": {
                       "description": "Defines if guest has write access or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "customOnly": {
+                      "description": "Indicates if build-in endpoints are disabled for a guest or not.",
                       "type": "boolean",
                       "default": false
                     },
@@ -434,6 +444,11 @@
                       "type": "boolean",
                       "default": false
                     },
+                    "customOnly": {
+                      "description": "Indicates if build-in endpoints are disabled for that user or not.",
+                      "type": "boolean",
+                      "default": false
+                    },
                     "endpoints": {
                       "description": "Defines one or more endpoint(s) via regular expressions that are available for the user.",
                       "type": "object",
@@ -580,6 +595,11 @@
                       },
                       "canWrite": {
                         "description": "Defines if user has write access or not.",
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "customOnly": {
+                        "description": "Indicates if build-in endpoints are disabled for that user or not.",
                         "type": "boolean",
                         "default": false
                       },

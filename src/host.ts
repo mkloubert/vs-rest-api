@@ -158,6 +158,9 @@ export class ApiHost implements vscode.Disposable {
             let apiModule: rapi_contracts.ApiModule;
             let method: rapi_contracts.ApiMethod;
 
+            let customOnly = rapi_helpers.toBooleanSafe(ctx.user.account.customOnly,
+                                                        rapi_helpers.toBooleanSafe(ctx.config.customOnly));
+
             let normalizedPath = rapi_helpers.toStringSafe(ctx.url.pathname);
             normalizedPath = rapi_helpers.replaceAllStrings(normalizedPath, "\\", '/');
             normalizedPath = rapi_helpers.replaceAllStrings(normalizedPath, Path.sep, '/');
@@ -559,7 +562,7 @@ export class ApiHost implements vscode.Disposable {
                 // custom method from external API module
                 method = apiModule[ctx.method.toUpperCase()];
             }
-            else {
+            else if (!customOnly) {
                 // no custom method found
                 // now try to bind matching "build in" ...
 
@@ -615,12 +618,19 @@ export class ApiHost implements vscode.Disposable {
                         };
 
                         // endpoints
+                        if (!customOnly)
                         {
                             let endpoints: { [key: string]: any } = ac.response.data['endpoints'];
 
-                            let isEndpointAvailableForUser = (endpointName: string, httpMethod: string, acl?: string) => {
-                                if (!rapi_helpers.isEmptyString(acl) && !ac.request.user.can(acl)) {
-                                    // no right in the ACL
+                            let isEndpointAvailableForUser = (endpointName: string, httpMethod: string, acl?: string | string[]) => {
+                                acl = rapi_helpers.asArray(acl)
+                                                  .filter(x => rapi_helpers.normalizeString(x))
+                                                  .filter(x => x);
+                                
+                                if (acl.filter(x => ac.request.user.can(x)).length <
+                                    acl.length) {
+
+                                    // not all required rights in the ACL
                                     return false;
                                 }
 
@@ -889,6 +899,18 @@ export class ApiHost implements vscode.Disposable {
                             if (ctx.whiteboard) {
                                 if (isEndpointAvailableForUser('whiteboard', 'get')) {
                                     setEndpointDescription('whiteboard', 'get', 'whiteboard(/{revision})');
+                                }
+
+                                if (isEndpointAvailableForUser('whiteboard', 'delete', 'delete')) {
+                                    setEndpointDescription('whiteboard', 'delete', 'whiteboard');
+                                }
+
+                                if (isEndpointAvailableForUser('whiteboard', 'post', ['delete', 'write'])) {
+                                    setEndpointDescription('whiteboard', 'post', 'whiteboard');
+                                }
+
+                                if (isEndpointAvailableForUser('whiteboard', 'put', 'write')) {
+                                    setEndpointDescription('whiteboard', 'put', 'whiteboard');
                                 }
                             }
                         }

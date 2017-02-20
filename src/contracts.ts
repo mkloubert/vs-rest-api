@@ -87,6 +87,10 @@ export interface Account {
      */
     canWrite?: boolean;
     /**
+     * Indicates if build-in endpoints are disabled for users and gueststhat account or not.
+     */
+    customOnly?: boolean;
+    /**
      * If defined: This is a whitelist of endpoints that are visible for that account.
      */
     endpoints?: { [pattern: string]: AccountEndpoint };
@@ -453,6 +457,10 @@ export interface Configuration {
      * Start HTTP on startup or not.
      */
     autoStart?: boolean;
+    /**
+     * Indicates if build-in endpoints are disabled by default or not.
+     */
+    customOnly?: boolean;
     /**
      * Disables popups that report for a new (installed) version.
      */
