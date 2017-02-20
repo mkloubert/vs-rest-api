@@ -618,7 +618,6 @@ export class ApiHost implements vscode.Disposable {
                         };
 
                         // endpoints
-                        if (!customOnly)
                         {
                             let endpoints: { [key: string]: any } = ac.response.data['endpoints'];
 
