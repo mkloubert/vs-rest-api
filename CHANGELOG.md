@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 1.18.0 (February 20th, 2017; deploy files from API scripts)
+
+* added [deploy()](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html#deploy) method to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) which make use of `extension.deploy.filesTo` command, provided by [vs-deploy](https://github.com/mkloubert/vs-deploy) extension
+
 ## 1.17.0 (February 20th, 2017; custom endpoints only)
 
 * added `customOnly` properties for [global](https://github.com/mkloubert/vs-rest-api/wiki#settings-) and [guest/users](https://github.com/mkloubert/vs-rest-api/wiki#users-and-guests-) settings

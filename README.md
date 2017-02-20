@@ -209,9 +209,24 @@ exports.GET = function(args) {
     // s. https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html#setcontent
     {
         var html = fs.readFileSync('/path/to/my/file.html');
+
+        // open HTML document in new tab (for reports e.g.)
+        args.openHtml(html.toString('utf8'), 'My HTML document from "file.html"').then(function() {
+            // HTML opened
+        }, function(err) {
+            // opening HTML document failed
+        });
     
         args.setContent(html, 'text/html');
     }
+
+    // deploys 'index.html' to 'My SFTP server'
+    // s. https://github.com/mkloubert/vs-deploy
+    args.deploy(['./index.html'], ['My SFTP server']).then(function() {
+        // file deployed
+    }, function(err) {
+        // deployment failed
+    });
     
     // custom HTTP status code
     args.statusCode = 202;

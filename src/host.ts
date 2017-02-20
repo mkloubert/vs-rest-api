@@ -173,6 +173,34 @@ export class ApiHost implements vscode.Disposable {
 
             let apiArgs: rapi_contracts.ApiMethodArguments;
             apiArgs = {
+                deploy: (files, targets) => {
+                    // files
+                    files = rapi_helpers.asArray(files)
+                                        .map(x => rapi_helpers.toStringSafe(x))
+                                        .filter(x => !rapi_helpers.isEmptyString(x));
+                    files = rapi_helpers.distinctArray(files);
+
+                    // targets
+                    targets = rapi_helpers.asArray(targets)
+                                          .map(x => rapi_helpers.normalizeString(x))
+                                          .filter(x => x);
+                    targets = rapi_helpers.distinctArray(targets);
+
+                    return new Promise<any>((resolve, reject) => {
+                        let completed = rapi_helpers.createSimplePromiseCompletedAction(resolve, reject);
+
+                        try {
+                            vscode.commands.executeCommand('extension.deploy.filesTo', files, targets).then((result) => {
+                                completed(null, result);
+                            }, (err) => {
+                                completed(err);
+                            });
+                        }
+                        catch (e) {
+                            completed(e);
+                        }
+                    });
+                },
                 doNotEmitHook: false,
                 emitHook: function(hook, args) {
                     hook = rapi_helpers.normalizeString(hook);
