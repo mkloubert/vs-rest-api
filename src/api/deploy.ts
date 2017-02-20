@@ -164,8 +164,8 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
                     if (isVisible) {
                         args.getJSON<DeployTargets>().then((submittedTargetList) => {
                             let targets = rapi_helpers.asArray(submittedTargetList)
-                                                      .filter(x => x)
-                                                      .map(x => rapi_helpers.normalizeString(x));
+                                                      .map(x => rapi_helpers.normalizeString(x))
+                                                      .filter(x => x);
                             targets = rapi_helpers.distinctArray(targets);
 
                             vscode.commands.executeCommand(deployCmd[0], [ fullPath ], targets).then(() => {
