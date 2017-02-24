@@ -223,6 +223,9 @@ export class Controller implements vscode.Disposable {
                         };
                     }
                 }
+                else {
+                    whiteboardCfg = {};
+                }
 
                 if (rapi_helpers.toBooleanSafe(whiteboardCfg.isActive, true)) {
                     let newWhiteboard: rapi_contracts.WhiteboardRepository = new rapi_whiteboard.MemoryWhitespaceRepository(me,
