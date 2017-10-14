@@ -1,5 +1,9 @@
 # Change Log (vs-rest-api)
 
+## 2.0.0 (October 14th, 2017; multi root support)
+
+* started to refactor to new, upcoming [Multi Root Workspace API](https://github.com/Microsoft/vscode/wiki/Extension-Authoring:-Adopting-Multi-Root-Workspace-APIs)
+
 ## 1.18.0 (February 20th, 2017; deploy files from API scripts)
 
 * added [deploy()](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html#deploy) method to [ApiMethodArguments](https://mkloubert.github.io/vs-rest-api/interfaces/_contracts_.apimethodarguments.html) which make use of `extension.deploy.filesTo` command, provided by [vs-deploy](https://github.com/mkloubert/vs-deploy) extension

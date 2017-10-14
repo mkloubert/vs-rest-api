@@ -37,6 +37,7 @@ import * as rapi_hooks from './hooks';
 import * as rapi_host_helpers from './host/helpers';
 import * as rapi_host_users from './host/users';
 import * as rapi_users from './host/users';
+import * as rapi_workspace from './workspace';
 import * as URL from 'url';
 import * as vscode from 'vscode';
 
@@ -556,7 +557,7 @@ export class ApiHost implements vscode.Disposable {
                         let apiScript = rapi_helpers.toStringSafe(ep.script);
                         if (!rapi_helpers.isEmptyString(apiScript)) {
                             if (!Path.isAbsolute(apiScript)) {
-                                apiScript = Path.join(vscode.workspace.rootPath, apiScript);
+                                apiScript = Path.join(rapi_workspace.getRootPath(), apiScript);
                             }
                             apiScript = Path.resolve(apiScript);
 
@@ -1254,7 +1255,7 @@ export class ApiHost implements vscode.Disposable {
 
                                     if (!rapi_helpers.isEmptyString(validatorScript)) {
                                         if (!Path.isAbsolute(validatorScript)) {
-                                            validatorScript = Path.join(vscode.workspace.rootPath, validatorScript);
+                                            validatorScript = Path.join(rapi_workspace.getRootPath(), validatorScript);
                                         }
                                         validatorScript = Path.resolve(validatorScript);
 
@@ -1361,7 +1362,7 @@ export class ApiHost implements vscode.Disposable {
                     if (!rapi_helpers.isEmptyString(cfg.ssl.ca)) {
                         let caFile = rapi_helpers.toStringSafe(cfg.ssl.ca);
                         if (!Path.isAbsolute(caFile)) {
-                            caFile = Path.join(vscode.workspace.rootPath, caFile);
+                            caFile = Path.join(rapi_workspace.getRootPath(), caFile);
                         }
                         caFile = Path.resolve(caFile);
 
@@ -1371,7 +1372,7 @@ export class ApiHost implements vscode.Disposable {
                     if (!rapi_helpers.isEmptyString(cfg.ssl.cert)) {
                         let certFile = rapi_helpers.toStringSafe(cfg.ssl.cert);
                         if (!Path.isAbsolute(certFile)) {
-                            certFile = Path.join(vscode.workspace.rootPath, certFile);
+                            certFile = Path.join(rapi_workspace.getRootPath(), certFile);
                         }
                         certFile = Path.resolve(certFile);
 
@@ -1381,7 +1382,7 @@ export class ApiHost implements vscode.Disposable {
                     if (!rapi_helpers.isEmptyString(cfg.ssl.key)) {
                         let keyFile = rapi_helpers.toStringSafe(cfg.ssl.key);
                         if (!Path.isAbsolute(keyFile)) {
-                            keyFile = Path.join(vscode.workspace.rootPath, keyFile);
+                            keyFile = Path.join(rapi_workspace.getRootPath(), keyFile);
                         }
                         keyFile = Path.resolve(keyFile);
 

@@ -33,6 +33,7 @@ import * as rapi_content from './content';
 import * as rapi_contracts from './contracts';
 import * as rapi_controller from './controller';
 import * as rapi_helpers from './helpers';
+import * as rapi_workspace from './workspace';
 import * as vscode from 'vscode';
 
 
@@ -69,6 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     controller = new rapi_controller.Controller(context, outputChannel, pkgFile);
+    rapi_workspace.resetSelectedWorkspaceFolder();
 
     // (re)start host
     let startHost = vscode.commands.registerCommand('extension.restApi.startHost', () => {

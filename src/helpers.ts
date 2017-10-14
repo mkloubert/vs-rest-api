@@ -34,6 +34,7 @@ import * as Moment from 'moment';
 import * as Path from 'path';
 import * as rapi_contracts from './contracts';
 import * as rapi_host_users from './host/users';
+import * as rapi_workspace from './workspace';
 import * as vscode from 'vscode';
 import * as ZLib from 'zlib';
 
@@ -539,7 +540,7 @@ export function isNullOrUndefined(val: any): boolean {
  */
 export function loadModuleSync<TModule extends rapi_contracts.ScriptModule>(file: string, useCache: boolean = false): TModule {
     if (!Path.isAbsolute(file)) {
-        file = Path.join(vscode.workspace.rootPath, file);
+        file = Path.join(rapi_workspace.getRootPath(), file);
     }
     file = Path.resolve(file);
 
@@ -619,7 +620,7 @@ export function open(target: string, opts?: OpenOptions): PromiseLike<ChildProce
             let appArgs: string[] = [];
             let args: string[] = [];
             let cpOpts: ChildProcess.SpawnOptions = {
-                cwd: opts.cwd || vscode.workspace.rootPath,
+                cwd: opts.cwd || rapi_workspace.getRootPath(),
             };
 
             if (Array.isArray(opts.app)) {
@@ -1126,11 +1127,11 @@ export function toRelativePath(path: string, baseDir?: string): string | false {
     let result: string | false = false;
 
     if (isEmptyString(baseDir)) {
-        baseDir = vscode.workspace.rootPath;
+        baseDir = rapi_workspace.getRootPath();
     }
     else {
         if (!Path.isAbsolute(baseDir)) {
-            baseDir = Path.join(vscode.workspace.rootPath, baseDir);
+            baseDir = Path.join(rapi_workspace.getRootPath(), baseDir);
         }
 
         baseDir = Path.resolve(baseDir);
@@ -1139,7 +1140,7 @@ export function toRelativePath(path: string, baseDir?: string): string | false {
     try {
         let normalizedPath = replaceAllStrings(path, Path.sep, '/');
 
-        let wsRootPath = replaceAllStrings(vscode.workspace.rootPath, Path.sep, '/');
+        let wsRootPath = replaceAllStrings(rapi_workspace.getRootPath(), Path.sep, '/');
         if (wsRootPath) {
             if (FS.existsSync(wsRootPath)) {
                 if (FS.lstatSync(wsRootPath).isDirectory()) {

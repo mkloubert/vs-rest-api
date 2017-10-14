@@ -28,6 +28,7 @@ const Glob = require('glob');
 import * as Path from 'path';
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
+import * as rapi_workspace from '../workspace';
 import * as vscode from 'vscode';
 
 
@@ -148,7 +149,7 @@ class User implements rapi_contracts.User {
                 };
 
                 if (!Path.isAbsolute(dir)) {
-                    dir = Path.join(vscode.workspace.rootPath, dir);
+                    dir = Path.join(rapi_workspace.getRootPath(), dir);
                 }
 
                 let parentDir = dir + '/..';
@@ -228,7 +229,7 @@ class User implements rapi_contracts.User {
                 };
 
                 if (!Path.isAbsolute(file)) {
-                    file = Path.join(vscode.workspace.rootPath, file);
+                    file = Path.join(rapi_workspace.getRootPath(), file);
                 }
 
                 file = normalizePath(file);
@@ -278,11 +279,11 @@ class User implements rapi_contracts.User {
                                 try {
                                     Glob(p, {
                                         absolute: true,
-                                        cwd: vscode.workspace.rootPath,
+                                        cwd: rapi_workspace.getRootPath(),
                                         dot: true,
                                         ignore: excludePatterns,
                                         nodir: true,
-                                        root: vscode.workspace.rootPath,
+                                        root: rapi_workspace.getRootPath(),
                                     }, (err: any, matchingFiles: string[]) => {
                                         if (err) {
                                             completed(err);
@@ -494,7 +495,7 @@ export function getUser(ctx: rapi_contracts.RequestContext): PromiseLike<rapi_co
                     if (userPreparer) {
                         let preparerScript = userPreparer.script;
                         if (!Path.isAbsolute(preparerScript)) {
-                            preparerScript = Path.join(vscode.workspace.rootPath, preparerScript);
+                            preparerScript = Path.join(rapi_workspace.getRootPath(), preparerScript);
                         }
                         preparerScript = Path.resolve(preparerScript);
 

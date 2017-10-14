@@ -30,6 +30,7 @@ import * as Moment from 'moment';
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
 import * as rapi_host_users from '../host/users';
+import * as rapi_workspace from '../workspace';
 import * as vscode from 'vscode';
 
 
@@ -344,7 +345,7 @@ function request(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> {
                                       .map(x => decodeURIComponent(x))
                                       .filter(x => x);
 
-            let fullPath = Path.join(vscode.workspace.rootPath, parts.join('/'));
+            let fullPath = Path.join(rapi_workspace.getRootPath(), parts.join('/'));
 
             let relativePath = rapi_helpers.toRelativePath(fullPath);
             if (false === relativePath) {

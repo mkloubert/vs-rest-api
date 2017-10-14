@@ -31,6 +31,7 @@ import * as Path from 'path';
 import * as rapi_contracts from './contracts';
 import * as rapi_controller from './controller';
 import * as rapi_helpers from './helpers';
+import * as rapi_workspace from './workspace';
 import * as vscode from 'vscode';
 
 
@@ -177,7 +178,7 @@ export abstract class WhiteboardRepositoryBase implements rapi_contracts.Whitebo
                 }
                 else {
                     if (!Path.isAbsolute(dir)) {
-                        dir = Path.join(vscode.workspace.rootPath, dir);
+                        dir = Path.join(rapi_workspace.getRootPath(), dir);
                     }
                     dir = Path.resolve(dir);
 

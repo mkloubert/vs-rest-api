@@ -30,6 +30,7 @@ import * as Moment from 'moment';
 import * as Path from 'path';
 import * as rapi_contracts from './contracts';
 import * as rapi_helpers from './helpers';
+import * as rapi_workspace from './workspace';
 import * as URL from 'url';
 import * as vscode from 'vscode';
 
@@ -73,7 +74,7 @@ export function emitHooks(apiArgs: rapi_contracts.ApiMethodArguments,
                             try {
                                 let hookScript = h.script;
                                 if (!Path.isAbsolute(hookScript)) {
-                                    hookScript = Path.join(vscode.workspace.rootPath, hookScript);
+                                    hookScript = Path.join(rapi_workspace.getRootPath(), hookScript);
                                 }
                                 hookScript = Path.resolve(hookScript);
 

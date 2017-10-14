@@ -2,10 +2,10 @@
   "name": "vs-rest-api",
   "displayName": "REST API",
   "description": "Extension that provides a REST API to control your editor.",
-  "version": "1.18.2",
+  "version": "2.0.0",
   "publisher": "mkloubert",
   "engines": {
-    "vscode": "^1.5.0"
+    "vscode": "^1.17.0"
   },
   "license": "MIT",
   "categories": [
@@ -269,7 +269,9 @@
                           "default": "./my-hook.js"
                         }
                       },
-                      "required": [ "script" ]
+                      "required": [
+                        "script"
+                      ]
                     },
                     {
                       "type": "array",
@@ -291,7 +293,9 @@
                                 "default": "./my-hook.js"
                               }
                             },
-                            "required": [ "script" ]
+                            "required": [
+                              "script"
+                            ]
                           }
                         ]
                       }
@@ -329,18 +333,20 @@
                       "default": "./my-user-preparer.js"
                     }
                   },
-                  "required": [ "script" ]
+                  "required": [
+                    "script"
+                  ]
                 }
               ]
             },
             "port": {
-              "oneOf":[
+              "oneOf": [
                 {
                   "description": "The TCP port the HTTP server should listen on.",
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 65535,
-                  "default": 1781  
+                  "default": 1781
                 },
                 {
                   "description": "Each property represents the machine (name) and its TCP port.",

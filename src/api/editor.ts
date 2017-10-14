@@ -28,6 +28,7 @@ import * as Path from 'path';
 import * as rapi_contracts from '../contracts';
 import * as rapi_helpers from '../helpers';
 import * as rapi_host_users from '../host/users';
+import * as rapi_workspace from '../workspace';
 import * as vscode from 'vscode';
 
 
@@ -207,7 +208,7 @@ export function POST(args: rapi_contracts.ApiMethodArguments): PromiseLike<any> 
             };
 
             if (fileToOpen) {
-                let fullPath = Path.join(vscode.workspace.rootPath, fileToOpen);
+                let fullPath = Path.join(rapi_workspace.getRootPath(), fileToOpen);
 
                 let relativePath = rapi_helpers.toRelativePath(fullPath);
                 if (false === relativePath) {
