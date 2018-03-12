@@ -1,5 +1,12 @@
 # Change Log (vs-rest-api)
 
+## 3.0.0 (March 13th, 2018; npm updates)
+
+* updated the following [npm](https://www.npmjs.com/) modules:
+  * [mime](https://www.npmjs.com/package/mime) `1.6.0`
+  * [moment](https://www.npmjs.com/package/moment) `2.21.0`
+* extension requires at least [Visual Studio Code 1.20](https://code.visualstudio.com/updates/v1_20) now
+
 ## 2.0.0 (October 14th, 2017; multi root support)
 
 * started to refactor to new, upcoming [Multi Root Workspace API](https://github.com/Microsoft/vscode/wiki/Extension-Authoring:-Adopting-Multi-Root-Workspace-APIs)
