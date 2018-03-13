@@ -1,6 +1,6 @@
 # Change Log (vs-rest-api)
 
-## 3.0.0 (March 13th, 2018; npm updates)
+## 3.0.1 (March 13th, 2018; npm updates)
 
 * updated the following [npm](https://www.npmjs.com/) modules:
   * [mime](https://www.npmjs.com/package/mime) `1.6.0`
